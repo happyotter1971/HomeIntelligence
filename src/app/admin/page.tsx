@@ -381,12 +381,11 @@ export default function AdminPage() {
     return (
       <div className="min-h-screen bg-slate-50">
         {/* Header with clean background */}
-        <div className="bg-white border-b border-gray-200 shadow-sm">
-          <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-600 to-blue-700"></div>
-          <div className="container mx-auto px-6 py-12 relative z-10">
+        <div className="bg-white border-b-2 border-blue-200 shadow-md">
+          <div className="container mx-auto px-6 py-8 relative z-10">
             <div className="flex justify-between items-center">
               <div className="flex items-center gap-6">
-                <div className="p-3 bg-white/15 backdrop-blur-sm rounded-2xl border border-white/25 shadow-lg">
+                <div className="p-3 bg-white rounded-2xl border-2 border-blue-200 shadow-md">
                   <Image 
                     src="/new-logo.svg" 
                     alt="BuilderIntelligence Logo" 
@@ -409,7 +408,7 @@ export default function AdminPage() {
                 <Link href="/">
                   <Button 
                     variant="outline"
-                    className="bg-white border-gray-300 text-gray-700 hover:bg-gray-50 hover:border-gray-400 rounded-lg shadow-sm"
+                    className="bg-white border-gray-300 text-gray-700 hover:bg-blue-50 hover:border-blue-300 hover:text-blue-700 rounded-xl transition-all duration-200 shadow-lg"
                   >
                     <ArrowLeft className="h-4 w-4 mr-2" />
                     Back to Home
@@ -422,7 +421,7 @@ export default function AdminPage() {
         
         <div className="relative">
           <div className="container mx-auto px-6 pt-8 pb-12">
-            <Card className="glass-effect border-0 shadow-lg">
+            <Card className="bg-white border-2 border-blue-200 shadow-md">
               <CardContent className="text-center py-12">
                 <Shield className="h-16 w-16 mx-auto text-red-400 mb-4" />
                 <h2 className="text-xl font-semibold mb-2">Access Denied</h2>
@@ -597,7 +596,7 @@ export default function AdminPage() {
         </Card>
 
         {showAddForm && (
-          <Card id="home-form" className="glass-effect border-0 shadow-lg mb-8">
+          <Card id="home-form" className="bg-white border-2 border-blue-200 shadow-md mb-8">
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-blue-600">
                 {editingHome ? <Edit className="h-5 w-5" /> : <Plus className="h-5 w-5" />}
@@ -821,7 +820,7 @@ export default function AdminPage() {
             const duplicateGroups = findAllDuplicates();
             if (duplicateGroups.length > 0) {
               return (
-                <Card className="glass-effect border-0 shadow-lg mb-8 bg-red-50/80">
+                <Card className="bg-red-50 border-2 border-red-200 shadow-md mb-8">
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2 text-red-800">
                       <AlertTriangle className="h-5 w-5" />
