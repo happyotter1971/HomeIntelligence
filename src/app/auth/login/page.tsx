@@ -29,17 +29,23 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center px-4">
-      <div className="w-full max-w-md">
+    <div className="min-h-screen relative overflow-hidden flex items-center justify-center px-4">
+      {/* Hero gradient background */}
+      <div className="absolute inset-0 bg-grad-hero"></div>
+      {/* Contrast overlay for text accessibility */}
+      <div className="absolute inset-0 bg-ink/35"></div>
+      <div className="w-full max-w-md relative z-10">
         <Link href="/" className="flex items-center justify-center mb-8">
-          <Image 
-            src="/home-intelligence-logo.svg" 
-            alt="BuilderIntelligence Logo" 
-            width={32} 
-            height={32}
-            className="mr-2"
-          />
-          <span className="text-2xl font-bold text-gray-900">BuilderIntelligence</span>
+          <div className="p-2 bg-white/10 backdrop-blur-sm rounded-xl border border-white/20 mr-3">
+            <Image 
+              src="/home-intelligence-logo.svg" 
+              alt="BuilderIntelligence Logo" 
+              width={28} 
+              height={28}
+              className="flex-shrink-0"
+            />
+          </div>
+          <span className="text-3xl md:text-4xl font-semibold text-white drop-shadow-lg">BuilderIntelligence</span>
         </Link>
         
         <Card>

@@ -461,9 +461,24 @@ export default function HomePage() {
       
       <div className="container mx-auto px-6 py-24 relative z-10">
         <div className="max-w-6xl mx-auto text-center text-white">
-          <h1 className="text-4xl md:text-6xl font-semibold mb-6">
+          <div className="flex items-center justify-center gap-6 mb-4">
+            <div className="p-4 bg-white/10 backdrop-blur-sm rounded-2xl border border-white/20">
+              <Image 
+                src="/home-intelligence-logo.svg" 
+                alt="BuilderIntelligence Logo" 
+                width={64} 
+                height={64}
+                className="flex-shrink-0"
+              />
+            </div>
+            <h1 className="text-4xl md:text-6xl font-semibold">
+              BuilderIntelligence
+            </h1>
+          </div>
+          <p className="text-2xl md:text-3xl text-honey font-bold mb-3 drop-shadow-[0_2px_8px_rgba(209,160,84,0.8)] relative">
+            <span className="bg-gradient-to-r from-honey/20 to-transparent h-1 w-full absolute bottom-0 left-0"></span>
             See the market clearly
-          </h1>
+          </p>
           <p className="text-lg md:text-xl text-white/90 mb-8 max-w-2xl mx-auto">
             Benchmark competitors, price confidently, build faster.
             Gain competitive insights across leading builders in Indian Trail, NC.
