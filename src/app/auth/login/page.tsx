@@ -29,22 +29,39 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 flex items-center justify-center px-4">
-      <div className="w-full max-w-md">
-        <Link href="/" className="flex items-center justify-center mb-8">
-          <div className="p-2 bg-blue-50 rounded-xl border border-blue-200 mr-3">
-            <Image 
-              src="/new-logo.svg" 
-              alt="BuilderIntelligence Logo" 
-              width={40} 
-              height={40}
-              className="flex-shrink-0"
-            />
+    <div className="min-h-screen bg-slate-50">
+      {/* Header with clean background */}
+      <div className="bg-white border-b-2 border-blue-200 shadow-md">
+        <div className="container mx-auto px-6 py-8 relative z-10">
+          <div className="flex justify-center items-center">
+            <div className="flex items-center gap-6">
+              <div className="p-3 bg-white rounded-2xl border-2 border-blue-200 shadow-md">
+                <Image 
+                  src="/new-logo.svg" 
+                  alt="BuilderIntelligence Logo" 
+                  width={64} 
+                  height={64}
+                  className="flex-shrink-0"
+                />
+              </div>
+              <div className="flex flex-col justify-center">
+                <h1 className="text-3xl md:text-4xl font-bold text-gray-900 leading-tight">
+                  <span className="text-blue-600">BuilderIntelligence</span>
+                  <span className="text-gray-700">: Sign In</span>
+                </h1>
+                <p className="text-sm text-gray-600 mt-2 font-medium bg-blue-50 px-3 py-1 rounded-lg border border-blue-200">
+                  Access your home intelligence dashboard
+                </p>
+              </div>
+            </div>
           </div>
-          <span className="text-3xl md:text-4xl font-semibold text-gray-900">BuilderIntelligence</span>
-        </Link>
-        
-        <Card>
+        </div>
+      </div>
+      
+      <div className="relative">
+        <div className="container mx-auto px-6 pt-12 pb-12">
+          <div className="max-w-md mx-auto">
+            <Card className="bg-white border-2 border-blue-200 shadow-md">
           <CardHeader>
             <CardTitle>Welcome Back</CardTitle>
             <CardDescription>
@@ -61,9 +78,8 @@ export default function LoginPage() {
 
               <Button 
                 onClick={handleGoogleSignIn} 
-                className="w-full" 
+                className="w-full bg-blue-600 text-white border-2 border-blue-700 hover:bg-blue-700 shadow-md rounded-lg" 
                 disabled={loading}
-                variant="outline"
               >
                 <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24">
                   <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
@@ -76,6 +92,8 @@ export default function LoginPage() {
             </div>
           </CardContent>
         </Card>
+          </div>
+        </div>
       </div>
     </div>
   );
