@@ -43,14 +43,14 @@ export default function PriceChanges({ maxItems = 10 }: PriceChangesProps) {
         }
       }
       
-      // Now find the actual homes for navigation
+      // Now find the actual homes for navigation and get full address data
       const changesWithHomes = await Promise.all(uniquePriceChanges.map(async (change) => {
         try {
           // First check if the price change already has a homeId
           if (change.homeId) {
             console.log(`Using homeId from price change: ${change.homeId} for ${change.modelName}`);
             
-            // Verify the home's current price
+            // Get the current home to get full address if price change address is incomplete
             const currentHome = await getHomeById(change.homeId);
             if (currentHome) {
               console.log(`Price verification for ${change.modelName}:`, {
@@ -62,6 +62,16 @@ export default function PriceChanges({ maxItems = 10 }: PriceChangesProps) {
               if (currentHome.price !== change.newPrice) {
                 console.warn(`Price mismatch! Home ${change.homeId} has price ${currentHome.price} but price change shows ${change.newPrice}`);
               }
+              
+              // Use the home's address to get the actual street address with house numbers
+              const enhancedChange = {
+                ...change,
+                actualHomeId: change.homeId,
+                // Always use home address to get proper street numbers, not lot numbers
+                address: currentHome.address || change.address
+              };
+              
+              return enhancedChange;
             }
             
             return { ...change, actualHomeId: change.homeId };
@@ -75,15 +85,30 @@ export default function PriceChanges({ maxItems = 10 }: PriceChangesProps) {
             change.communityId,
             change.address
           );
-          return { ...change, actualHomeId: home?.id };
+          
+          if (home) {
+            return { 
+              ...change, 
+              actualHomeId: home.id,
+              // Use the found home's address to get street numbers
+              address: home.address || change.address
+            };
+          }
+          
+          return { ...change, actualHomeId: undefined };
         } catch (err) {
           console.error('Error finding home for price change:', err);
           return { ...change, actualHomeId: undefined };
         }
       }));
       
-      // Filter out changes without matching homes
-      const validChanges = changesWithHomes.filter(c => c.actualHomeId);
+      // Filter out changes without matching homes AND without proper addresses
+      const validChanges = changesWithHomes.filter(c => 
+        c.actualHomeId && 
+        c.address && 
+        c.address.trim() !== '' &&
+        !c.address.includes('Address Not Available')
+      );
       
       console.log(`Price changes: Found ${changes.length} total, ${uniquePriceChanges.length} unique models, ${validChanges.length} with matching homes`);
       setPriceChanges(validChanges);
@@ -225,16 +250,20 @@ export default function PriceChanges({ maxItems = 10 }: PriceChangesProps) {
                     className="flex items-center justify-between px-3 py-2 rounded-lg border-2 border-blue-100 bg-white hover:bg-blue-50 hover:border-blue-200 transition-colors text-sm cursor-pointer group shadow-sm"
                     title={`Home ID: ${homeId}`}
                   >
-                    {/* Left side: Model name and trend icon */}
+                    {/* Left side: Address with trend icon */}
                     <div className="flex items-center gap-2 flex-shrink-0">
-                      <h4 className="font-semibold text-gray-900">
-                        {change.modelName}
-                        {(change.homesiteNumber || change.address) && (
-                          <span className="font-normal text-muted-foreground">
-                            {' '}• {change.homesiteNumber ? `Lot ${change.homesiteNumber}` : change.address?.replace(' Cunningham Farm Drive', '').replace(' Cunningham Farm Dr', '')}
-                          </span>
+                      <div className="flex flex-col">
+                        {change.address ? (
+                          <h4 className="font-semibold text-gray-900">
+                            {/* Display full street address with house numbers */}
+                            {change.address}
+                          </h4>
+                        ) : (
+                          <h4 className="font-semibold text-gray-900 text-gray-400">
+                            Address Not Available
+                          </h4>
                         )}
-                      </h4>
+                      </div>
                       {change.changeType === 'decrease' ? (
                         <TrendingDown className="h-3 w-3 text-green-600" />
                       ) : (
