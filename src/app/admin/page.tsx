@@ -325,7 +325,7 @@ export default function AdminPage() {
               </div>
               <div className="bg-green-50 p-4 rounded-lg">
                 <div className="text-sm font-medium text-green-900">Manual Control</div>
-                <div className="text-green-700">Click "Scrape Now" above</div>
+                <div className="text-green-700">Click &quot;Scrape Now&quot; above</div>
                 <div className="text-xs text-green-600 mt-1">Immediate data refresh available</div>
               </div>
             </div>
