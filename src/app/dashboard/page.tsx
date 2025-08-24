@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { onAuthStateChanged } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
@@ -46,7 +46,7 @@ export default function DashboardPage() {
 
   useEffect(() => {
     applyFilters();
-  }, [homes, searchTerm, selectedBuilder, selectedCommunity, minPrice, maxPrice, bedrooms, status]);
+  }, [applyFilters]);
 
   const fetchData = async () => {
     try {
@@ -66,7 +66,7 @@ export default function DashboardPage() {
     }
   };
 
-  const applyFilters = () => {
+  const applyFilters = useCallback(() => {
     let filtered = homes;
 
     if (searchTerm) {
@@ -102,7 +102,7 @@ export default function DashboardPage() {
     }
 
     setFilteredHomes(filtered);
-  };
+  }, [homes, searchTerm, selectedBuilder, selectedCommunity, minPrice, maxPrice, bedrooms, status]);
 
   const handleCompare = (home: HomeWithRelations) => {
     const isAlreadyComparing = compareList.some(h => h.id === home.id);

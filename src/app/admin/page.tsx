@@ -203,7 +203,7 @@ export default function AdminPage() {
               <Shield className="h-16 w-16 mx-auto text-red-400 mb-4" />
               <h2 className="text-xl font-semibold mb-2">Access Denied</h2>
               <p className="text-gray-600">
-                You don't have admin privileges to access this page.
+                You don&apos;t have admin privileges to access this page.
               </p>
             </CardContent>
           </Card>
