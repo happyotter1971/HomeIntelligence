@@ -369,7 +369,21 @@ function InventoryContent() {
                               <div>
                                 <div className="font-semibold text-foreground">{home.modelName}</div>
                                 {home.address && (
-                                  <div className="text-sm text-muted-foreground">{home.address}</div>
+                                  <div className="text-sm text-muted-foreground">
+                                    {home.address.match(/Lot\s+(\d+)/i) ? (
+                                      <>
+                                        <span className="font-medium text-foreground">Lot {home.address.match(/Lot\s+(\d+)/i)?.[1]}</span>
+                                        <span className="ml-1">{home.address.replace(/Lot\s+\d+\s*,?\s*/i, '')}</span>
+                                      </>
+                                    ) : home.address.match(/^\d+/) ? (
+                                      <>
+                                        <span className="font-medium text-foreground">{home.address.match(/^\d+/)?.[0]}</span>
+                                        <span className="ml-1">{home.address.replace(/^\d+\s*,?\s*/, '')}</span>
+                                      </>
+                                    ) : (
+                                      home.address
+                                    )}
+                                  </div>
                                 )}
                                 {home.homesiteNumber && (
                                   <div className="text-sm text-muted-foreground">Homesite: {home.homesiteNumber}</div>

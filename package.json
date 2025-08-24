@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@types/node": "^20.14.10",
+    "@types/puppeteer": "^5.4.7",
     "@types/react": "^18.3.3",
     "@types/react-dom": "^18.3.0",
     "class-variance-authority": "^0.7.0",
@@ -17,6 +18,7 @@
     "firebase": "^10.12.3",
     "lucide-react": "^0.408.0",
     "next": "^14.2.32",
+    "puppeteer": "^24.17.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "recharts": "^2.12.7",
@@ -28,6 +30,7 @@
     "eslint": "^8.57.0",
     "eslint-config-next": "14.2.5",
     "postcss": "^8.4.39",
-    "tailwindcss": "^3.4.6"
+    "tailwindcss": "^3.4.6",
+    "ts-node": "^10.9.2"
   }
 }

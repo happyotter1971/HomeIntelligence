@@ -1,14 +1,14 @@
 import { Timestamp } from 'firebase/firestore';
 import { Home } from '@/types';
 
-interface ScrapedHome extends Omit<Home, 'id' | 'builderId' | 'communityId' | 'createdAt' | 'lastUpdated'> {
+export interface ScrapedHome extends Omit<Home, 'id' | 'builderId' | 'communityId' | 'createdAt' | 'lastUpdated'> {
   builderName: string;
   communityName: string;
 }
 
 const BUILDER_URLS = {
   dreamfinders: 'https://dreamfindershomes.com/new-homes/nc/indian-trail/moore-farms/',
-  kbhome: 'https://www.kbhome.com/new-homes-charlotte-area/sheffield',
+  kbhome: 'https://www.kbhome.com/move-in-ready?state=north+carolina&region=charlotte+area&city=indian+trail',
   ryanhomes: 'https://www.ryanhomes.com/new-homes/communities/10222120152769/north-carolina/indian-trail/moorefarm'
 };
 
@@ -304,8 +304,28 @@ export const scrapeDreamFindersHomes = async (): Promise<ScrapedHome[]> => {
 };
 
 export const scrapeKBHomes = async (): Promise<ScrapedHome[]> => {
-  // Only showing quick move-in homes based on actual website data
-  const homes: ScrapedHome[] = [
+  // Use dynamic web scraping to get live data from KB Home website
+  try {
+    const { scrapeKBHomesLive } = await import('./kb-home-scraper');
+    const liveHomes = await scrapeKBHomesLive();
+    
+    if (liveHomes.length > 0) {
+      console.log(`Successfully scraped ${liveHomes.length} homes from KB Home website`);
+      return liveHomes;
+    } else {
+      console.log('No homes found from live scraping, falling back to sample data');
+      // Fallback to minimal sample data if live scraping fails
+      return getFallbackKBHomes();
+    }
+  } catch (error) {
+    console.error('Error with live KB Home scraping, using fallback data:', error);
+    return getFallbackKBHomes();
+  }
+};
+
+// Fallback function with minimal sample data
+const getFallbackKBHomes = (): ScrapedHome[] => {
+  return [
     {
       modelName: 'Plan 1820',
       address: 'Lot 142, Cunningham Farm Dr',
@@ -315,84 +335,12 @@ export const scrapeKBHomes = async (): Promise<ScrapedHome[]> => {
       squareFootage: 1820,
       garageSpaces: 2,
       status: 'quick-move-in',
-      features: ['Quick Move-In Ready', 'Single Story', 'Open Concept', 'Kitchen Island'],
+      features: ['Move-In Ready', 'Single Story', 'Open Concept'],
       builderName: 'KB Home',
       communityName: 'Sheffield',
       estimatedMonthlyPayment: Math.round((365990 * 0.06) / 12)
-    },
-    {
-      modelName: 'Plan 1820',
-      address: 'Lot 156, Cunningham Farm Dr',
-      price: 368500,
-      bedrooms: 3,
-      bathrooms: 2,
-      squareFootage: 1820,
-      garageSpaces: 2,
-      status: 'quick-move-in',
-      features: ['Quick Move-In Ready', 'Single Story', 'Open Concept', 'Kitchen Island'],
-      builderName: 'KB Home',
-      communityName: 'Sheffield',
-      estimatedMonthlyPayment: Math.round((368500 * 0.06) / 12)
-    },
-    {
-      modelName: 'Plan 2156',
-      address: 'Lot 134, Cunningham Farm Dr',
-      price: 395990,
-      bedrooms: 4,
-      bathrooms: 2.5,
-      squareFootage: 2156,
-      garageSpaces: 2,
-      status: 'quick-move-in',
-      features: ['Quick Move-In Ready', 'Two Story', 'Master Suite', 'Walk-in Closets'],
-      builderName: 'KB Home',
-      communityName: 'Sheffield',
-      estimatedMonthlyPayment: Math.round((395990 * 0.06) / 12)
-    },
-    {
-      modelName: 'Plan 2156',
-      address: 'Lot 148, Cunningham Farm Dr',
-      price: 398750,
-      bedrooms: 4,
-      bathrooms: 2.5,
-      squareFootage: 2156,
-      garageSpaces: 2,
-      status: 'quick-move-in',
-      features: ['Quick Move-In Ready', 'Two Story', 'Master Suite', 'Walk-in Closets'],
-      builderName: 'KB Home',
-      communityName: 'Sheffield',
-      estimatedMonthlyPayment: Math.round((398750 * 0.06) / 12)
-    },
-    {
-      modelName: 'Plan 2486',
-      address: 'Lot 161, Cunningham Farm Dr',
-      price: 435990,
-      bedrooms: 4,
-      bathrooms: 3,
-      squareFootage: 2486,
-      garageSpaces: 2,
-      status: 'quick-move-in',
-      features: ['Quick Move-In Ready', 'Master Suite Downstairs', 'Game Room', 'Covered Patio'],
-      builderName: 'KB Home',
-      communityName: 'Sheffield',
-      estimatedMonthlyPayment: Math.round((435990 * 0.06) / 12)
-    },
-    {
-      modelName: 'Plan 2486',
-      address: 'Lot 173, Cunningham Farm Dr',
-      price: 439990,
-      bedrooms: 4,
-      bathrooms: 3,
-      squareFootage: 2486,
-      garageSpaces: 2,
-      status: 'quick-move-in',
-      features: ['Quick Move-In Ready', 'Master Suite Downstairs', 'Game Room', 'Covered Patio'],
-      builderName: 'KB Home',
-      communityName: 'Sheffield',
-      estimatedMonthlyPayment: Math.round((439990 * 0.06) / 12)
     }
   ];
-
-  return homes;
 };
 
 export const scrapeRyanHomes = async (): Promise<ScrapedHome[]> => {
