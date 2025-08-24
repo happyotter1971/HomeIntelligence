@@ -169,9 +169,10 @@ export default function HomePage() {
       <div className="min-h-screen bg-background relative overflow-hidden">
         {/* Background decorative elements for authenticated users */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute top-20 right-20 w-64 h-64 gradient-accent rounded-full blur-3xl opacity-10"></div>
-          <div className="absolute bottom-40 left-20 w-80 h-80 gradient-primary rounded-full blur-3xl opacity-8"></div>
-          <div className="absolute top-1/2 right-1/3 w-48 h-48 gradient-secondary rounded-full blur-3xl opacity-15"></div>
+          <div className="absolute top-20 right-20 w-64 h-64 gradient-accent rounded-full blur-3xl opacity-15"></div>
+          <div className="absolute bottom-40 left-20 w-80 h-80 gradient-primary rounded-full blur-3xl opacity-12"></div>
+          <div className="absolute top-60 left-1/4 w-96 h-96 gradient-primary rounded-full blur-2xl opacity-50"></div>
+          <div className="absolute top-40 right-1/3 w-80 h-80 gradient-accent rounded-full blur-2xl opacity-45"></div>
         </div>
         
         <div className="container mx-auto px-4 py-8 relative z-10">
@@ -235,6 +236,11 @@ export default function HomePage() {
                 </CardHeader>
               </Card>
             </Link>
+          </div>
+
+          {/* Price Changes Section */}
+          <div className="mb-8">
+            <PriceChanges maxItems={10} />
           </div>
 
           {/* Competitive Analysis Section */}
@@ -394,10 +400,7 @@ export default function HomePage() {
             </CardContent>
           </Card>
 
-          {/* Price Changes Section */}
-          <PriceChanges maxItems={10} />
-
-          <Card className="glass-effect border-0 shadow-lg mt-8">
+          <Card className="glass-effect border-0 shadow-lg">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Building2 className="h-5 w-5" />
@@ -407,7 +410,7 @@ export default function HomePage() {
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div 
-                  className="text-center p-4 bg-gradient-to-br from-blue-600 to-blue-800 text-white rounded-lg shadow-lg cursor-pointer hover:shadow-xl transition-all transform hover:scale-105 border-2 border-blue-500"
+                  className="text-center p-4 bg-gradient-to-br from-purple-600 via-indigo-600 to-blue-700 text-white rounded-lg shadow-lg cursor-pointer hover:shadow-xl transition-all transform hover:scale-105 border-2 border-purple-500"
                   onClick={() => window.open('https://dreamfindershomes.com/new-homes/nc/indian-trail/moore-farms/', '_blank')}
                 >
                   <h3 className="font-bold text-lg">Dream Finders Homes</h3>
