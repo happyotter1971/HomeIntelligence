@@ -49,12 +49,12 @@ export const getCurrentUser = (): Promise<FirebaseUser | null> => {
   });
 };
 
-export const getUserData = async (uid: string): Promise<User | null> => {
+export const getUserData = async (uid: string): Promise<User | undefined> => {
   const docRef = doc(db, 'users', uid);
   const docSnap = await getDoc(docRef);
   
   if (docSnap.exists()) {
     return { uid, ...docSnap.data() } as User;
   }
-  return null;
+  return undefined;
 };

@@ -39,7 +39,7 @@ export default function ComparisonPage() {
     try {
       const homePromises = homeIds.map(id => getHome(id));
       const homesData = await Promise.all(homePromises);
-      const validHomes = homesData.filter(home => home !== null) as HomeWithRelations[];
+      const validHomes = homesData.filter(home => home !== undefined) as HomeWithRelations[];
       setHomes(validHomes);
     } catch (error) {
       console.error('Error fetching homes:', error);

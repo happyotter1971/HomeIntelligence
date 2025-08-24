@@ -54,7 +54,7 @@ export const getHomes = async (filters?: {
   return homes;
 };
 
-export const getHome = async (id: string): Promise<HomeWithRelations | null> => {
+export const getHome = async (id: string): Promise<HomeWithRelations | undefined> => {
   const docRef = doc(db, 'homes', id);
   const docSnap = await getDoc(docRef);
   
@@ -71,7 +71,7 @@ export const getHome = async (id: string): Promise<HomeWithRelations | null> => 
     };
   }
   
-  return null;
+  return undefined;
 };
 
 export const getBuilders = async (): Promise<Builder[]> => {
@@ -82,7 +82,7 @@ export const getBuilders = async (): Promise<Builder[]> => {
   } as Builder));
 };
 
-export const getBuilder = async (id: string): Promise<Builder | null> => {
+export const getBuilder = async (id: string): Promise<Builder | undefined> => {
   const docRef = doc(db, 'builders', id);
   const docSnap = await getDoc(docRef);
   
@@ -90,7 +90,7 @@ export const getBuilder = async (id: string): Promise<Builder | null> => {
     return { id: docSnap.id, ...docSnap.data() } as Builder;
   }
   
-  return null;
+  return undefined;
 };
 
 export const getCommunities = async (builderId?: string): Promise<Community[]> => {
@@ -107,7 +107,7 @@ export const getCommunities = async (builderId?: string): Promise<Community[]> =
   } as Community));
 };
 
-export const getCommunity = async (id: string): Promise<Community | null> => {
+export const getCommunity = async (id: string): Promise<Community | undefined> => {
   const docRef = doc(db, 'communities', id);
   const docSnap = await getDoc(docRef);
   
@@ -115,7 +115,7 @@ export const getCommunity = async (id: string): Promise<Community | null> => {
     return { id: docSnap.id, ...docSnap.data() } as Community;
   }
   
-  return null;
+  return undefined;
 };
 
 export const addHome = async (homeData: Omit<Home, 'id'>) => {
