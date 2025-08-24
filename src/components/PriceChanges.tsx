@@ -184,18 +184,18 @@ export default function PriceChanges({ maxItems = 10 }: PriceChangesProps) {
   }
 
   return (
-    <Card className="glass-effect border-0 shadow-lg">
+    <Card className="bg-white border-2 border-blue-200 shadow-md">
       <CardHeader>
         <CardTitle className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <TrendingDown className="h-5 w-5 text-blue-600" />
-            Recent Price Changes by Company
+            <span className="text-gray-900">Recent Price Changes by Builder</span>
           </div>
-          <span className="gradient-primary text-white px-3 py-1 rounded-full text-sm font-medium shadow-sm">
+          <span className="bg-blue-600 text-white px-3 py-1 rounded-full text-sm font-medium shadow-sm border border-blue-700">
             {priceChanges.length} change{priceChanges.length !== 1 ? 's' : ''} (90 days)
           </span>
         </CardTitle>
-        <CardDescription>
+        <CardDescription className="text-gray-600">
           Track price movements from Dream Finder Homes, KB Home, and Ryan Homes
         </CardDescription>
       </CardHeader>
@@ -206,28 +206,28 @@ export default function PriceChanges({ maxItems = 10 }: PriceChangesProps) {
             .map(([companyName, changes]) => (
             <div key={companyName} className="space-y-3">
               <div className="flex items-center justify-between">
-                <h3 className="text-lg font-semibold text-foreground flex items-center gap-2">
-                  <Building2 className="h-5 w-5" />
+                <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                  <Building2 className="h-5 w-5 text-blue-600" />
                   {companyName}
                 </h3>
-                <span className="text-sm text-muted-foreground bg-gray-100 px-2 py-1 rounded-full">
+                <span className="text-sm text-gray-600 bg-blue-50 px-2 py-1 rounded-full border border-blue-200">
                   {changes.length} change{changes.length !== 1 ? 's' : ''}
                 </span>
               </div>
               
-              <div className="space-y-1 pl-4 border-l-2 border-gray-200">
+              <div className="space-y-1 pl-4 border-l-2 border-blue-200">
                 {changes.map((change: any) => {
                   const homeId = change.actualHomeId || change.homeId;
                   return (
                   <Link
                     key={change.id}
                     href={`/home/${homeId}`}
-                    className="flex items-center justify-between px-3 py-2 rounded-lg border bg-card/50 hover:bg-card/80 transition-colors text-sm cursor-pointer group"
+                    className="flex items-center justify-between px-3 py-2 rounded-lg border-2 border-blue-100 bg-white hover:bg-blue-50 hover:border-blue-200 transition-colors text-sm cursor-pointer group shadow-sm"
                     title={`Home ID: ${homeId}`}
                   >
                     {/* Left side: Model name and trend icon */}
                     <div className="flex items-center gap-2 flex-shrink-0">
-                      <h4 className="font-semibold text-foreground">
+                      <h4 className="font-semibold text-gray-900">
                         {change.modelName}
                         {(change.homesiteNumber || change.address) && (
                           <span className="font-normal text-muted-foreground">
@@ -243,7 +243,7 @@ export default function PriceChanges({ maxItems = 10 }: PriceChangesProps) {
                     </div>
                     
                     {/* Middle: Community and timing */}
-                    <div className="flex items-center gap-3 text-xs text-muted-foreground flex-1 min-w-0 mx-3">
+                    <div className="flex items-center gap-3 text-xs text-gray-600 flex-1 min-w-0 mx-3">
                       <div className="flex items-center gap-1">
                         <MapPin className="h-3 w-3 flex-shrink-0" />
                         <span className="truncate">{change.community?.name}</span>
@@ -256,11 +256,11 @@ export default function PriceChanges({ maxItems = 10 }: PriceChangesProps) {
                     
                     {/* Right side: Price change details */}
                     <div className="flex items-center gap-2 flex-shrink-0">
-                      <span className="text-xs text-muted-foreground line-through">
+                      <span className="text-xs text-gray-500 line-through">
                         {formatPrice(change.oldPrice)}
                       </span>
                       <span className="text-sm">→</span>
-                      <span className="font-semibold text-foreground">
+                      <span className="font-semibold text-gray-900">
                         {formatPrice(change.newPrice)}
                       </span>
                       <span className={`text-xs font-medium px-1.5 py-0.5 rounded ${

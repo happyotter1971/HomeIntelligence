@@ -172,26 +172,27 @@ function DashboardContent() {
   }
 
   return (
-    <div className="min-h-screen bg-background relative overflow-hidden">
+    <div className="min-h-screen bg-slate-50 relative">
       {/* Dashboard background decorative elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-0 right-0 w-72 h-72 gradient-primary rounded-full blur-3xl opacity-8"></div>
-        <div className="absolute bottom-20 left-0 w-80 h-80 gradient-accent rounded-full blur-3xl opacity-6"></div>
-        <div className="absolute top-1/3 right-1/4 w-56 h-56 gradient-secondary rounded-full blur-3xl opacity-10"></div>
       </div>
       
       <div className="container mx-auto px-4 py-6 relative z-10">
-        <div className="flex items-center gap-4 mb-6">
-          <Link href="/">
-            <Button variant="outline" size="sm">
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Back
-            </Button>
-          </Link>
-          <h1 className="text-3xl font-bold gradient-accent bg-clip-text text-transparent">Quick Move-In Inventory</h1>
+        <div className="bg-white border-b-2 border-blue-200 -mx-4 px-4 py-8 mb-6 shadow-md">
+          <div className="container mx-auto max-w-7xl">
+            <div className="flex items-center gap-4">
+              <Link href="/">
+                <Button variant="outline" size="sm">
+                  <ArrowLeft className="h-4 w-4 mr-2" />
+                  Back
+                </Button>
+              </Link>
+              <h1 className="text-3xl font-bold text-gray-900">Quick Move-In Inventory</h1>
+            </div>
+          </div>
         </div>
 
-        <Card className="mb-6 border-0 bg-gradient-to-r from-blue-50 to-indigo-50 shadow-sm">
+        <Card className="mb-6 border border-gray-100 bg-gray-50 shadow-sm">
           <CardContent className="pt-6">
             <div className="space-y-6">
               {/* Search Bar & Clear Button */}
@@ -276,7 +277,7 @@ function DashboardContent() {
         {compareList.length >= 2 && (
           <div className="fixed bottom-6 right-6 z-50">
             <Link href={`/comparison?homes=${compareList.map(h => h.id).join(',')}`}>
-              <Button size="lg" className="shadow-lg bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white px-6 py-3 rounded-full">
+              <Button size="lg" className="shadow-sm bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg border border-blue-700">
                 Compare {compareList.length} Home{compareList.length !== 1 ? 's' : ''} Now
               </Button>
             </Link>
@@ -301,7 +302,7 @@ function DashboardContent() {
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-xl">{builderName}</CardTitle>
-                  <span className="gradient-primary text-white px-3 py-1 rounded-full text-sm font-medium shadow-sm">
+                  <span className="bg-blue-600 text-white px-3 py-1 rounded-full text-sm font-medium shadow-sm border border-blue-700">
                     {homes.length} home{homes.length !== 1 ? 's' : ''}
                   </span>
                 </div>

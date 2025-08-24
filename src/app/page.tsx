@@ -140,18 +140,11 @@ export default function HomePage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background relative overflow-hidden">
-        {/* Loading screen background elements */}
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute top-1/4 right-1/4 w-32 h-32 gradient-primary rounded-full blur-2xl opacity-30 animate-pulse"></div>
-          <div className="absolute bottom-1/4 left-1/4 w-40 h-40 gradient-accent rounded-full blur-2xl opacity-20 animate-pulse"></div>
-          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 gradient-secondary rounded-full blur-3xl opacity-10"></div>
-        </div>
-        
-        <div className="text-center relative z-10">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-4 border-primary mx-auto mb-4"></div>
-          <h2 className="text-2xl font-bold gradient-accent bg-clip-text text-transparent">Loading BuilderIntelligence</h2>
-          <p className="text-muted-foreground mt-2">Setting up your dashboard...</p>
+      <div className="min-h-screen flex items-center justify-center bg-slate-50">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-4 border-blue-600 mx-auto mb-4"></div>
+          <h2 className="text-2xl font-bold text-gray-900">Loading BuilderIntelligence</h2>
+          <p className="text-gray-600 mt-2">Setting up your dashboard...</p>
         </div>
       </div>
     );
@@ -166,16 +159,14 @@ export default function HomePage() {
     };
 
     return (
-      <div className="min-h-screen relative">
-        {/* Header with gradient background */}
-        <div className="relative">
-          <div className="absolute inset-0 bg-grad-hero"></div>
-          <div className="absolute inset-0 bg-gradient-to-r from-ink/30 via-bluebrand/40 to-transparent"></div>
-          <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-b from-transparent to-background"></div>
+      <div className="min-h-screen bg-slate-50">
+        {/* Header with clean background */}
+        <div className="bg-white border-b border-gray-200 shadow-sm">
+          <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-600 to-blue-700"></div>
           <div className="container mx-auto px-6 py-12 relative z-10">
             <div className="flex justify-between items-center">
               <div className="flex items-center gap-6">
-                <div className="p-3 bg-white/15 backdrop-blur-sm rounded-2xl border border-white/25 shadow-lg">
+                <div className="p-3 bg-blue-50 rounded-2xl border border-blue-200 shadow-sm">
                   <Image 
                     src="/new-logo.svg" 
                     alt="BuilderIntelligence Logo" 
@@ -185,25 +176,25 @@ export default function HomePage() {
                   />
                 </div>
                 <div className="flex flex-col justify-center">
-                  <h1 className="text-3xl md:text-4xl font-bold text-white leading-tight drop-shadow-xl">
-                    <span className="text-honey">Dream Finders Homes</span>
-                    <span className="text-white/90">: BuilderIntelligence</span>
+                  <h1 className="text-3xl md:text-4xl font-bold text-gray-900 leading-tight">
+                    <span className="text-blue-600">Dream Finders Homes</span>
+                    <span className="text-gray-700">: BuilderIntelligence</span>
                   </h1>
-                  <p className="text-sm text-white mt-2 font-medium drop-shadow-lg bg-black/20 px-3 py-1 rounded-lg backdrop-blur-sm border border-white/20">
+                  <p className="text-sm text-gray-600 mt-2 font-medium bg-blue-50 px-3 py-1 rounded-lg border border-blue-200">
                     Insight that Builds Results and Makes Jeff Ott a Boat Load of Money
                   </p>
                 </div>
               </div>
               <div className="flex items-center gap-4">
                 <div className="text-right">
-                  <p className="text-white font-medium drop-shadow-md">
-                    Welcome back, <span className="text-white font-bold drop-shadow-lg">{getFirstName()}!</span>
+                  <p className="text-gray-700 font-medium">
+                    Welcome back, <span className="text-gray-900 font-bold">{getFirstName()}!</span>
                   </p>
                 </div>
                 <Button 
                   variant="outline" 
                   onClick={() => auth.signOut()}
-                  className="bg-white/15 backdrop-blur-sm border-white/30 text-white hover:bg-honey/20 hover:border-honey/40 hover:text-white rounded-xl transition-all duration-200 shadow-lg"
+                  className="bg-white border-gray-300 text-gray-700 hover:bg-gray-50 hover:border-gray-400 rounded-lg shadow-sm"
                 >
                   Sign Out
                 </Button>
@@ -218,37 +209,37 @@ export default function HomePage() {
             {/* Navigation Cards Section */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
               <Link href="/dashboard">
-                <Card variant="branded" className="hover:shadow-xl transition-all cursor-pointer h-full">
-                  <CardHeader variant="gradient">
-                    <CardTitle className="flex items-center gap-2">
-                      <Home className="h-5 w-5 text-bluebrand" />
+                <Card className="bg-white border-2 border-blue-200 hover:border-blue-300 hover:shadow-lg transition-all cursor-pointer h-full shadow-md">
+                  <CardHeader className="pb-4">
+                    <CardTitle className="flex items-center gap-2 text-gray-900">
+                      <Home className="h-5 w-5 text-blue-600" />
                       Quick Move-In Inventory
                     </CardTitle>
-                    <CardDescription>Browse homes ready for immediate move-in</CardDescription>
+                    <CardDescription className="text-gray-600">Browse homes ready for immediate move-in</CardDescription>
                   </CardHeader>
                 </Card>
               </Link>
 
               <Link href="/comparison">
-                <Card variant="branded" className="hover:shadow-xl transition-all cursor-pointer h-full">
-                  <CardHeader variant="gradient">
-                    <CardTitle className="flex items-center gap-2">
-                      <BarChart3 className="h-5 w-5 text-rust" />
+                <Card className="bg-white border-2 border-blue-200 hover:border-blue-300 hover:shadow-lg transition-all cursor-pointer h-full shadow-md">
+                  <CardHeader className="pb-4">
+                    <CardTitle className="flex items-center gap-2 text-gray-900">
+                      <BarChart3 className="h-5 w-5 text-blue-600" />
                       Compare Homes
                     </CardTitle>
-                    <CardDescription>Side-by-side home comparisons</CardDescription>
+                    <CardDescription className="text-gray-600">Side-by-side home comparisons</CardDescription>
                   </CardHeader>
                 </Card>
               </Link>
 
               <Link href="/admin">
-                <Card variant="branded" className="hover:shadow-xl transition-all cursor-pointer h-full">
-                  <CardHeader variant="gradient">
-                    <CardTitle className="flex items-center gap-2">
-                      <Users className="h-5 w-5 text-honey" />
+                <Card className="bg-white border-2 border-blue-200 hover:border-blue-300 hover:shadow-lg transition-all cursor-pointer h-full shadow-md">
+                  <CardHeader className="pb-4">
+                    <CardTitle className="flex items-center gap-2 text-gray-900">
+                      <Users className="h-5 w-5 text-blue-600" />
                       Admin Panel
                     </CardTitle>
-                    <CardDescription>Manage home inventory data</CardDescription>
+                    <CardDescription className="text-gray-600">Manage home inventory data</CardDescription>
                   </CardHeader>
                 </Card>
               </Link>
@@ -260,13 +251,13 @@ export default function HomePage() {
             </div>
 
             {/* Competitive Analysis Section */}
-            <Card className="glass-effect border-0 shadow-lg mb-8">
+            <Card className="bg-white border-2 border-blue-200 shadow-md mb-8">
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
+                  <CardTitle className="flex items-center gap-2 text-gray-900">
                     <BarChart3 className="h-5 w-5 text-blue-600" />
                     Quick Move-In Inventory Comparison
                   </CardTitle>
-                  <CardDescription>
+                  <CardDescription className="text-gray-600">
                     Price comparison analysis for similar home configurations
                   </CardDescription>
                 </CardHeader>
@@ -413,35 +404,35 @@ export default function HomePage() {
               </Card>
 
             {/* Featured Builders Section */}
-            <Card className="glass-effect border-0 shadow-lg">
+            <Card className="bg-white border-2 border-blue-200 shadow-md">
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Building2 className="h-5 w-5" />
+                <CardTitle className="flex items-center gap-2 text-gray-900">
+                  <Building2 className="h-5 w-5 text-blue-600" />
                   Featured Builders
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div 
-                    className="text-center p-4 bg-grad-primary text-white rounded-lg shadow-lg cursor-pointer hover:shadow-xl transition-all transform hover:scale-105 border-2 border-honey"
+                    className="text-center p-4 bg-white border-2 border-blue-200 rounded-lg shadow-md cursor-pointer hover:shadow-lg hover:border-blue-300 transition-all"
                     onClick={() => window.open('https://dreamfindershomes.com/new-homes/nc/indian-trail/moore-farms/', '_blank')}
                   >
-                    <h3 className="font-bold text-lg">Dream Finders Homes</h3>
-                    <p className="text-sm text-white/90">Moore Farms Community</p>
+                    <h3 className="font-bold text-lg text-gray-900">Dream Finders Homes</h3>
+                    <p className="text-sm text-gray-600">Moore Farms Community</p>
                   </div>
                   <div 
-                    className="text-center p-4 bg-cloud border border-slate/20 rounded-lg shadow-sm cursor-pointer hover:shadow-md transition-all transform hover:scale-105 hover:border-honey"
+                    className="text-center p-4 bg-white border-2 border-blue-200 rounded-lg shadow-md cursor-pointer hover:shadow-lg hover:border-blue-300 transition-all"
                     onClick={() => window.open('https://www.kbhome.com/new-homes-charlotte-area/sheffield', '_blank')}
                   >
-                    <h3 className="font-semibold text-ink">KB Home</h3>
-                    <p className="text-sm text-slate">Sheffield Community</p>
+                    <h3 className="font-bold text-lg text-gray-900">KB Home</h3>
+                    <p className="text-sm text-gray-600">Sheffield Community</p>
                   </div>
                   <div 
-                    className="text-center p-4 bg-cloud border border-slate/20 rounded-lg shadow-sm cursor-pointer hover:shadow-md transition-all transform hover:scale-105 hover:border-honey"
+                    className="text-center p-4 bg-white border-2 border-blue-200 rounded-lg shadow-md cursor-pointer hover:shadow-lg hover:border-blue-300 transition-all"
                     onClick={() => window.open('https://www.ryanhomes.com/new-homes/communities/10222120152769/north-carolina/indian-trail/moorefarm', '_blank')}
                   >
-                    <h3 className="font-semibold text-ink">Ryan Homes</h3>
-                    <p className="text-sm text-slate">Moore Farm Community</p>
+                    <h3 className="font-bold text-lg text-gray-900">Ryan Homes</h3>
+                    <p className="text-sm text-gray-600">Moore Farm Community</p>
                   </div>
                 </div>
               </CardContent>
@@ -455,15 +446,13 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen relative overflow-hidden">
-      {/* Hero gradient background */}
-      <div className="absolute inset-0 bg-grad-hero"></div>
-      {/* Contrast overlay for text accessibility */}
-      <div className="absolute inset-0 bg-ink/35"></div>
+      {/* Clean background */}
+      <div className="absolute inset-0 bg-slate-50"></div>
       
       <div className="container mx-auto px-6 py-24 relative z-10">
-        <div className="max-w-6xl mx-auto text-center text-white">
+        <div className="max-w-6xl mx-auto text-center">
           <div className="flex items-center justify-center gap-6 mb-4">
-            <div className="p-4 bg-white/10 backdrop-blur-sm rounded-2xl border border-white/20">
+            <div className="p-4 bg-white rounded-2xl border-2 border-blue-200 shadow-md">
               <Image 
                 src="/new-logo.svg" 
                 alt="BuilderIntelligence Logo" 
@@ -472,15 +461,15 @@ export default function HomePage() {
                 className="flex-shrink-0"
               />
             </div>
-            <h1 className="text-4xl md:text-6xl font-semibold">
+            <h1 className="text-4xl md:text-6xl font-semibold text-gray-900">
               BuilderIntelligence
             </h1>
           </div>
-          <p className="text-2xl md:text-3xl text-honey font-bold mb-3 drop-shadow-[0_2px_8px_rgba(209,160,84,0.8)] relative">
-            <span className="bg-gradient-to-r from-honey/20 to-transparent h-1 w-full absolute bottom-0 left-0"></span>
+          <p className="text-2xl md:text-3xl text-blue-600 font-bold mb-3 relative">
+            <span className="bg-blue-200 h-1 w-24 absolute bottom-0 left-1/2 transform -translate-x-1/2"></span>
             See the market clearly
           </p>
-          <p className="text-lg md:text-xl text-white/90 mb-8 max-w-2xl mx-auto">
+          <p className="text-lg md:text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
             Benchmark competitors, price confidently, build faster.
             Gain competitive insights across leading builders in Indian Trail, NC.
           </p>

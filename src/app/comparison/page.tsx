@@ -101,7 +101,7 @@ function ComparisonContent() {
 
   if (homes.length === 0) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-slate-50">
         <div className="container mx-auto px-4 py-6">
           <div className="flex items-center gap-4 mb-6">
             <Link href="/dashboard">
@@ -150,7 +150,7 @@ function ComparisonContent() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-slate-50">
       <div className="container mx-auto px-4 py-6">
         <div className="flex items-center gap-4 mb-6">
           <Link href="/dashboard">

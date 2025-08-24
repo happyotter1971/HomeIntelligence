@@ -6,7 +6,9 @@
       "WebFetch(domain:www.ryanhomes.com)",
       "Bash(git add:*)",
       "WebSearch",
-      "Bash(curl:*)"
+      "Bash(curl:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)"
     ],
     "deny": [],
     "ask": []
