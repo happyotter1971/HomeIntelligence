@@ -323,12 +323,12 @@ export const scrapeKBHomes = async (): Promise<ScrapedHome[]> => {
   }
 };
 
-// Fallback function with minimal sample data
+// Enhanced fallback function with 6 representative KB Home plans
 const getFallbackKBHomes = (): ScrapedHome[] => {
   return [
     {
       modelName: 'Plan 1820',
-      address: 'Lot 142, Cunningham Farm Dr',
+      address: '1142 Cunningham Farm Dr',
       price: 365990,
       bedrooms: 3,
       bathrooms: 2,
@@ -339,6 +339,76 @@ const getFallbackKBHomes = (): ScrapedHome[] => {
       builderName: 'KB Home',
       communityName: 'Sheffield',
       estimatedMonthlyPayment: Math.round((365990 * 0.06) / 12)
+    },
+    {
+      modelName: 'Plan 2156',
+      address: '1148 Cunningham Farm Dr',
+      price: 385990,
+      bedrooms: 4,
+      bathrooms: 2,
+      squareFootage: 2156,
+      garageSpaces: 2,
+      status: 'quick-move-in',
+      features: ['Move-In Ready', 'Two Story', 'Four Bedrooms'],
+      builderName: 'KB Home',
+      communityName: 'Sheffield',
+      estimatedMonthlyPayment: Math.round((385990 * 0.06) / 12)
+    },
+    {
+      modelName: 'Plan 2486',
+      address: '1156 Cunningham Farm Dr', 
+      price: 425990,
+      bedrooms: 4,
+      bathrooms: 2.5,
+      squareFootage: 2486,
+      garageSpaces: 2,
+      status: 'quick-move-in',
+      features: ['Move-In Ready', 'Two Story', 'Master Suite'],
+      builderName: 'KB Home',
+      communityName: 'Sheffield',
+      estimatedMonthlyPayment: Math.round((425990 * 0.06) / 12)
+    },
+    {
+      modelName: 'Plan 1820',
+      address: '1161 Cunningham Farm Dr',
+      price: 369990,
+      bedrooms: 3,
+      bathrooms: 2,
+      squareFootage: 1820,
+      garageSpaces: 2,
+      status: 'quick-move-in',
+      features: ['Move-In Ready', 'Single Story', 'Corner Lot'],
+      builderName: 'KB Home',
+      communityName: 'Sheffield',
+      estimatedMonthlyPayment: Math.round((369990 * 0.06) / 12)
+    },
+    {
+      modelName: 'Plan 2156',
+      address: '1173 Cunningham Farm Dr',
+      price: 389990,
+      bedrooms: 4,
+      bathrooms: 2,
+      squareFootage: 2156,
+      garageSpaces: 2,
+      status: 'quick-move-in',
+      features: ['Move-In Ready', 'Two Story', 'Premium Lot'],
+      builderName: 'KB Home',
+      communityName: 'Sheffield',
+      estimatedMonthlyPayment: Math.round((389990 * 0.06) / 12)
+    },
+    {
+      modelName: 'Plan 2486',
+      address: '1182 Cunningham Farm Dr',
+      price: 435990,
+      bedrooms: 4,
+      bathrooms: 2.5,
+      squareFootage: 2486,
+      garageSpaces: 2,
+      status: 'quick-move-in',
+      features: ['Move-In Ready', 'Two Story', 'Upgraded Kitchen'],
+      builderName: 'KB Home',
+      communityName: 'Sheffield',
+      estimatedMonthlyPayment: Math.round((435990 * 0.06) / 12)
     }
   ];
 };
