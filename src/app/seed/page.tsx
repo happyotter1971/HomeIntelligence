@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import { seedDatabase } from '@/lib/sample-data';
 import { clearAllData } from '@/lib/clear-database';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -24,9 +23,22 @@ export default function SeedPage() {
       console.log('Clearing existing data...');
       await clearAllData();
       
-      // Then seed with fresh data
+      // Then seed with fresh data via API
       console.log('Seeding with fresh scraped data...');
-      const result = await seedDatabase();
+      const response = await fetch('/api/seed', {
+        method: 'POST',
+      });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      const result = await response.json();
+      
+      if (!result.success) {
+        throw new Error(result.error || 'Failed to seed database');
+      }
+      
       setStats(result);
       setSuccess(true);
     } catch (err: any) {
