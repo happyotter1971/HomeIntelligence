@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { refreshHomesFromWebsites } from '@/lib/scrape-and-update';
+import { refreshHomesWithPriceTracking } from '@/lib/scrape-and-update';
 
 export async function GET(request: NextRequest) {
   try {
@@ -12,7 +12,7 @@ export async function GET(request: NextRequest) {
 
     console.log('Daily automated scrape started at:', new Date().toISOString());
     
-    const result = await refreshHomesFromWebsites();
+    const result = await refreshHomesWithPriceTracking();
     
     console.log('Daily automated scrape completed:', result);
     

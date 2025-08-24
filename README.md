@@ -1,4 +1,4 @@
-# Home Intelligence
+# BuilderIntelligence
 
 A modern web application for comparing new home inventory across builders in Indian Trail, NC.
 

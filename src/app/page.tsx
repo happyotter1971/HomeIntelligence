@@ -11,6 +11,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { formatPrice } from '@/lib/utils';
 import Link from 'next/link';
 import Image from 'next/image';
+import PriceChanges from '@/components/PriceChanges';
 import { Home, Users, BarChart3, Building2, TrendingUp, TrendingDown, Minus } from 'lucide-react';
 
 export default function HomePage() {
@@ -141,7 +142,7 @@ export default function HomePage() {
         
         <div className="text-center relative z-10">
           <div className="animate-spin rounded-full h-12 w-12 border-b-4 border-primary mx-auto mb-4"></div>
-          <h2 className="text-2xl font-bold gradient-accent bg-clip-text text-transparent">Loading Home Intelligence</h2>
+          <h2 className="text-2xl font-bold gradient-accent bg-clip-text text-transparent">Loading BuilderIntelligence</h2>
           <p className="text-muted-foreground mt-2">Setting up your dashboard...</p>
         </div>
       </div>
@@ -170,7 +171,7 @@ export default function HomePage() {
             <div className="flex items-center gap-4">
               <Image 
                 src="/home-intelligence-logo.svg" 
-                alt="Home Intelligence Logo" 
+                alt="BuilderIntelligence Logo" 
                 width={60} 
                 height={60}
                 className="flex-shrink-0"
@@ -383,6 +384,9 @@ export default function HomePage() {
             </CardContent>
           </Card>
 
+          {/* Price Changes Section */}
+          <PriceChanges maxItems={10} />
+
           <Card className="glass-effect border-0 shadow-lg">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -392,17 +396,26 @@ export default function HomePage() {
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="text-center p-4 gradient-primary text-white rounded-lg shadow-lg">
-                  <h3 className="font-semibold">Dream Finders Homes</h3>
+                <div 
+                  className="text-center p-4 bg-gradient-to-br from-blue-600 to-blue-800 text-white rounded-lg shadow-lg cursor-pointer hover:shadow-xl transition-all transform hover:scale-105 border-2 border-blue-500"
+                  onClick={() => window.open('https://dreamfindershomes.com/new-homes/nc/indian-trail/moore-farms/', '_blank')}
+                >
+                  <h3 className="font-bold text-lg">Dream Finders Homes</h3>
                   <p className="text-sm opacity-90">Moore Farms Community</p>
                 </div>
-                <div className="text-center p-4 gradient-secondary rounded-lg shadow-lg">
-                  <h3 className="font-semibold text-foreground">KB Home</h3>
-                  <p className="text-sm text-muted-foreground">Sheffield Community</p>
+                <div 
+                  className="text-center p-4 bg-gray-100 border border-gray-200 rounded-lg shadow-sm cursor-pointer hover:shadow-md transition-all transform hover:scale-105"
+                  onClick={() => window.open('https://www.kbhome.com/new-homes-charlotte-area/sheffield', '_blank')}
+                >
+                  <h3 className="font-semibold text-gray-700">KB Home</h3>
+                  <p className="text-sm text-gray-500">Sheffield Community</p>
                 </div>
-                <div className="text-center p-4 gradient-accent text-white rounded-lg shadow-lg">
-                  <h3 className="font-semibold">Ryan Homes</h3>
-                  <p className="text-sm opacity-90">Moore Farm Community</p>
+                <div 
+                  className="text-center p-4 bg-gray-100 border border-gray-200 rounded-lg shadow-sm cursor-pointer hover:shadow-md transition-all transform hover:scale-105"
+                  onClick={() => window.open('https://www.ryanhomes.com/new-homes/communities/10222120152769/north-carolina/indian-trail/moorefarm', '_blank')}
+                >
+                  <h3 className="font-semibold text-gray-700">Ryan Homes</h3>
+                  <p className="text-sm text-gray-500">Moore Farm Community</p>
                 </div>
               </div>
             </CardContent>
@@ -426,7 +439,7 @@ export default function HomePage() {
       <div className="container mx-auto px-4 py-16 relative z-10">
         <div className="max-w-4xl mx-auto text-center">
           <h1 className="text-6xl font-bold gradient-accent bg-clip-text text-transparent mb-6">
-            Home Intelligence
+            BuilderIntelligence
           </h1>
           <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
             Compare new home inventory across leading builders in Indian Trail, NC. 

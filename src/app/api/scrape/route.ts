@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { refreshHomesFromWebsites } from '@/lib/scrape-and-update';
+import { refreshHomesWithPriceTracking } from '@/lib/scrape-and-update';
 
 export async function POST(request: NextRequest) {
   try {
@@ -11,7 +11,7 @@ export async function POST(request: NextRequest) {
 
     console.log('Manual scrape triggered at:', new Date().toISOString());
     
-    const result = await refreshHomesFromWebsites();
+    const result = await refreshHomesWithPriceTracking();
     
     return NextResponse.json({ 
       success: true, 

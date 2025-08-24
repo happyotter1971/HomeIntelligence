@@ -5,7 +5,7 @@ import './globals.css';
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: 'Home Intelligence - Compare New Home Inventory',
+  title: 'BuilderIntelligence - Compare New Home Inventory',
   description: 'Compare new home inventory across leading builders in Indian Trail, NC',
 };
 

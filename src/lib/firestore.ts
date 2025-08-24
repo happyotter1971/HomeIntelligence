@@ -3,16 +3,18 @@ import {
   query, 
   where, 
   orderBy, 
+  limit,
   getDocs, 
   doc, 
   getDoc,
   addDoc,
   updateDoc,
   deleteDoc,
-  QueryConstraint
+  QueryConstraint,
+  Timestamp
 } from 'firebase/firestore';
 import { db } from './firebase';
-import { Home, Builder, Community, HomeWithRelations } from '@/types';
+import { Home, Builder, Community, HomeWithRelations, PriceChange, PriceChangeWithRelations, PriceHistory, PriceHistoryWithRelations } from '@/types';
 
 export const getHomes = async (filters?: {
   builderId?: string;
@@ -135,3 +137,248 @@ export const deleteHome = async (id: string) => {
 
 // Alias for consistency
 export const getHomeById = getHome;
+
+// Price Change Functions
+
+export const addPriceChange = async (priceChangeData: Omit<PriceChange, 'id'>) => {
+  const docRef = await addDoc(collection(db, 'priceChanges'), priceChangeData);
+  return docRef.id;
+};
+
+export const getPriceChanges = async (options?: {
+  builderId?: string;
+  daysBack?: number;
+  limitCount?: number;
+}): Promise<PriceChangeWithRelations[]> => {
+  const constraints: QueryConstraint[] = [orderBy('changeDate', 'desc')];
+  
+  // Default to 90 days back
+  const daysBack = options?.daysBack || 90;
+  const cutoffDate = new Date();
+  cutoffDate.setDate(cutoffDate.getDate() - daysBack);
+  constraints.push(where('changeDate', '>=', Timestamp.fromDate(cutoffDate)));
+  
+  if (options?.builderId) {
+    constraints.push(where('builderId', '==', options.builderId));
+  }
+  
+  if (options?.limitCount) {
+    constraints.push(limit(options.limitCount));
+  }
+  
+  const q = query(collection(db, 'priceChanges'), ...constraints);
+  const querySnapshot = await getDocs(q);
+  
+  const priceChanges: PriceChangeWithRelations[] = [];
+  
+  for (const docSnap of querySnapshot.docs) {
+    const priceChangeData = { id: docSnap.id, ...docSnap.data() } as PriceChange;
+    
+    const builder = await getBuilder(priceChangeData.builderId);
+    const community = await getCommunity(priceChangeData.communityId);
+    
+    priceChanges.push({
+      ...priceChangeData,
+      builder,
+      community
+    });
+  }
+  
+  return priceChanges;
+};
+
+export const getRecentPriceChanges = async (limitCount: number = 20): Promise<PriceChangeWithRelations[]> => {
+  return getPriceChanges({ limitCount, daysBack: 90 });
+};
+
+// Price History Functions
+
+export const addPriceHistory = async (priceHistoryData: Omit<PriceHistory, 'id'>) => {
+  const docRef = await addDoc(collection(db, 'priceHistory'), priceHistoryData);
+  return docRef.id;
+};
+
+export const getPriceHistory = async (homeId: string): Promise<PriceHistoryWithRelations[]> => {
+  const constraints: QueryConstraint[] = [
+    where('homeId', '==', homeId),
+    orderBy('priceStartDate', 'desc')
+  ];
+  
+  const q = query(collection(db, 'priceHistory'), ...constraints);
+  const querySnapshot = await getDocs(q);
+  
+  const priceHistory: PriceHistoryWithRelations[] = [];
+  
+  for (const docSnap of querySnapshot.docs) {
+    const historyData = { id: docSnap.id, ...docSnap.data() } as PriceHistory;
+    
+    const builder = await getBuilder(historyData.builderId);
+    const community = await getCommunity(historyData.communityId);
+    
+    priceHistory.push({
+      ...historyData,
+      builder,
+      community
+    });
+  }
+  
+  return priceHistory;
+};
+
+export const updatePriceHistory = async (homeId: string, newPrice: number): Promise<void> => {
+  // Get current price history for this home
+  const currentHistoryQuery = query(
+    collection(db, 'priceHistory'),
+    where('homeId', '==', homeId),
+    where('isCurrentPrice', '==', true)
+  );
+  
+  const currentHistorySnapshot = await getDocs(currentHistoryQuery);
+  const changeDate = Timestamp.now();
+  
+  // Close out the current price history record
+  if (!currentHistorySnapshot.empty) {
+    const currentRecord = currentHistorySnapshot.docs[0];
+    const currentData = currentRecord.data() as PriceHistory;
+    
+    // Calculate days active
+    const startDate = currentData.priceStartDate.toDate();
+    const endDate = changeDate.toDate();
+    const daysActive = Math.floor((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
+    
+    await updateDoc(doc(db, 'priceHistory', currentRecord.id), {
+      priceEndDate: changeDate,
+      daysActive,
+      isCurrentPrice: false
+    });
+  }
+};
+
+export const initializePriceHistory = async (home: Home): Promise<string | null> => {
+  // Only track competitor homes (not Dream Finders)
+  const builder = await getBuilder(home.builderId);
+  if (!builder || builder.name.toLowerCase().includes('dream')) {
+    return null;
+  }
+
+  // Check if price history already exists for this home
+  const existingHistoryQuery = query(
+    collection(db, 'priceHistory'),
+    where('homeId', '==', home.id)
+  );
+  
+  const existingHistorySnapshot = await getDocs(existingHistoryQuery);
+  
+  // Only create initial record if none exists
+  if (existingHistorySnapshot.empty) {
+    const priceHistoryData: any = {
+      homeId: home.id,
+      builderId: home.builderId,
+      communityId: home.communityId,
+      modelName: home.modelName,
+      price: home.price,
+      priceStartDate: home.createdAt || Timestamp.now(),
+      isCurrentPrice: true
+    };
+
+    // Only add optional fields if they have values
+    if (home.address) {
+      priceHistoryData.address = home.address;
+    }
+    if (home.homesiteNumber) {
+      priceHistoryData.homesiteNumber = home.homesiteNumber;
+    }
+    
+    return addPriceHistory(priceHistoryData);
+  }
+  
+  return null;
+};
+
+export const logPriceChange = async (
+  home: Home,
+  oldPrice: number,
+  newPrice: number
+): Promise<string | null> => {
+  // Only log changes for competitor homes (not Dream Finders)
+  const builder = await getBuilder(home.builderId);
+  if (!builder || builder.name.toLowerCase().includes('dream')) {
+    return null;
+  }
+  
+  const changeAmount = newPrice - oldPrice;
+  const changePercentage = (changeAmount / oldPrice) * 100;
+  const changeType = changeAmount > 0 ? 'increase' : 'decrease';
+  const changeDate = Timestamp.now();
+  
+  // Get the date when the old price was first set
+  const oldPriceHistoryQuery = query(
+    collection(db, 'priceHistory'),
+    where('homeId', '==', home.id),
+    where('isCurrentPrice', '==', true)
+  );
+  
+  const oldPriceHistorySnapshot = await getDocs(oldPriceHistoryQuery);
+  let oldPriceDate = Timestamp.now();
+  let daysSinceLastChange = 0;
+  
+  if (!oldPriceHistorySnapshot.empty) {
+    const oldPriceRecord = oldPriceHistorySnapshot.docs[0].data() as PriceHistory;
+    oldPriceDate = oldPriceRecord.priceStartDate;
+    
+    // Calculate days since last change
+    const startDate = oldPriceDate.toDate();
+    const endDate = changeDate.toDate();
+    daysSinceLastChange = Math.floor((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
+  }
+  
+  // Update price history - close old record and create new one
+  await updatePriceHistory(home.id, newPrice);
+  
+  // Create new price history record
+  const newPriceHistoryData: any = {
+    homeId: home.id,
+    builderId: home.builderId,
+    communityId: home.communityId,
+    modelName: home.modelName,
+    price: newPrice,
+    priceStartDate: changeDate,
+    isCurrentPrice: true
+  };
+
+  // Only add optional fields if they have values
+  if (home.address) {
+    newPriceHistoryData.address = home.address;
+  }
+  if (home.homesiteNumber) {
+    newPriceHistoryData.homesiteNumber = home.homesiteNumber;
+  }
+  
+  await addPriceHistory(newPriceHistoryData);
+  
+  // Log the price change with enhanced date tracking
+  const priceChangeData: any = {
+    homeId: home.id,
+    builderId: home.builderId,
+    communityId: home.communityId,
+    modelName: home.modelName,
+    oldPrice,
+    newPrice,
+    changeAmount,
+    changePercentage,
+    oldPriceDate,
+    changeDate,
+    changeType,
+    daysSinceLastChange
+  };
+
+  // Only add optional fields if they have values
+  if (home.address) {
+    priceChangeData.address = home.address;
+  }
+  if (home.homesiteNumber) {
+    priceChangeData.homesiteNumber = home.homesiteNumber;
+  }
+  
+  return addPriceChange(priceChangeData);
+};

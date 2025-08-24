@@ -172,6 +172,14 @@ export default function AdminPage() {
     });
     setEditingHome(home);
     setShowAddForm(true);
+    
+    // Scroll to form after a brief delay to ensure it's rendered
+    setTimeout(() => {
+      const formElement = document.getElementById('home-form');
+      if (formElement) {
+        formElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }, 100);
   };
 
   const checkForDuplicates = (homeData: Omit<Home, 'id'>) => {
@@ -440,11 +448,16 @@ export default function AdminPage() {
         </Card>
 
         {showAddForm && (
-          <Card className="mb-6">
-            <CardHeader>
-              <CardTitle>
-                {editingHome ? 'Edit Home' : 'Add New Home'}
+          <Card id="home-form" className="mb-6 border-2 border-blue-200 shadow-lg">
+            <CardHeader className="bg-blue-50">
+              <CardTitle className="text-blue-900">
+                {editingHome ? `Edit Home: ${formData.modelName}` : 'Add New Home'}
               </CardTitle>
+              {editingHome && (
+                <p className="text-sm text-blue-700">
+                  Editing home in {homes.find(h => h.id === editingHome.id)?.community?.name}
+                </p>
+              )}
             </CardHeader>
             <CardContent>
               <form onSubmit={handleSubmit} className="space-y-4">
