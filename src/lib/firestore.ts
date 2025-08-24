@@ -256,6 +256,178 @@ export const getPriceChangesForHome = async (homeId: string): Promise<PriceChang
   return priceChanges;
 };
 
+// Debug function to check what's in the priceChanges collection
+export const debugPriceChangesCollection = async (): Promise<void> => {
+  try {
+    const q = query(collection(db, 'priceChanges'), limit(5));
+    const querySnapshot = await getDocs(q);
+    
+    console.log(`=== DEBUG: Total documents in priceChanges collection (first 5): ${querySnapshot.size} ===`);
+    
+    querySnapshot.forEach((doc) => {
+      console.log('Document ID:', doc.id);
+      console.log('Document data:', doc.data());
+    });
+  } catch (error) {
+    console.error('Error debugging priceChanges collection:', error);
+  }
+};
+
+// Debug function to get all price changes for a model name
+export const getAllPriceChangesForModel = async (modelName: string): Promise<PriceChangeWithRelations[]> => {
+  try {
+    console.log(`Debug: Getting ALL price changes for model: ${modelName}`);
+    
+    const q = query(
+      collection(db, 'priceChanges'),
+      where('modelName', '==', modelName),
+      orderBy('changeDate', 'desc')
+    );
+    
+    const querySnapshot = await getDocs(q);
+    console.log(`Debug: Found ${querySnapshot.size} total price changes for ${modelName}`);
+    
+    const priceChanges: PriceChangeWithRelations[] = [];
+    
+    for (const docSnap of querySnapshot.docs) {
+      const priceChangeData = { id: docSnap.id, ...docSnap.data() } as PriceChange;
+      console.log('Debug: Price change data:', {
+        id: priceChangeData.id,
+        modelName: priceChangeData.modelName,
+        builderId: priceChangeData.builderId,
+        communityId: priceChangeData.communityId,
+        homeId: priceChangeData.homeId,
+        oldPrice: priceChangeData.oldPrice,
+        newPrice: priceChangeData.newPrice
+      });
+      
+      const builder = await getBuilder(priceChangeData.builderId);
+      const community = await getCommunity(priceChangeData.communityId);
+      
+      priceChanges.push({
+        ...priceChangeData,
+        builder,
+        community
+      });
+    }
+    
+    return priceChanges;
+  } catch (error) {
+    console.error('Error in getAllPriceChangesForModel:', error);
+    // If index error, try without orderBy
+    if (error instanceof Error && error.message.includes('index')) {
+      const q = query(
+        collection(db, 'priceChanges'),
+        where('modelName', '==', modelName)
+      );
+      
+      const querySnapshot = await getDocs(q);
+      const priceChanges: PriceChangeWithRelations[] = [];
+      
+      for (const docSnap of querySnapshot.docs) {
+        const priceChangeData = { id: docSnap.id, ...docSnap.data() } as PriceChange;
+        const builder = await getBuilder(priceChangeData.builderId);
+        const community = await getCommunity(priceChangeData.communityId);
+        
+        priceChanges.push({
+          ...priceChangeData,
+          builder,
+          community
+        });
+      }
+      
+      // Sort manually
+      priceChanges.sort((a, b) => {
+        const aDate = a.changeDate?.seconds || 0;
+        const bDate = b.changeDate?.seconds || 0;
+        return bDate - aDate;
+      });
+      
+      return priceChanges;
+    }
+    return [];
+  }
+};
+
+export const getPriceChangesByModelAttributes = async (
+  modelName: string,
+  builderId: string,
+  communityId: string
+): Promise<PriceChangeWithRelations[]> => {
+  try {
+    console.log('Searching for price changes with:', { modelName, builderId, communityId });
+    
+    const constraints: QueryConstraint[] = [
+      where('modelName', '==', modelName),
+      where('builderId', '==', builderId),
+      where('communityId', '==', communityId),
+      orderBy('changeDate', 'desc')
+    ];
+    
+    const q = query(collection(db, 'priceChanges'), ...constraints);
+    const querySnapshot = await getDocs(q);
+    
+    console.log(`Found ${querySnapshot.size} price changes for model ${modelName}`);
+    
+    const priceChanges: PriceChangeWithRelations[] = [];
+    
+    for (const docSnap of querySnapshot.docs) {
+      const priceChangeData = { id: docSnap.id, ...docSnap.data() } as PriceChange;
+      
+      const builder = await getBuilder(priceChangeData.builderId);
+      const community = await getCommunity(priceChangeData.communityId);
+      
+      priceChanges.push({
+        ...priceChangeData,
+        builder,
+        community
+      });
+    }
+    
+    return priceChanges;
+  } catch (error) {
+    console.error('Error in getPriceChangesByModelAttributes:', error);
+    // If it's a missing index error, try without the orderBy
+    if (error instanceof Error && error.message.includes('index')) {
+      console.log('Retrying without orderBy due to missing index...');
+      
+      const constraints: QueryConstraint[] = [
+        where('modelName', '==', modelName),
+        where('builderId', '==', builderId),
+        where('communityId', '==', communityId)
+      ];
+      
+      const q = query(collection(db, 'priceChanges'), ...constraints);
+      const querySnapshot = await getDocs(q);
+      
+      const priceChanges: PriceChangeWithRelations[] = [];
+      
+      for (const docSnap of querySnapshot.docs) {
+        const priceChangeData = { id: docSnap.id, ...docSnap.data() } as PriceChange;
+        
+        const builder = await getBuilder(priceChangeData.builderId);
+        const community = await getCommunity(priceChangeData.communityId);
+        
+        priceChanges.push({
+          ...priceChangeData,
+          builder,
+          community
+        });
+      }
+      
+      // Sort manually if orderBy failed
+      priceChanges.sort((a, b) => {
+        const aDate = a.changeDate?.seconds || 0;
+        const bDate = b.changeDate?.seconds || 0;
+        return bDate - aDate;
+      });
+      
+      return priceChanges;
+    }
+    throw error;
+  }
+};
+
 // Price History Functions
 
 export const addPriceHistory = async (priceHistoryData: Omit<PriceHistory, 'id'>) => {

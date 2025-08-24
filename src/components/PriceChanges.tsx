@@ -4,7 +4,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { formatPrice } from '@/lib/utils';
-import { getRecentPriceChanges, findHomeByAttributes } from '@/lib/firestore';
+import { getRecentPriceChanges, findHomeByAttributes, getHomeById } from '@/lib/firestore';
 import { PriceChangeWithRelations } from '@/types';
 import { TrendingUp, TrendingDown, Calendar, Building2, MapPin, ExternalLink } from 'lucide-react';
 import Link from 'next/link';
@@ -46,7 +46,29 @@ export default function PriceChanges({ maxItems = 10 }: PriceChangesProps) {
       // Now find the actual homes for navigation
       const changesWithHomes = await Promise.all(uniquePriceChanges.map(async (change) => {
         try {
-          // Try to find a home that matches the price change attributes
+          // First check if the price change already has a homeId
+          if (change.homeId) {
+            console.log(`Using homeId from price change: ${change.homeId} for ${change.modelName}`);
+            
+            // Verify the home's current price
+            const currentHome = await getHomeById(change.homeId);
+            if (currentHome) {
+              console.log(`Price verification for ${change.modelName}:`, {
+                priceChangeNewPrice: change.newPrice,
+                currentHomePrice: currentHome.price,
+                pricesMatch: currentHome.price === change.newPrice
+              });
+              
+              if (currentHome.price !== change.newPrice) {
+                console.warn(`Price mismatch! Home ${change.homeId} has price ${currentHome.price} but price change shows ${change.newPrice}`);
+              }
+            }
+            
+            return { ...change, actualHomeId: change.homeId };
+          }
+          
+          // If no homeId, try to find a home that matches the price change attributes
+          console.log(`No homeId in price change, searching for home: ${change.modelName}`);
           const home = await findHomeByAttributes(
             change.modelName,
             change.builderId,

@@ -144,14 +144,18 @@ export const refreshHomesWithPriceTracking = async () => {
       if (existingHome) {
         // Check for price change
         if (existingHome.price !== scrapedHome.price) {
-          console.log(`Price change detected for ${scrapedHome.modelName}: $${existingHome.price} → $${scrapedHome.price}`);
+          console.log(`Price change detected for ${scrapedHome.modelName} (${existingHome.id}): $${existingHome.price} → $${scrapedHome.price}`);
           
-          // Log price change
+          // Log price change BEFORE updating the home
           await logPriceChange(existingHome, existingHome.price, scrapedHome.price);
           priceChangesLogged++;
+          
+          // Make sure to update the price in homeData
+          homeData.price = scrapedHome.price;
+          console.log(`Updating home ${existingHome.id} with new price: $${scrapedHome.price}`);
         }
         
-        // Update existing home
+        // Update existing home (including new price if changed)
         await updateDoc(doc(db, 'homes', existingHome.id), homeData);
         homesUpdated++;
         

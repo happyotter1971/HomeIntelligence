@@ -1,22 +1,38 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 240">
-  <!-- Left blue building bar -->
-  <polygon points="20,220 50,220 50,160 20,160" fill="#2E5BBA"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="none">
+  <!-- Blue rounded background -->
+  <rect width="100" height="100" rx="18" fill="#4A5FC1"/>
   
-  <!-- Middle-left blue building bar -->
-  <polygon points="60,220 90,220 90,120 60,120" fill="#2E5BBA"/>
+  <!-- House icon at top -->
+  <g transform="translate(50, 30)">
+    <!-- House roof -->
+    <path d="M-15 0 L0 -12 L15 0 Z" fill="white"/>
+    <!-- House chimney -->
+    <rect x="7" y="-10" width="4" height="7" fill="white"/>
+    <!-- House body -->
+    <rect x="-12" y="0" width="24" height="14" fill="white"/>
+    <!-- Diagonal shadow/division on house -->
+    <path d="M-12 14 L-12 5 L0 0 L12 0 L12 14 Z" fill="#7FA3E0" opacity="0.5"/>
+  </g>
   
-  <!-- Center tall blue building bar -->
-  <polygon points="100,220 130,220 130,60 100,60" fill="#2E5BBA"/>
+  <!-- Three bar charts with 3D effect -->
+  <!-- Left bar -->
+  <g transform="translate(25, 72)">
+    <rect x="-8" y="-20" width="16" height="20" fill="white"/>
+    <path d="M-8 0 L-8 -10 L8 -17 L8 0 Z" fill="#7FA3E0" opacity="0.6"/>
+  </g>
   
-  <!-- Right tall blue building bar -->
-  <polygon points="140,220 170,220 170,40 140,40" fill="#2E5BBA"/>
+  <!-- Middle bar (tallest) -->
+  <g transform="translate(50, 72)">
+    <rect x="-8" y="-30" width="16" height="30" fill="white"/>
+    <path d="M-8 0 L-8 -15 L8 -22 L8 0 Z" fill="#7FA3E0" opacity="0.6"/>
+  </g>
   
-  <!-- Orange house base -->
-  <polygon points="70,200 120,140 170,200 170,220 70,220" fill="#E07B39"/>
+  <!-- Right bar -->
+  <g transform="translate(75, 72)">
+    <rect x="-8" y="-20" width="16" height="20" fill="white"/>
+    <path d="M-8 0 L-8 -10 L8 -17 L8 0 Z" fill="#7FA3E0" opacity="0.6"/>
+  </g>
   
-  <!-- White house roof -->
-  <polygon points="70,200 120,140 170,200" fill="#FFFFFF"/>
-  
-  <!-- White house peak detail -->
-  <polygon points="115,145 120,140 125,145" fill="#FFFFFF"/>
+  <!-- Yellow/orange base line -->
+  <rect x="12" y="72" width="76" height="2.5" rx="1" fill="#FFB84D"/>
 </svg>

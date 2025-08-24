@@ -4,7 +4,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { onAuthStateChanged } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
-import { getHomeById, getPriceChangesForHome, findHomeByAttributes } from '@/lib/firestore';
+import { getHomeById, getPriceChangesForHome, getPriceChangesByModelAttributes, getAllPriceChangesForModel, debugPriceChangesCollection, findHomeByAttributes } from '@/lib/firestore';
 import { HomeWithRelations, PriceChangeWithRelations } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -71,15 +71,65 @@ export default function HomeDetailPage({ params }: HomeDetailPageProps) {
       console.log('Fetching home with ID:', params.id);
       
       const homeData = await getHomeById(params.id);
-      console.log('Home data:', homeData);
+      console.log('Home data:', {
+        id: homeData?.id,
+        modelName: homeData?.modelName,
+        price: homeData?.price,
+        builderId: homeData?.builderId,
+        communityId: homeData?.communityId,
+        address: homeData?.address
+      });
       
       if (homeData) {
         setHome(homeData);
         
         // Fetch price history separately to avoid blocking if it fails
         try {
-          const priceChanges = await getPriceChangesForHome(params.id);
-          console.log('Price changes:', priceChanges);
+          // Debug: Check what's in the priceChanges collection
+          await debugPriceChangesCollection();
+          
+          // First try to get price changes by homeId
+          let priceChanges = await getPriceChangesForHome(params.id);
+          console.log('Price changes by homeId:', priceChanges);
+          
+          // If no price changes found by homeId, try by model attributes
+          if (priceChanges.length === 0 && homeData.builderId && homeData.communityId) {
+            console.log('No price changes found by homeId, trying by model attributes...');
+            console.log('Home data:', {
+              id: homeData.id,
+              modelName: homeData.modelName,
+              builderId: homeData.builderId,
+              communityId: homeData.communityId,
+              address: homeData.address
+            });
+            
+            priceChanges = await getPriceChangesByModelAttributes(
+              homeData.modelName,
+              homeData.builderId,
+              homeData.communityId
+            );
+            console.log('Price changes by model attributes:', priceChanges);
+            
+            // If still no price changes, try just by model name as last resort
+            if (priceChanges.length === 0) {
+              console.log('Still no price changes, trying by model name only...');
+              priceChanges = await getAllPriceChangesForModel(homeData.modelName);
+              console.log('Price changes by model name only:', priceChanges);
+              
+              // Filter to only show changes from the same community if we got results
+              if (priceChanges.length > 0) {
+                const filteredChanges = priceChanges.filter(pc => 
+                  pc.communityId === homeData.communityId
+                );
+                if (filteredChanges.length > 0) {
+                  priceChanges = filteredChanges;
+                  console.log('Filtered to same community:', priceChanges);
+                }
+              }
+            }
+          }
+          
+          console.log(`Final price history for display (${priceChanges.length} items):`, priceChanges);
           setPriceHistory(priceChanges);
         } catch (priceError) {
           console.error('Error fetching price history:', priceError);
@@ -232,23 +282,88 @@ export default function HomeDetailPage({ params }: HomeDetailPageProps) {
                     <p className="text-gray-500">No price changes recorded</p>
                     <p className="text-sm text-gray-400 mt-2">Current price: {formatPrice(home.price)}</p>
                   </div>
-                ) : (
-                  <div className="space-y-3">
-                    {/* Current Price */}
-                    <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <p className="text-sm font-medium text-blue-900">Current Price</p>
-                          <p className="text-2xl font-bold text-blue-600">{formatPrice(home.price)}</p>
-                          <p className="text-sm text-blue-700">{formatPricePerSquareFoot(home.price, home.squareFootage)}</p>
+                ) : (() => {
+                  // Calculate total change from original to current
+                  console.log('Rendering price history with', priceHistory.length, 'items');
+                  const sortedHistory = [...priceHistory].sort((a, b) => 
+                    (a.changeDate?.seconds || 0) - (b.changeDate?.seconds || 0)
+                  );
+                  const oldestChange = sortedHistory[0];
+                  console.log('Oldest change:', oldestChange);
+                  const originalPrice = oldestChange?.oldPrice || home.price;
+                  const totalChange = home.price - originalPrice;
+                  const totalChangePercent = ((totalChange / originalPrice) * 100).toFixed(1);
+                  
+                  return (
+                    <div className="space-y-3">
+                      {/* Price Summary */}
+                      <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="text-sm font-medium text-blue-900">Current Price</p>
+                            <p className="text-2xl font-bold text-blue-600">{formatPrice(home.price)}</p>
+                            <p className="text-sm text-blue-700">{formatPricePerSquareFoot(home.price, home.squareFootage)}</p>
+                          </div>
+                          {totalChange !== 0 && (
+                            <div className="text-right">
+                              <p className="text-sm font-medium text-gray-600">Total Change</p>
+                              <p className={`text-lg font-bold ${totalChange < 0 ? 'text-green-600' : 'text-red-600'}`}>
+                                {totalChange < 0 ? '↓' : '↑'} {formatPrice(Math.abs(totalChange))}
+                              </p>
+                              <p className={`text-sm ${totalChange < 0 ? 'text-green-600' : 'text-red-600'}`}>
+                                {totalChange < 0 ? '' : '+'}{totalChangePercent}%
+                              </p>
+                            </div>
+                          )}
                         </div>
                       </div>
-                    </div>
                     
                     {/* Price Change Timeline */}
                     <div className="relative">
                       <div className="absolute left-4 top-8 bottom-0 w-0.5 bg-gray-200"></div>
-                      {priceHistory.map((change, index) => {
+                      
+                      {/* Original Price Entry - Use the oldest price change */}
+                      {priceHistory.length > 0 && (() => {
+                        // Sort to get the oldest price change first
+                        const sortedHistory = [...priceHistory].sort((a, b) => 
+                          (a.changeDate?.seconds || 0) - (b.changeDate?.seconds || 0)
+                        );
+                        const oldestChange = sortedHistory[0];
+                        
+                        return (
+                          <div className="relative flex items-start gap-4 pb-6">
+                            <div className="z-10 flex h-8 w-8 items-center justify-center rounded-full border-2 bg-white border-gray-400">
+                              <DollarSign className="h-4 w-4 text-gray-600" />
+                            </div>
+                            <div className="flex-1">
+                              <div className="flex items-center justify-between">
+                                <div>
+                                  <p className="text-sm font-medium text-gray-900">Original Price</p>
+                                  <p className="text-xs text-gray-500">
+                                    {oldestChange.oldPriceDate ? 
+                                      new Date(oldestChange.oldPriceDate.seconds * 1000).toLocaleDateString('en-US', {
+                                        month: 'short',
+                                        day: 'numeric',
+                                        year: 'numeric'
+                                      }) : 'Starting price'}
+                                  </p>
+                                </div>
+                                <div className="text-right">
+                                  <span className="text-lg font-semibold text-gray-700">
+                                    {formatPrice(oldestChange.oldPrice)}
+                                  </span>
+                                  <p className="text-xs text-gray-500">
+                                    {formatPricePerSquareFoot(oldestChange.oldPrice, home.squareFootage)}
+                                  </p>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })()}
+                      
+                      {/* Price Changes - Show in chronological order (oldest to newest) */}
+                      {[...priceHistory].reverse().map((change, index) => {
                         const changeDate = new Date(change.changeDate.seconds * 1000);
                         const formatDate = (date: Date) => {
                           return date.toLocaleDateString('en-US', {
@@ -326,7 +441,8 @@ export default function HomeDetailPage({ params }: HomeDetailPageProps) {
                       })}
                     </div>
                   </div>
-                )}
+                  );
+                })()}
               </CardContent>
             </Card>
           </div>
