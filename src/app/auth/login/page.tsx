@@ -38,10 +38,10 @@ export default function LoginPage() {
         <Link href="/" className="flex items-center justify-center mb-8">
           <div className="p-2 bg-white/10 backdrop-blur-sm rounded-xl border border-white/20 mr-3">
             <Image 
-              src="/home-intelligence-logo.svg" 
+              src="/new-logo.svg" 
               alt="BuilderIntelligence Logo" 
-              width={28} 
-              height={28}
+              width={40} 
+              height={40}
               className="flex-shrink-0"
             />
           </div>

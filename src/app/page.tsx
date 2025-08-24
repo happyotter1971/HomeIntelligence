@@ -170,35 +170,40 @@ export default function HomePage() {
         {/* Header with gradient background */}
         <div className="relative">
           <div className="absolute inset-0 bg-grad-hero"></div>
-          <div className="absolute inset-0 bg-gradient-to-r from-ink/40 via-bluebrand/60 to-transparent"></div>
+          <div className="absolute inset-0 bg-gradient-to-r from-ink/30 via-bluebrand/40 to-transparent"></div>
           <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-b from-transparent to-background"></div>
           <div className="container mx-auto px-6 py-12 relative z-10">
             <div className="flex justify-between items-center">
               <div className="flex items-center gap-6">
-                <div className="p-3 bg-white/10 backdrop-blur-sm rounded-2xl border border-white/20">
+                <div className="p-3 bg-white/15 backdrop-blur-sm rounded-2xl border border-white/25 shadow-lg">
                   <Image 
-                    src="/home-intelligence-logo.svg" 
+                    src="/new-logo.svg" 
                     alt="BuilderIntelligence Logo" 
-                    width={48} 
-                    height={48}
+                    width={64} 
+                    height={64}
                     className="flex-shrink-0"
                   />
                 </div>
                 <div className="flex flex-col justify-center">
-                  <h1 className="text-3xl md:text-4xl font-bold text-white leading-tight drop-shadow-lg">
-                    Dream Finders Homes: BuilderIntelligence
+                  <h1 className="text-3xl md:text-4xl font-bold text-white leading-tight drop-shadow-xl">
+                    <span className="text-honey">Dream Finders Homes</span>
+                    <span className="text-white/90">: BuilderIntelligence</span>
                   </h1>
-                  <p className="text-sm text-white mt-2 font-semibold drop-shadow-lg bg-black/20 px-3 py-1 rounded-lg backdrop-blur-sm border border-white/10">Insight that Builds Results and Makes Jeff Ott a Boat Load of Money</p>
+                  <p className="text-sm text-white mt-2 font-medium drop-shadow-lg bg-black/20 px-3 py-1 rounded-lg backdrop-blur-sm border border-white/20">
+                    Insight that Builds Results and Makes Jeff Ott a Boat Load of Money
+                  </p>
                 </div>
               </div>
               <div className="flex items-center gap-4">
                 <div className="text-right">
-                  <p className="text-white font-medium drop-shadow-md">Welcome back, <span className="text-white font-bold">{getFirstName()}!</span></p>
+                  <p className="text-white font-medium drop-shadow-md">
+                    Welcome back, <span className="text-white font-bold drop-shadow-lg">{getFirstName()}!</span>
+                  </p>
                 </div>
                 <Button 
                   variant="outline" 
                   onClick={() => auth.signOut()}
-                  className="bg-white/10 backdrop-blur-sm border-white/20 text-white hover:bg-white/20 hover:text-white rounded-xl"
+                  className="bg-white/15 backdrop-blur-sm border-white/30 text-white hover:bg-honey/20 hover:border-honey/40 hover:text-white rounded-xl transition-all duration-200 shadow-lg"
                 >
                   Sign Out
                 </Button>
@@ -272,33 +277,33 @@ export default function HomePage() {
                         <table className="w-full">
                           <thead>
                             <tr className="border-b">
-                              <th className="text-left py-3 px-2 font-medium">Bedrooms</th>
-                              <th className="text-left py-3 px-2 font-medium">Dream Finders</th>
-                              <th className="text-left py-3 px-2 font-medium">vs. KB Home</th>
-                              <th className="text-left py-3 px-2 font-medium">vs. Ryan Homes</th>
-                              <th className="text-left py-3 px-2 font-medium">Market Position</th>
+                              <th className="text-left py-2 px-3 font-medium text-sm">Bedrooms</th>
+                              <th className="text-left py-2 px-3 font-medium text-sm">DFH</th>
+                              <th className="text-left py-2 px-3 font-medium text-sm">KB Home</th>
+                              <th className="text-left py-2 px-3 font-medium text-sm">Ryan Homes</th>
+                              <th className="text-left py-2 px-3 font-medium text-sm">Position</th>
                             </tr>
                           </thead>
                           <tbody className="divide-y">
                             {[1, 2, 3].map((i) => (
                               <tr key={i}>
-                                <td className="py-4 px-2">
-                                  <div className="h-4 bg-gray-200 rounded w-20"></div>
+                                <td className="py-3 px-3">
+                                  <div className="h-4 bg-gray-200 rounded w-16"></div>
                                 </td>
-                                <td className="py-4 px-2">
-                                  <div className="h-4 bg-gray-200 rounded w-24 mb-2"></div>
+                                <td className="py-3 px-3">
+                                  <div className="h-4 bg-gray-200 rounded w-20 mb-1"></div>
+                                  <div className="h-3 bg-gray-200 rounded w-12"></div>
+                                </td>
+                                <td className="py-3 px-3">
+                                  <div className="h-4 bg-gray-200 rounded w-20 mb-1"></div>
                                   <div className="h-3 bg-gray-200 rounded w-16"></div>
                                 </td>
-                                <td className="py-4 px-2">
-                                  <div className="h-4 bg-gray-200 rounded w-24 mb-2"></div>
-                                  <div className="h-3 bg-gray-200 rounded w-20"></div>
+                                <td className="py-3 px-3">
+                                  <div className="h-4 bg-gray-200 rounded w-20 mb-1"></div>
+                                  <div className="h-3 bg-gray-200 rounded w-16"></div>
                                 </td>
-                                <td className="py-4 px-2">
-                                  <div className="h-4 bg-gray-200 rounded w-24 mb-2"></div>
-                                  <div className="h-3 bg-gray-200 rounded w-20"></div>
-                                </td>
-                                <td className="py-4 px-2">
-                                  <div className="h-6 bg-gray-200 rounded w-24"></div>
+                                <td className="py-3 px-3">
+                                  <div className="h-5 bg-gray-200 rounded w-20"></div>
                                 </td>
                               </tr>
                             ))}
@@ -320,83 +325,79 @@ export default function HomePage() {
                         <div className="overflow-x-auto">
                           <table className="w-full">
                             <thead>
-                              <tr className="border-b">
-                                <th className="text-left py-3 px-2 font-medium">Bedrooms</th>
-                                <th className="text-left py-3 px-2 font-medium">Dream Finders</th>
-                                <th className="text-left py-3 px-2 font-medium">vs. KB Home</th>
-                                <th className="text-left py-3 px-2 font-medium">vs. Ryan Homes</th>
-                                <th className="text-left py-3 px-2 font-medium">Market Position</th>
+                              <tr className="border-b border-gray-200">
+                                <th className="text-left py-2 px-3 font-medium text-sm text-gray-700">Bedrooms</th>
+                                <th className="text-left py-2 px-3 font-medium text-sm text-blue-700">DFH</th>
+                                <th className="text-left py-2 px-3 font-medium text-sm text-gray-700">KB Home</th>
+                                <th className="text-left py-2 px-3 font-medium text-sm text-gray-700">Ryan Homes</th>
+                                <th className="text-left py-2 px-3 font-medium text-sm text-gray-700">Position</th>
                               </tr>
                             </thead>
-                            <tbody className="divide-y">
+                            <tbody className="divide-y divide-gray-100">
                               {competitiveAnalysis.map((comp) => (
-                                <tr key={comp.bedrooms}>
-                                  <td className="py-4 px-2 font-medium">
+                                <tr key={comp.bedrooms} className="hover:bg-gray-50">
+                                  <td className="py-2 px-3">
                                     <Link 
                                       href={`/dashboard?bedrooms=${comp.bedrooms}`}
-                                      className="text-blue-600 hover:text-blue-800 hover:underline cursor-pointer"
-                                      target="_blank"
+                                      className="font-medium text-blue-600 hover:text-blue-800 hover:underline cursor-pointer"
                                     >
-                                      {comp.bedrooms} Bedroom{comp.bedrooms > 1 ? 's' : ''}
+                                      {comp.bedrooms}BR
                                     </Link>
                                   </td>
-                                  <td className="py-4 px-2">
+                                  <td className="py-2 px-3">
                                     {comp.dreamfindersPrice ? (
                                       <div>
-                                        <div className="font-semibold text-blue-600">{formatPrice(comp.dreamfindersPrice)}</div>
-                                        <div className="text-sm text-gray-500">{comp.dreamfindersCount} home{comp.dreamfindersCount > 1 ? 's' : ''}</div>
+                                        <div className="font-semibold text-blue-700">{formatPrice(comp.dreamfindersPrice)}</div>
+                                        <div className="text-xs text-gray-500">{comp.dreamfindersCount} home{comp.dreamfindersCount > 1 ? 's' : ''}</div>
                                       </div>
                                     ) : (
-                                      <div>
-                                        <div className="text-sm text-gray-500">0 homes</div>
-                                      </div>
+                                      <div className="text-sm text-gray-400">No homes</div>
                                     )}
                                   </td>
-                                  <td className="py-4 px-2">
+                                  <td className="py-2 px-3">
                                     {comp.kbPrice ? (
                                       <div>
-                                        <div className="font-medium">{formatPrice(comp.kbPrice)}</div>
-                                        <div className={`text-sm ${comp.kbDiff ? 'flex items-center gap-1' : ''} ${getPriceComparisonColor(comp.kbDiff)}`}>
+                                        <div className="font-medium text-gray-800">{formatPrice(comp.kbPrice)}</div>
+                                        <div className={`text-xs flex items-center gap-1 ${getPriceComparisonColor(comp.kbDiff)}`}>
                                           {comp.kbDiff && getPriceComparisonIcon(comp.kbDiff)}
-                                          {comp.kbDiff ? getPriceComparisonText(comp.kbDiff) : `${comp.kbCount} home${comp.kbCount > 1 ? 's' : ''}`}
+                                          <span className="truncate">{comp.kbDiff ? getPriceComparisonText(comp.kbDiff) : `${comp.kbCount} home${comp.kbCount > 1 ? 's' : ''}`}</span>
                                         </div>
                                       </div>
                                     ) : (
-                                      <div className="text-gray-400">No comparable homes</div>
+                                      <div className="text-sm text-gray-400">No homes</div>
                                     )}
                                   </td>
-                                  <td className="py-4 px-2">
+                                  <td className="py-2 px-3">
                                     {comp.ryanPrice ? (
                                       <div>
-                                        <div className="font-medium">{formatPrice(comp.ryanPrice)}</div>
-                                        <div className={`text-sm ${comp.ryanDiff ? 'flex items-center gap-1' : ''} ${getPriceComparisonColor(comp.ryanDiff)}`}>
+                                        <div className="font-medium text-gray-800">{formatPrice(comp.ryanPrice)}</div>
+                                        <div className={`text-xs flex items-center gap-1 ${getPriceComparisonColor(comp.ryanDiff)}`}>
                                           {comp.ryanDiff && getPriceComparisonIcon(comp.ryanDiff)}
-                                          {comp.ryanDiff ? getPriceComparisonText(comp.ryanDiff) : `${comp.ryanCount} home${comp.ryanCount > 1 ? 's' : ''}`}
+                                          <span className="truncate">{comp.ryanDiff ? getPriceComparisonText(comp.ryanDiff) : `${comp.ryanCount} home${comp.ryanCount > 1 ? 's' : ''}`}</span>
                                         </div>
                                       </div>
                                     ) : (
-                                      <div className="text-gray-400">No comparable homes</div>
+                                      <div className="text-sm text-gray-400">No homes</div>
                                     )}
                                   </td>
-                                  <td className="py-4 px-2">
+                                  <td className="py-2 px-3">
                                     {(() => {
-                                      // If Dream Finders has no homes, show "Not Applicable"
                                       if (!comp.dreamfindersPrice) {
-                                        return <span className="text-gray-500">Not Applicable</span>;
+                                        return <span className="px-2 py-1 bg-gray-100 text-gray-600 rounded text-xs">N/A</span>;
                                       }
                                       
                                       const competitorPrices = [comp.kbPrice, comp.ryanPrice].filter(Boolean);
                                       if (competitorPrices.length === 0) {
-                                        return <span className="text-gray-500">No competition</span>;
+                                        return <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded text-xs">No Comp</span>;
                                       }
                                       const avgCompetitorPrice = competitorPrices.reduce((a, b) => a! + b!, 0)! / competitorPrices.length;
                                       const diff = comp.dreamfindersPrice - avgCompetitorPrice;
                                       if (Math.abs(diff) < 5000) {
-                                        return <span className="px-2 py-1 bg-yellow-100 text-yellow-800 rounded-full text-xs">Competitive</span>;
+                                        return <span className="px-2 py-1 bg-yellow-100 text-yellow-800 rounded text-xs">Competitive</span>;
                                       } else if (diff < 0) {
-                                        return <span className="px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs">Below Market</span>;
+                                        return <span className="px-2 py-1 bg-green-100 text-green-800 rounded text-xs">Below Market</span>;
                                       } else {
-                                        return <span className="px-2 py-1 bg-red-100 text-red-800 rounded-full text-xs">Above Market</span>;
+                                        return <span className="px-2 py-1 bg-red-100 text-red-800 rounded text-xs">Above Market</span>;
                                       }
                                     })()}
                                   </td>
@@ -464,10 +465,10 @@ export default function HomePage() {
           <div className="flex items-center justify-center gap-6 mb-4">
             <div className="p-4 bg-white/10 backdrop-blur-sm rounded-2xl border border-white/20">
               <Image 
-                src="/home-intelligence-logo.svg" 
+                src="/new-logo.svg" 
                 alt="BuilderIntelligence Logo" 
-                width={64} 
-                height={64}
+                width={80} 
+                height={80}
                 className="flex-shrink-0"
               />
             </div>

@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 240">
+  <!-- Left blue building bar -->
+  <polygon points="20,220 50,220 50,160 20,160" fill="#2E5BBA"/>
+  
+  <!-- Middle-left blue building bar -->
+  <polygon points="60,220 90,220 90,120 60,120" fill="#2E5BBA"/>
+  
+  <!-- Center tall blue building bar -->
+  <polygon points="100,220 130,220 130,60 100,60" fill="#2E5BBA"/>
+  
+  <!-- Right tall blue building bar -->
+  <polygon points="140,220 170,220 170,40 140,40" fill="#2E5BBA"/>
+  
+  <!-- Orange house base -->
+  <polygon points="70,200 120,140 170,200 170,220 70,220" fill="#E07B39"/>
+  
+  <!-- White house roof -->
+  <polygon points="70,200 120,140 170,200" fill="#FFFFFF"/>
+  
+  <!-- White house peak detail -->
+  <polygon points="115,145 120,140 125,145" fill="#FFFFFF"/>
+</svg>
