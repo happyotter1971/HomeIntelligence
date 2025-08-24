@@ -55,8 +55,8 @@ function ComparisonContent() {
       }
       
       // Get unique builder and community IDs
-      const builderIds = [...new Set(validHomes.map(home => home.builderId))];
-      const communityIds = [...new Set(validHomes.map(home => home.communityId))];
+      const builderIds = Array.from(new Set(validHomes.map(home => home.builderId)));
+      const communityIds = Array.from(new Set(validHomes.map(home => home.communityId)));
       
       // Fetch all builders and communities in parallel
       const [buildersData, communitiesData] = await Promise.all([
@@ -79,8 +79,8 @@ function ComparisonContent() {
       // Combine the data
       const homesWithRelations: HomeWithRelations[] = validHomes.map(home => ({
         ...home,
-        builder: buildersMap.get(home.builderId),
-        community: communitiesMap.get(home.communityId)
+        builder: buildersMap.get(home.builderId) || undefined,
+        community: communitiesMap.get(home.communityId) || undefined
       }));
       
       setHomes(homesWithRelations);
@@ -129,11 +129,11 @@ function ComparisonContent() {
                   </div>
                   <div className="flex items-center gap-2">
                     <span className="bg-blue-100 text-blue-800 rounded-full w-6 h-6 flex items-center justify-center text-xs font-medium">2</span>
-                    Click "Compare" on homes you're interested in
+                    Click &ldquo;Compare&rdquo; on homes you&rsquo;re interested in
                   </div>
                   <div className="flex items-center gap-2">
                     <span className="bg-blue-100 text-blue-800 rounded-full w-6 h-6 flex items-center justify-center text-xs font-medium">3</span>
-                    Click "Compare Now" to see them side-by-side
+                    Click &ldquo;Compare Now&rdquo; to see them side-by-side
                   </div>
                 </div>
               </div>

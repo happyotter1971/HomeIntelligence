@@ -172,8 +172,15 @@ function DashboardContent() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="container mx-auto px-4 py-6">
+    <div className="min-h-screen bg-background relative overflow-hidden">
+      {/* Dashboard background decorative elements */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-0 right-0 w-72 h-72 gradient-primary rounded-full blur-3xl opacity-8"></div>
+        <div className="absolute bottom-20 left-0 w-80 h-80 gradient-accent rounded-full blur-3xl opacity-6"></div>
+        <div className="absolute top-1/3 right-1/4 w-56 h-56 gradient-secondary rounded-full blur-3xl opacity-10"></div>
+      </div>
+      
+      <div className="container mx-auto px-4 py-6 relative z-10">
         <div className="flex items-center gap-4 mb-6">
           <Link href="/">
             <Button variant="outline" size="sm">
@@ -181,10 +188,10 @@ function DashboardContent() {
               Back
             </Button>
           </Link>
-          <h1 className="text-3xl font-bold text-gray-900">Quick Move-In Inventory</h1>
+          <h1 className="text-3xl font-bold gradient-accent bg-clip-text text-transparent">Quick Move-In Inventory</h1>
         </div>
 
-        <Card className="mb-6">
+        <Card className="mb-6 glass-effect border-0 shadow-lg">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Filter className="h-5 w-5" />
@@ -253,7 +260,7 @@ function DashboardContent() {
         </Card>
 
         {compareList.length > 0 && (
-          <Card className="mb-6">
+          <Card className="mb-6 gradient-secondary border-0 shadow-lg">
             <CardHeader>
               <CardTitle>Compare Homes ({compareList.length}/3)</CardTitle>
               <CardDescription>
@@ -264,7 +271,7 @@ function DashboardContent() {
               <div className="flex gap-4 items-center">
                 <div className="flex gap-2 flex-1">
                   {compareList.map(home => (
-                    <div key={home.id} className="bg-primary/10 px-3 py-1 rounded-md text-sm">
+                    <div key={home.id} className="gradient-primary px-3 py-1 rounded-lg text-sm text-white shadow-md">
                       {home.modelName} - {home.builder?.name}
                       <button
                         onClick={() => handleCompare(home)}
@@ -299,11 +306,11 @@ function DashboardContent() {
 
         <div className="space-y-6">
           {groupedHomes().map(([builderName, homes]) => (
-            <Card key={builderName}>
+            <Card key={builderName} className="border-0 shadow-lg bg-card/95 backdrop-blur-sm">
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-xl">{builderName}</CardTitle>
-                  <span className="bg-gray-100 text-gray-600 px-3 py-1 rounded-full text-sm font-medium">
+                  <span className="gradient-primary text-white px-3 py-1 rounded-full text-sm font-medium shadow-sm">
                     {homes.length} home{homes.length !== 1 ? 's' : ''}
                   </span>
                 </div>
@@ -326,25 +333,25 @@ function DashboardContent() {
                     </thead>
                     <tbody className="divide-y">
                       {homes.map((home) => (
-                        <tr key={home.id} className="hover:bg-green-50">
+                        <tr key={home.id} className="hover:bg-accent/50 transition-colors duration-200">
                           <td className="py-4 px-2">
-                            <div className="font-medium text-gray-900">{home.modelName}</div>
+                            <div className="font-semibold text-foreground">{home.modelName}</div>
                             {home.address && (
-                              <div className="text-sm text-gray-500">{home.address}</div>
+                              <div className="text-sm text-muted-foreground">{home.address}</div>
                             )}
                             {home.homesiteNumber && (
-                              <div className="text-sm text-gray-500">Homesite: {home.homesiteNumber}</div>
+                              <div className="text-sm text-muted-foreground">Homesite: {home.homesiteNumber}</div>
                             )}
                           </td>
-                          <td className="py-4 px-2 text-gray-600">{home.community?.name}</td>
+                          <td className="py-4 px-2 text-muted-foreground">{home.community?.name}</td>
                           <td className="py-4 px-2">
-                            <div className="font-semibold text-gray-900">{formatPrice(home.price)}</div>
+                            <div className="font-bold text-foreground">{formatPrice(home.price)}</div>
                           </td>
-                          <td className="py-4 px-2 text-gray-600">{formatPricePerSquareFoot(home.price, home.squareFootage)}</td>
-                          <td className="py-4 px-2 text-gray-600">{formatSquareFootageNumber(home.squareFootage)}</td>
-                          <td className="py-4 px-2 text-gray-600">{home.bedrooms}</td>
-                          <td className="py-4 px-2 text-gray-600">{home.bathrooms}</td>
-                          <td className="py-4 px-2 text-gray-600">{home.garageSpaces}</td>
+                          <td className="py-4 px-2 text-muted-foreground">{formatPricePerSquareFoot(home.price, home.squareFootage)}</td>
+                          <td className="py-4 px-2 text-muted-foreground">{formatSquareFootageNumber(home.squareFootage)}</td>
+                          <td className="py-4 px-2 text-muted-foreground">{home.bedrooms}</td>
+                          <td className="py-4 px-2 text-muted-foreground">{home.bathrooms}</td>
+                          <td className="py-4 px-2 text-muted-foreground">{home.garageSpaces}</td>
                           <td className="py-4 px-2">
                             <div className="flex gap-2">
                               <Link href={`/home/${home.id}`}>

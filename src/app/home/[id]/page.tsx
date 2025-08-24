@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { onAuthStateChanged } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
@@ -34,11 +34,7 @@ export default function HomeDetailPage({ params }: HomeDetailPageProps) {
     return () => unsubscribe();
   }, [router]);
 
-  useEffect(() => {
-    fetchHome();
-  }, [params.id]);
-
-  const fetchHome = async () => {
+  const fetchHome = useCallback(async () => {
     try {
       setLoading(true);
       const homeData = await getHomeById(params.id);
@@ -53,7 +49,11 @@ export default function HomeDetailPage({ params }: HomeDetailPageProps) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [params.id]);
+
+  useEffect(() => {
+    fetchHome();
+  }, [fetchHome]);
 
   if (loading) {
     return (

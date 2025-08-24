@@ -71,7 +71,7 @@ export default function HomePage() {
       ...kbHomes.map(h => h.bedrooms),
       ...ryanHomes.map(h => h.bedrooms)
     ];
-    const bedroomCounts = [...new Set(allBedroomCounts)].sort();
+    const bedroomCounts = Array.from(new Set(allBedroomCounts)).sort();
 
     const comparisons = bedroomCounts.map(bedrooms => {
       const dfHomes = dreamfindersHomes.filter(h => h.bedrooms === bedrooms);
@@ -130,8 +130,19 @@ export default function HomePage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      <div className="min-h-screen flex items-center justify-center bg-background relative overflow-hidden">
+        {/* Loading screen background elements */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute top-1/4 right-1/4 w-32 h-32 gradient-primary rounded-full blur-2xl opacity-30 animate-pulse"></div>
+          <div className="absolute bottom-1/4 left-1/4 w-40 h-40 gradient-accent rounded-full blur-2xl opacity-20 animate-pulse"></div>
+          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 gradient-secondary rounded-full blur-3xl opacity-10"></div>
+        </div>
+        
+        <div className="text-center relative z-10">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-4 border-primary mx-auto mb-4"></div>
+          <h2 className="text-2xl font-bold gradient-accent bg-clip-text text-transparent">Loading Home Intelligence</h2>
+          <p className="text-muted-foreground mt-2">Setting up your dashboard...</p>
+        </div>
       </div>
     );
   }
@@ -145,12 +156,19 @@ export default function HomePage() {
     };
 
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
-        <div className="container mx-auto px-4 py-8">
+      <div className="min-h-screen bg-background relative overflow-hidden">
+        {/* Background decorative elements for authenticated users */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute top-20 right-20 w-64 h-64 gradient-accent rounded-full blur-3xl opacity-10"></div>
+          <div className="absolute bottom-40 left-20 w-80 h-80 gradient-primary rounded-full blur-3xl opacity-8"></div>
+          <div className="absolute top-1/2 right-1/3 w-48 h-48 gradient-secondary rounded-full blur-3xl opacity-15"></div>
+        </div>
+        
+        <div className="container mx-auto px-4 py-8 relative z-10">
           <div className="flex justify-between items-center mb-8">
             <div>
-              <h1 className="text-4xl font-bold text-gray-900">Home Intelligence</h1>
-              <p className="text-gray-600 mt-2">Welcome back, {getFirstName()}</p>
+              <h1 className="text-4xl font-bold gradient-accent bg-clip-text text-transparent">Home Intelligence</h1>
+              <p className="text-muted-foreground mt-2">Welcome back, {getFirstName()}</p>
             </div>
             <Button variant="outline" onClick={() => auth.signOut()}>
               Sign Out
@@ -159,7 +177,7 @@ export default function HomePage() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
             <Link href="/dashboard">
-              <Card className="hover:shadow-lg transition-shadow cursor-pointer h-full">
+              <Card className="glass-effect hover:shadow-xl transition-all cursor-pointer h-full border-0">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <Home className="h-5 w-5 text-blue-600" />
@@ -171,7 +189,7 @@ export default function HomePage() {
             </Link>
 
             <Link href="/comparison">
-              <Card className="hover:shadow-lg transition-shadow cursor-pointer h-full">
+              <Card className="glass-effect hover:shadow-xl transition-all cursor-pointer h-full border-0">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <BarChart3 className="h-5 w-5 text-green-600" />
@@ -183,7 +201,7 @@ export default function HomePage() {
             </Link>
 
             <Link href="/admin">
-              <Card className="hover:shadow-lg transition-shadow cursor-pointer h-full">
+              <Card className="glass-effect hover:shadow-xl transition-all cursor-pointer h-full border-0">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <Users className="h-5 w-5 text-purple-600" />
@@ -196,7 +214,7 @@ export default function HomePage() {
           </div>
 
           {/* Competitive Analysis Section */}
-          <Card className="mb-8">
+          <Card className="mb-8 glass-effect border-0 shadow-lg">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <BarChart3 className="h-5 w-5 text-blue-600" />
@@ -352,7 +370,7 @@ export default function HomePage() {
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="glass-effect border-0 shadow-lg">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Building2 className="h-5 w-5" />
@@ -361,17 +379,17 @@ export default function HomePage() {
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="text-center p-4 bg-blue-50 rounded-lg">
-                  <h3 className="font-semibold text-blue-900">Dream Finders Homes</h3>
-                  <p className="text-sm text-blue-700">Moore Farms Community</p>
+                <div className="text-center p-4 gradient-primary text-white rounded-lg shadow-lg">
+                  <h3 className="font-semibold">Dream Finders Homes</h3>
+                  <p className="text-sm opacity-90">Moore Farms Community</p>
                 </div>
-                <div className="text-center p-4 bg-green-50 rounded-lg">
-                  <h3 className="font-semibold text-green-900">KB Home</h3>
-                  <p className="text-sm text-green-700">Sheffield Community</p>
+                <div className="text-center p-4 gradient-secondary rounded-lg shadow-lg">
+                  <h3 className="font-semibold text-foreground">KB Home</h3>
+                  <p className="text-sm text-muted-foreground">Sheffield Community</p>
                 </div>
-                <div className="text-center p-4 bg-purple-50 rounded-lg">
-                  <h3 className="font-semibold text-purple-900">Ryan Homes</h3>
-                  <p className="text-sm text-purple-700">Moore Farm Community</p>
+                <div className="text-center p-4 gradient-accent text-white rounded-lg shadow-lg">
+                  <h3 className="font-semibold">Ryan Homes</h3>
+                  <p className="text-sm opacity-90">Moore Farm Community</p>
                 </div>
               </div>
             </CardContent>
@@ -382,13 +400,22 @@ export default function HomePage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
-      <div className="container mx-auto px-4 py-16">
+    <div className="min-h-screen bg-background relative overflow-hidden">
+      {/* Background decorative elements */}
+      <div className="absolute inset-0 bg-dots"></div>
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute -top-40 -right-40 w-80 h-80 gradient-primary rounded-full blur-3xl opacity-20"></div>
+        <div className="absolute top-1/3 -left-40 w-96 h-96 gradient-accent rounded-full blur-3xl opacity-15"></div>
+        <div className="absolute bottom-0 right-1/4 w-72 h-72 gradient-secondary rounded-full blur-3xl opacity-25"></div>
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] gradient-primary rounded-full blur-3xl opacity-5"></div>
+      </div>
+      
+      <div className="container mx-auto px-4 py-16 relative z-10">
         <div className="max-w-4xl mx-auto text-center">
-          <h1 className="text-6xl font-bold text-gray-900 mb-6">
+          <h1 className="text-6xl font-bold gradient-accent bg-clip-text text-transparent mb-6">
             Home Intelligence
           </h1>
-          <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
+          <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
             Compare new home inventory across leading builders in Indian Trail, NC. 
             Find your perfect home with comprehensive data and insights.
           </p>

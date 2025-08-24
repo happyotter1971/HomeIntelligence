@@ -728,7 +728,9 @@ export default function AdminPage() {
                               <div className="flex items-center gap-2">
                                 <span className="font-medium">{home.modelName}</span>
                                 {isDuplicateHome(home.id) && (
-                                  <AlertTriangle className="h-4 w-4 text-red-500" title="Potential duplicate detected" />
+                                  <div title="Potential duplicate detected">
+                                    <AlertTriangle className="h-4 w-4 text-red-500" />
+                                  </div>
                                 )}
                               </div>
                               {home.address && (
