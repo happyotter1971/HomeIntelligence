@@ -122,15 +122,10 @@ export default function HomePage() {
             Find your perfect home with comprehensive data and insights.
           </p>
           
-          <div className="flex gap-4 justify-center mb-12">
+          <div className="flex justify-center mb-12">
             <Link href="/auth/login">
               <Button size="lg" className="px-8">
-                Sign In
-              </Button>
-            </Link>
-            <Link href="/auth/register">
-              <Button variant="outline" size="lg" className="px-8">
-                Register
+                Sign In with Google
               </Button>
             </Link>
           </div>

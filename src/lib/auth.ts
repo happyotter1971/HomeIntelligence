@@ -1,6 +1,6 @@
 import { 
-  createUserWithEmailAndPassword,
-  signInWithEmailAndPassword,
+  GoogleAuthProvider,
+  signInWithPopup,
   signOut as firebaseSignOut,
   onAuthStateChanged,
   User as FirebaseUser
@@ -9,29 +9,28 @@ import { doc, setDoc, getDoc, Timestamp } from 'firebase/firestore';
 import { auth, db } from './firebase';
 import { User } from '@/types';
 
-export const signUp = async (email: string, password: string, displayName?: string) => {
-  const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+export const signInWithGoogle = async () => {
+  const provider = new GoogleAuthProvider();
+  const userCredential = await signInWithPopup(auth, provider);
   const user = userCredential.user;
   
-  const userData: Omit<User, 'uid'> = {
-    email: user.email!,
-    displayName: displayName || undefined,
-    role: 'user',
-    createdAt: Timestamp.now(),
-    lastLogin: Timestamp.now()
-  };
+  const existingUser = await getUserData(user.uid);
   
-  await setDoc(doc(db, 'users', user.uid), userData);
-  return user;
-};
-
-export const signIn = async (email: string, password: string) => {
-  const userCredential = await signInWithEmailAndPassword(auth, email, password);
-  const user = userCredential.user;
-  
-  await setDoc(doc(db, 'users', user.uid), {
-    lastLogin: Timestamp.now()
-  }, { merge: true });
+  if (!existingUser) {
+    const userData: Omit<User, 'uid'> = {
+      email: user.email!,
+      displayName: user.displayName || undefined,
+      role: 'user',
+      createdAt: Timestamp.now(),
+      lastLogin: Timestamp.now()
+    };
+    
+    await setDoc(doc(db, 'users', user.uid), userData);
+  } else {
+    await setDoc(doc(db, 'users', user.uid), {
+      lastLogin: Timestamp.now()
+    }, { merge: true });
+  }
   
   return user;
 };
