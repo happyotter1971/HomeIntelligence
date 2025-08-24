@@ -166,302 +166,312 @@ export default function HomePage() {
     };
 
     return (
-      <div className="min-h-screen bg-background relative overflow-hidden">
-        {/* Background decorative elements for authenticated users */}
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute top-20 right-20 w-64 h-64 gradient-accent rounded-full blur-3xl opacity-15"></div>
-          <div className="absolute bottom-40 left-20 w-80 h-80 gradient-primary rounded-full blur-3xl opacity-12"></div>
-          <div className="absolute top-60 left-1/4 w-96 h-96 gradient-primary rounded-full blur-2xl opacity-50"></div>
-          <div className="absolute top-40 right-1/3 w-80 h-80 gradient-accent rounded-full blur-2xl opacity-45"></div>
+      <div className="min-h-screen relative">
+        {/* Header with gradient background */}
+        <div className="relative">
+          <div className="absolute inset-0 bg-grad-hero"></div>
+          <div className="absolute inset-0 bg-gradient-to-r from-ink/40 via-bluebrand/60 to-transparent"></div>
+          <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-b from-transparent to-background"></div>
+          <div className="container mx-auto px-6 py-12 relative z-10">
+            <div className="flex justify-between items-center">
+              <div className="flex items-center gap-6">
+                <div className="p-3 bg-white/10 backdrop-blur-sm rounded-2xl border border-white/20">
+                  <Image 
+                    src="/home-intelligence-logo.svg" 
+                    alt="BuilderIntelligence Logo" 
+                    width={48} 
+                    height={48}
+                    className="flex-shrink-0"
+                  />
+                </div>
+                <div className="flex flex-col justify-center">
+                  <h1 className="text-3xl md:text-4xl font-bold text-white leading-tight drop-shadow-lg">
+                    Dream Finders Homes: BuilderIntelligence
+                  </h1>
+                  <p className="text-sm text-white mt-2 font-semibold drop-shadow-lg bg-black/20 px-3 py-1 rounded-lg backdrop-blur-sm border border-white/10">Insight that Builds Results and Makes Jeff Ott a Boat Load of Money</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-4">
+                <div className="text-right">
+                  <p className="text-white font-medium drop-shadow-md">Welcome back, <span className="text-white font-bold">{getFirstName()}!</span></p>
+                </div>
+                <Button 
+                  variant="outline" 
+                  onClick={() => auth.signOut()}
+                  className="bg-white/10 backdrop-blur-sm border-white/20 text-white hover:bg-white/20 hover:text-white rounded-xl"
+                >
+                  Sign Out
+                </Button>
+              </div>
+            </div>
+          </div>
         </div>
         
-        <div className="container mx-auto px-4 py-8 relative z-10">
-          <div className="flex justify-between items-center mb-8">
-            <div className="flex items-center gap-4">
-              <Image 
-                src="/home-intelligence-logo.svg" 
-                alt="BuilderIntelligence Logo" 
-                width={60} 
-                height={60}
-                className="flex-shrink-0"
-              />
-              <div className="flex flex-col justify-center">
-                <h1 className="text-4xl font-bold gradient-accent bg-clip-text text-transparent leading-tight">
-                  Dream Finders Homes: BuilderIntelligence
-                </h1>
-                <p className="text-sm text-muted-foreground mt-1 italic">Insight That Builds Results</p>
-              </div>
+        <div className="relative">
+          <div className="container mx-auto px-6 pt-8 pb-12">
+
+            {/* Navigation Cards Section */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+              <Link href="/dashboard">
+                <Card variant="branded" className="hover:shadow-xl transition-all cursor-pointer h-full">
+                  <CardHeader variant="gradient">
+                    <CardTitle className="flex items-center gap-2">
+                      <Home className="h-5 w-5 text-bluebrand" />
+                      Quick Move-In Inventory
+                    </CardTitle>
+                    <CardDescription>Browse homes ready for immediate move-in</CardDescription>
+                  </CardHeader>
+                </Card>
+              </Link>
+
+              <Link href="/comparison">
+                <Card variant="branded" className="hover:shadow-xl transition-all cursor-pointer h-full">
+                  <CardHeader variant="gradient">
+                    <CardTitle className="flex items-center gap-2">
+                      <BarChart3 className="h-5 w-5 text-rust" />
+                      Compare Homes
+                    </CardTitle>
+                    <CardDescription>Side-by-side home comparisons</CardDescription>
+                  </CardHeader>
+                </Card>
+              </Link>
+
+              <Link href="/admin">
+                <Card variant="branded" className="hover:shadow-xl transition-all cursor-pointer h-full">
+                  <CardHeader variant="gradient">
+                    <CardTitle className="flex items-center gap-2">
+                      <Users className="h-5 w-5 text-honey" />
+                      Admin Panel
+                    </CardTitle>
+                    <CardDescription>Manage home inventory data</CardDescription>
+                  </CardHeader>
+                </Card>
+              </Link>
             </div>
-            <div className="flex items-center gap-4">
-              <span className="text-muted-foreground">Welcome back, {getFirstName()}!</span>
-              <Button variant="outline" onClick={() => auth.signOut()}>
-                Sign Out
-              </Button>
+
+            {/* Price Changes Section */}
+            <div className="mb-8">
+              <PriceChanges maxItems={10} />
             </div>
-          </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-            <Link href="/dashboard">
-              <Card className="glass-effect hover:shadow-xl transition-all cursor-pointer h-full border-0">
+            {/* Competitive Analysis Section */}
+            <Card className="glass-effect border-0 shadow-lg mb-8">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
-                    <Home className="h-5 w-5 text-blue-600" />
-                    Quick Move-In Inventory
+                    <BarChart3 className="h-5 w-5 text-blue-600" />
+                    Quick Move-In Inventory Comparison
                   </CardTitle>
-                  <CardDescription>Browse homes ready for immediate move-in</CardDescription>
+                  <CardDescription>
+                    Price comparison analysis for similar home configurations
+                  </CardDescription>
                 </CardHeader>
+                <CardContent>
+                  {analysisLoading ? (
+                    <div className="animate-pulse">
+                      <div className="overflow-x-auto">
+                        <table className="w-full">
+                          <thead>
+                            <tr className="border-b">
+                              <th className="text-left py-3 px-2 font-medium">Bedrooms</th>
+                              <th className="text-left py-3 px-2 font-medium">Dream Finders</th>
+                              <th className="text-left py-3 px-2 font-medium">vs. KB Home</th>
+                              <th className="text-left py-3 px-2 font-medium">vs. Ryan Homes</th>
+                              <th className="text-left py-3 px-2 font-medium">Market Position</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y">
+                            {[1, 2, 3].map((i) => (
+                              <tr key={i}>
+                                <td className="py-4 px-2">
+                                  <div className="h-4 bg-gray-200 rounded w-20"></div>
+                                </td>
+                                <td className="py-4 px-2">
+                                  <div className="h-4 bg-gray-200 rounded w-24 mb-2"></div>
+                                  <div className="h-3 bg-gray-200 rounded w-16"></div>
+                                </td>
+                                <td className="py-4 px-2">
+                                  <div className="h-4 bg-gray-200 rounded w-24 mb-2"></div>
+                                  <div className="h-3 bg-gray-200 rounded w-20"></div>
+                                </td>
+                                <td className="py-4 px-2">
+                                  <div className="h-4 bg-gray-200 rounded w-24 mb-2"></div>
+                                  <div className="h-3 bg-gray-200 rounded w-20"></div>
+                                </td>
+                                <td className="py-4 px-2">
+                                  <div className="h-6 bg-gray-200 rounded w-24"></div>
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  ) : (
+                    (() => {
+                      if (!competitiveAnalysis || competitiveAnalysis.length === 0) {
+                        return (
+                          <div className="text-center py-8">
+                            <p className="text-gray-500">No competitive analysis data available</p>
+                          </div>
+                        );
+                      }
+
+                      return (
+                        <div className="overflow-x-auto">
+                          <table className="w-full">
+                            <thead>
+                              <tr className="border-b">
+                                <th className="text-left py-3 px-2 font-medium">Bedrooms</th>
+                                <th className="text-left py-3 px-2 font-medium">Dream Finders</th>
+                                <th className="text-left py-3 px-2 font-medium">vs. KB Home</th>
+                                <th className="text-left py-3 px-2 font-medium">vs. Ryan Homes</th>
+                                <th className="text-left py-3 px-2 font-medium">Market Position</th>
+                              </tr>
+                            </thead>
+                            <tbody className="divide-y">
+                              {competitiveAnalysis.map((comp) => (
+                                <tr key={comp.bedrooms}>
+                                  <td className="py-4 px-2 font-medium">
+                                    <Link 
+                                      href={`/dashboard?bedrooms=${comp.bedrooms}`}
+                                      className="text-blue-600 hover:text-blue-800 hover:underline cursor-pointer"
+                                      target="_blank"
+                                    >
+                                      {comp.bedrooms} Bedroom{comp.bedrooms > 1 ? 's' : ''}
+                                    </Link>
+                                  </td>
+                                  <td className="py-4 px-2">
+                                    {comp.dreamfindersPrice ? (
+                                      <div>
+                                        <div className="font-semibold text-blue-600">{formatPrice(comp.dreamfindersPrice)}</div>
+                                        <div className="text-sm text-gray-500">{comp.dreamfindersCount} home{comp.dreamfindersCount > 1 ? 's' : ''}</div>
+                                      </div>
+                                    ) : (
+                                      <div>
+                                        <div className="text-sm text-gray-500">0 homes</div>
+                                      </div>
+                                    )}
+                                  </td>
+                                  <td className="py-4 px-2">
+                                    {comp.kbPrice ? (
+                                      <div>
+                                        <div className="font-medium">{formatPrice(comp.kbPrice)}</div>
+                                        <div className={`text-sm ${comp.kbDiff ? 'flex items-center gap-1' : ''} ${getPriceComparisonColor(comp.kbDiff)}`}>
+                                          {comp.kbDiff && getPriceComparisonIcon(comp.kbDiff)}
+                                          {comp.kbDiff ? getPriceComparisonText(comp.kbDiff) : `${comp.kbCount} home${comp.kbCount > 1 ? 's' : ''}`}
+                                        </div>
+                                      </div>
+                                    ) : (
+                                      <div className="text-gray-400">No comparable homes</div>
+                                    )}
+                                  </td>
+                                  <td className="py-4 px-2">
+                                    {comp.ryanPrice ? (
+                                      <div>
+                                        <div className="font-medium">{formatPrice(comp.ryanPrice)}</div>
+                                        <div className={`text-sm ${comp.ryanDiff ? 'flex items-center gap-1' : ''} ${getPriceComparisonColor(comp.ryanDiff)}`}>
+                                          {comp.ryanDiff && getPriceComparisonIcon(comp.ryanDiff)}
+                                          {comp.ryanDiff ? getPriceComparisonText(comp.ryanDiff) : `${comp.ryanCount} home${comp.ryanCount > 1 ? 's' : ''}`}
+                                        </div>
+                                      </div>
+                                    ) : (
+                                      <div className="text-gray-400">No comparable homes</div>
+                                    )}
+                                  </td>
+                                  <td className="py-4 px-2">
+                                    {(() => {
+                                      // If Dream Finders has no homes, show "Not Applicable"
+                                      if (!comp.dreamfindersPrice) {
+                                        return <span className="text-gray-500">Not Applicable</span>;
+                                      }
+                                      
+                                      const competitorPrices = [comp.kbPrice, comp.ryanPrice].filter(Boolean);
+                                      if (competitorPrices.length === 0) {
+                                        return <span className="text-gray-500">No competition</span>;
+                                      }
+                                      const avgCompetitorPrice = competitorPrices.reduce((a, b) => a! + b!, 0)! / competitorPrices.length;
+                                      const diff = comp.dreamfindersPrice - avgCompetitorPrice;
+                                      if (Math.abs(diff) < 5000) {
+                                        return <span className="px-2 py-1 bg-yellow-100 text-yellow-800 rounded-full text-xs">Competitive</span>;
+                                      } else if (diff < 0) {
+                                        return <span className="px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs">Below Market</span>;
+                                      } else {
+                                        return <span className="px-2 py-1 bg-red-100 text-red-800 rounded-full text-xs">Above Market</span>;
+                                      }
+                                    })()}
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      );
+                    })()
+                  )}
+                </CardContent>
               </Card>
-            </Link>
 
-            <Link href="/comparison">
-              <Card className="glass-effect hover:shadow-xl transition-all cursor-pointer h-full border-0">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <BarChart3 className="h-5 w-5 text-green-600" />
-                    Compare Homes
-                  </CardTitle>
-                  <CardDescription>Side-by-side home comparisons</CardDescription>
-                </CardHeader>
-              </Card>
-            </Link>
-
-            <Link href="/admin">
-              <Card className="glass-effect hover:shadow-xl transition-all cursor-pointer h-full border-0">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Users className="h-5 w-5 text-purple-600" />
-                    Admin Panel
-                  </CardTitle>
-                  <CardDescription>Manage home inventory data</CardDescription>
-                </CardHeader>
-              </Card>
-            </Link>
-          </div>
-
-          {/* Price Changes Section */}
-          <div className="mb-8">
-            <PriceChanges maxItems={10} />
-          </div>
-
-          {/* Competitive Analysis Section */}
-          <Card className="mb-8 glass-effect border-0 shadow-lg">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <BarChart3 className="h-5 w-5 text-blue-600" />
-                Dream Finders vs. Competition - Quick Move-In Inventory Comparison
-              </CardTitle>
-              <CardDescription>
-                Price comparison analysis for similar home configurations
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              {analysisLoading ? (
-                <div className="animate-pulse">
-                  <div className="overflow-x-auto">
-                    <table className="w-full">
-                      <thead>
-                        <tr className="border-b">
-                          <th className="text-left py-3 px-2 font-medium">Bedrooms</th>
-                          <th className="text-left py-3 px-2 font-medium">Dream Finders</th>
-                          <th className="text-left py-3 px-2 font-medium">vs. KB Home</th>
-                          <th className="text-left py-3 px-2 font-medium">vs. Ryan Homes</th>
-                          <th className="text-left py-3 px-2 font-medium">Market Position</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y">
-                        {[1, 2, 3].map((i) => (
-                          <tr key={i}>
-                            <td className="py-4 px-2">
-                              <div className="h-4 bg-gray-200 rounded w-20"></div>
-                            </td>
-                            <td className="py-4 px-2">
-                              <div className="h-4 bg-gray-200 rounded w-24 mb-2"></div>
-                              <div className="h-3 bg-gray-200 rounded w-16"></div>
-                            </td>
-                            <td className="py-4 px-2">
-                              <div className="h-4 bg-gray-200 rounded w-24 mb-2"></div>
-                              <div className="h-3 bg-gray-200 rounded w-20"></div>
-                            </td>
-                            <td className="py-4 px-2">
-                              <div className="h-4 bg-gray-200 rounded w-24 mb-2"></div>
-                              <div className="h-3 bg-gray-200 rounded w-20"></div>
-                            </td>
-                            <td className="py-4 px-2">
-                              <div className="h-6 bg-gray-200 rounded w-24"></div>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
+            {/* Featured Builders Section */}
+            <Card className="glass-effect border-0 shadow-lg">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Building2 className="h-5 w-5" />
+                  Featured Builders
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div 
+                    className="text-center p-4 bg-grad-primary text-white rounded-lg shadow-lg cursor-pointer hover:shadow-xl transition-all transform hover:scale-105 border-2 border-honey"
+                    onClick={() => window.open('https://dreamfindershomes.com/new-homes/nc/indian-trail/moore-farms/', '_blank')}
+                  >
+                    <h3 className="font-bold text-lg">Dream Finders Homes</h3>
+                    <p className="text-sm text-white/90">Moore Farms Community</p>
+                  </div>
+                  <div 
+                    className="text-center p-4 bg-cloud border border-slate/20 rounded-lg shadow-sm cursor-pointer hover:shadow-md transition-all transform hover:scale-105 hover:border-honey"
+                    onClick={() => window.open('https://www.kbhome.com/new-homes-charlotte-area/sheffield', '_blank')}
+                  >
+                    <h3 className="font-semibold text-ink">KB Home</h3>
+                    <p className="text-sm text-slate">Sheffield Community</p>
+                  </div>
+                  <div 
+                    className="text-center p-4 bg-cloud border border-slate/20 rounded-lg shadow-sm cursor-pointer hover:shadow-md transition-all transform hover:scale-105 hover:border-honey"
+                    onClick={() => window.open('https://www.ryanhomes.com/new-homes/communities/10222120152769/north-carolina/indian-trail/moorefarm', '_blank')}
+                  >
+                    <h3 className="font-semibold text-ink">Ryan Homes</h3>
+                    <p className="text-sm text-slate">Moore Farm Community</p>
                   </div>
                 </div>
-              ) : (
-                (() => {
-                  if (!competitiveAnalysis || competitiveAnalysis.length === 0) {
-                    return (
-                      <div className="text-center py-8">
-                        <p className="text-gray-500">No competitive analysis data available</p>
-                      </div>
-                    );
-                  }
+              </CardContent>
+            </Card>
 
-                  return (
-                    <div className="overflow-x-auto">
-                      <table className="w-full">
-                        <thead>
-                          <tr className="border-b">
-                            <th className="text-left py-3 px-2 font-medium">Bedrooms</th>
-                            <th className="text-left py-3 px-2 font-medium">Dream Finders</th>
-                            <th className="text-left py-3 px-2 font-medium">vs. KB Home</th>
-                            <th className="text-left py-3 px-2 font-medium">vs. Ryan Homes</th>
-                            <th className="text-left py-3 px-2 font-medium">Market Position</th>
-                          </tr>
-                        </thead>
-                        <tbody className="divide-y">
-                          {competitiveAnalysis.map((comp) => (
-                            <tr key={comp.bedrooms}>
-                              <td className="py-4 px-2 font-medium">
-                                <Link 
-                                  href={`/dashboard?bedrooms=${comp.bedrooms}`}
-                                  className="text-blue-600 hover:text-blue-800 hover:underline cursor-pointer"
-                                  target="_blank"
-                                >
-                                  {comp.bedrooms} Bedroom{comp.bedrooms > 1 ? 's' : ''}
-                                </Link>
-                              </td>
-                              <td className="py-4 px-2">
-                                {comp.dreamfindersPrice ? (
-                                  <div>
-                                    <div className="font-semibold text-blue-600">{formatPrice(comp.dreamfindersPrice)}</div>
-                                    <div className="text-sm text-gray-500">{comp.dreamfindersCount} home{comp.dreamfindersCount > 1 ? 's' : ''}</div>
-                                  </div>
-                                ) : (
-                                  <div>
-                                    <div className="text-sm text-gray-500">0 homes</div>
-                                  </div>
-                                )}
-                              </td>
-                              <td className="py-4 px-2">
-                                {comp.kbPrice ? (
-                                  <div>
-                                    <div className="font-medium">{formatPrice(comp.kbPrice)}</div>
-                                    <div className={`text-sm ${comp.kbDiff ? 'flex items-center gap-1' : ''} ${getPriceComparisonColor(comp.kbDiff)}`}>
-                                      {comp.kbDiff && getPriceComparisonIcon(comp.kbDiff)}
-                                      {comp.kbDiff ? getPriceComparisonText(comp.kbDiff) : `${comp.kbCount} home${comp.kbCount > 1 ? 's' : ''}`}
-                                    </div>
-                                  </div>
-                                ) : (
-                                  <div className="text-gray-400">No comparable homes</div>
-                                )}
-                              </td>
-                              <td className="py-4 px-2">
-                                {comp.ryanPrice ? (
-                                  <div>
-                                    <div className="font-medium">{formatPrice(comp.ryanPrice)}</div>
-                                    <div className={`text-sm ${comp.ryanDiff ? 'flex items-center gap-1' : ''} ${getPriceComparisonColor(comp.ryanDiff)}`}>
-                                      {comp.ryanDiff && getPriceComparisonIcon(comp.ryanDiff)}
-                                      {comp.ryanDiff ? getPriceComparisonText(comp.ryanDiff) : `${comp.ryanCount} home${comp.ryanCount > 1 ? 's' : ''}`}
-                                    </div>
-                                  </div>
-                                ) : (
-                                  <div className="text-gray-400">No comparable homes</div>
-                                )}
-                              </td>
-                              <td className="py-4 px-2">
-                                {(() => {
-                                  // If Dream Finders has no homes, show "Not Applicable"
-                                  if (!comp.dreamfindersPrice) {
-                                    return <span className="text-gray-500">Not Applicable</span>;
-                                  }
-                                  
-                                  const competitorPrices = [comp.kbPrice, comp.ryanPrice].filter(Boolean);
-                                  if (competitorPrices.length === 0) {
-                                    return <span className="text-gray-500">No competition</span>;
-                                  }
-                                  const avgCompetitorPrice = competitorPrices.reduce((a, b) => a! + b!, 0)! / competitorPrices.length;
-                                  const diff = comp.dreamfindersPrice - avgCompetitorPrice;
-                                  if (Math.abs(diff) < 5000) {
-                                    return <span className="px-2 py-1 bg-yellow-100 text-yellow-800 rounded-full text-xs">Competitive</span>;
-                                  } else if (diff < 0) {
-                                    return <span className="px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs">Below Market</span>;
-                                  } else {
-                                    return <span className="px-2 py-1 bg-red-100 text-red-800 rounded-full text-xs">Above Market</span>;
-                                  }
-                                })()}
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                  );
-                })()
-              )}
-            </CardContent>
-          </Card>
-
-          <Card className="glass-effect border-0 shadow-lg">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Building2 className="h-5 w-5" />
-                Featured Builders
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div 
-                  className="text-center p-4 bg-gradient-to-br from-purple-600 via-indigo-600 to-blue-700 text-white rounded-lg shadow-lg cursor-pointer hover:shadow-xl transition-all transform hover:scale-105 border-2 border-purple-500"
-                  onClick={() => window.open('https://dreamfindershomes.com/new-homes/nc/indian-trail/moore-farms/', '_blank')}
-                >
-                  <h3 className="font-bold text-lg">Dream Finders Homes</h3>
-                  <p className="text-sm opacity-90">Moore Farms Community</p>
-                </div>
-                <div 
-                  className="text-center p-4 bg-gray-100 border border-gray-200 rounded-lg shadow-sm cursor-pointer hover:shadow-md transition-all transform hover:scale-105"
-                  onClick={() => window.open('https://www.kbhome.com/new-homes-charlotte-area/sheffield', '_blank')}
-                >
-                  <h3 className="font-semibold text-gray-700">KB Home</h3>
-                  <p className="text-sm text-gray-500">Sheffield Community</p>
-                </div>
-                <div 
-                  className="text-center p-4 bg-gray-100 border border-gray-200 rounded-lg shadow-sm cursor-pointer hover:shadow-md transition-all transform hover:scale-105"
-                  onClick={() => window.open('https://www.ryanhomes.com/new-homes/communities/10222120152769/north-carolina/indian-trail/moorefarm', '_blank')}
-                >
-                  <h3 className="font-semibold text-gray-700">Ryan Homes</h3>
-                  <p className="text-sm text-gray-500">Moore Farm Community</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background relative overflow-hidden">
-      {/* Background decorative elements */}
-      <div className="absolute inset-0 bg-dots"></div>
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-40 -right-40 w-80 h-80 gradient-primary rounded-full blur-3xl opacity-20"></div>
-        <div className="absolute top-1/3 -left-40 w-96 h-96 gradient-accent rounded-full blur-3xl opacity-15"></div>
-        <div className="absolute bottom-0 right-1/4 w-72 h-72 gradient-secondary rounded-full blur-3xl opacity-25"></div>
-        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] gradient-primary rounded-full blur-3xl opacity-5"></div>
-      </div>
+    <div className="min-h-screen relative overflow-hidden">
+      {/* Hero gradient background */}
+      <div className="absolute inset-0 bg-grad-hero"></div>
+      {/* Contrast overlay for text accessibility */}
+      <div className="absolute inset-0 bg-ink/35"></div>
       
-      <div className="container mx-auto px-4 py-16 relative z-10">
-        <div className="max-w-4xl mx-auto text-center">
-          <h1 className="text-6xl font-bold gradient-accent bg-clip-text text-transparent mb-6">
-            BuilderIntelligence
+      <div className="container mx-auto px-6 py-24 relative z-10">
+        <div className="max-w-6xl mx-auto text-center text-white">
+          <h1 className="text-4xl md:text-6xl font-semibold mb-6">
+            See the market clearly
           </h1>
-          <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
-            Analyze new home inventory across leading builders in Indian Trail, NC. 
-            Gain competitive insights to benchmark your offerings and identify market opportunities.
+          <p className="text-lg md:text-xl text-white/90 mb-8 max-w-2xl mx-auto">
+            Benchmark competitors, price confidently, build faster.
+            Gain competitive insights across leading builders in Indian Trail, NC.
           </p>
           
           <div className="flex justify-center">
             <Link href="/auth/login">
-              <Button size="lg" className="px-8">
+              <Button size="lg" className="px-8 text-base">
                 Sign In with Google
               </Button>
             </Link>

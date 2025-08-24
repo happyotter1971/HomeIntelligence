@@ -7,40 +7,55 @@
 @layer base {
   :root {
     --background: 0 0% 100%;
-    --foreground: 224 71% 4%;
+    --foreground: 215 28% 7%;
     --card: 0 0% 100%;
-    --card-foreground: 224 71% 4%;
+    --card-foreground: 215 28% 7%;
     --popover: 0 0% 100%;
-    --popover-foreground: 224 71% 4%;
-    --primary: 262 83% 58%;
-    --primary-foreground: 210 20% 98%;
+    --popover-foreground: 215 28% 7%;
+    --primary: 221 83% 33%;
+    --primary-foreground: 0 0% 100%;
     --secondary: 220 14% 96%;
-    --secondary-foreground: 220 9% 46%;
+    --secondary-foreground: 216 15% 34%;
     --muted: 220 14% 96%;
-    --muted-foreground: 220 9% 46%;
+    --muted-foreground: 216 15% 34%;
     --accent: 220 14% 96%;
-    --accent-foreground: 220 9% 46%;
+    --accent-foreground: 216 15% 34%;
     --destructive: 0 84% 60%;
     --destructive-foreground: 210 20% 98%;
     --border: 220 13% 91%;
     --input: 220 13% 91%;
-    --ring: 262 83% 58%;
+    --ring: 33 100% 50%;
     --radius: 0.75rem;
     
-    /* Comet-inspired gradients */
-    --gradient-primary: linear-gradient(135deg, hsl(262 83% 58%) 0%, hsl(252 94% 67%) 100%);
+    /* Brand Colors */
+    --color-blue: #1E3A8A;
+    --color-rust: #B7410E;
+    --color-honey: #D1A054;
+    --color-ink: #0B1220;
+    --color-slate: #475569;
+    --color-cloud: #F1F5F9;
+    --color-white: #FFFFFF;
+    
+    /* Brand Gradients */
+    --grad-primary: linear-gradient(135deg, var(--color-blue) 0%, var(--color-rust) 50%, var(--color-honey) 100%);
+    --grad-hero: linear-gradient(90deg, var(--color-blue) 0%, var(--color-rust) 60%, var(--color-honey) 100%);
+    --grad-cta: linear-gradient(90deg, var(--color-blue), var(--color-honey));
+    --grad-card-header: linear-gradient(90deg, var(--color-rust) 0%, var(--color-honey) 100%);
+    
+    /* Legacy gradient variables for backward compatibility */
+    --gradient-primary: var(--grad-primary);
     --gradient-secondary: linear-gradient(135deg, hsl(220 14% 96%) 0%, hsl(210 20% 98%) 100%);
-    --gradient-accent: linear-gradient(135deg, hsl(262 83% 58%) 0%, hsl(221 83% 53%) 50%, hsl(252 94% 67%) 100%);
+    --gradient-accent: var(--grad-cta);
   }
 
   .dark {
-    --background: 224 71% 4%;
+    --background: 215 28% 7%;
     --foreground: 210 20% 98%;
-    --card: 224 71% 4%;
+    --card: 215 28% 7%;
     --card-foreground: 210 20% 98%;
-    --popover: 224 71% 4%;
+    --popover: 215 28% 7%;
     --popover-foreground: 210 20% 98%;
-    --primary: 263 70% 50%;
+    --primary: 221 83% 33%;
     --primary-foreground: 210 20% 98%;
     --secondary: 215 28% 17%;
     --secondary-foreground: 210 20% 98%;
@@ -52,12 +67,18 @@
     --destructive-foreground: 210 20% 98%;
     --border: 215 28% 17%;
     --input: 215 28% 17%;
-    --ring: 263 70% 50%;
+    --ring: 33 100% 50%;
     
-    /* Dark mode gradients */
-    --gradient-primary: linear-gradient(135deg, hsl(263 70% 50%) 0%, hsl(252 94% 67%) 100%);
+    /* Dark mode gradients - maintain brand consistency */
+    --grad-primary: linear-gradient(135deg, var(--color-blue) 0%, var(--color-rust) 50%, var(--color-honey) 100%);
+    --grad-hero: linear-gradient(90deg, var(--color-blue) 0%, var(--color-rust) 60%, var(--color-honey) 100%);
+    --grad-cta: linear-gradient(90deg, var(--color-blue), var(--color-honey));
+    --grad-card-header: linear-gradient(90deg, var(--color-rust) 0%, var(--color-honey) 100%);
+    
+    /* Legacy gradient variables for backward compatibility */
+    --gradient-primary: var(--grad-primary);
     --gradient-secondary: linear-gradient(135deg, hsl(215 28% 17%) 0%, hsl(224 71% 4%) 100%);
-    --gradient-accent: linear-gradient(135deg, hsl(263 70% 50%) 0%, hsl(221 83% 53%) 50%, hsl(252 94% 67%) 100%);
+    --gradient-accent: var(--grad-cta);
   }
 }
 

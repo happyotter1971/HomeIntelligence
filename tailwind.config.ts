@@ -45,11 +45,22 @@ const config: Config = {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
+        // Brand colors
+        bluebrand: 'var(--color-blue)',
+        rust: 'var(--color-rust)',
+        honey: 'var(--color-honey)',
+        ink: 'var(--color-ink)',
+        slate: 'var(--color-slate)',
+        cloud: 'var(--color-cloud)',
       },
       backgroundImage: {
         'gradient-primary': 'var(--gradient-primary)',
         'gradient-secondary': 'var(--gradient-secondary)',
         'gradient-accent': 'var(--gradient-accent)',
+        'grad-primary': 'var(--grad-primary)',
+        'grad-hero': 'var(--grad-hero)',
+        'grad-cta': 'var(--grad-cta)',
+        'grad-card-header': 'var(--grad-card-header)',
       },
       borderRadius: {
         lg: "var(--radius)",

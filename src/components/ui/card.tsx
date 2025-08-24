@@ -3,12 +3,13 @@ import { cn } from "@/lib/utils";
 
 const Card = React.forwardRef<
   HTMLDivElement,
-  React.HTMLAttributes<HTMLDivElement>
->(({ className, ...props }, ref) => (
+  React.HTMLAttributes<HTMLDivElement> & { variant?: "default" | "branded" }
+>(({ className, variant = "default", ...props }, ref) => (
   <div
     ref={ref}
     className={cn(
       "rounded-lg border bg-card text-card-foreground shadow-sm",
+      variant === "branded" && "border-t-4 border-t-honey border-slate/20",
       className
     )}
     {...props}
@@ -18,13 +19,22 @@ Card.displayName = "Card";
 
 const CardHeader = React.forwardRef<
   HTMLDivElement,
-  React.HTMLAttributes<HTMLDivElement>
->(({ className, ...props }, ref) => (
+  React.HTMLAttributes<HTMLDivElement> & { variant?: "default" | "gradient" }
+>(({ className, variant = "default", children, ...props }, ref) => (
   <div
     ref={ref}
-    className={cn("flex flex-col space-y-1.5 p-6", className)}
+    className={cn(
+      "flex flex-col space-y-1.5 p-6",
+      variant === "gradient" && "relative overflow-hidden",
+      className
+    )}
     {...props}
-  />
+  >
+    {variant === "gradient" && (
+      <div className="absolute inset-0 bg-grad-card-header opacity-5" />
+    )}
+    <div className="relative">{children}</div>
+  </div>
 ));
 CardHeader.displayName = "CardHeader";
 
