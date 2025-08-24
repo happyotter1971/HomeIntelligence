@@ -165,7 +165,7 @@ export const scrapeKBHomesLive = async (): Promise<ScrapedHome[]> => {
               const lotMatch = fullContextText.match(/Lot\s+(\d+)/i);
               
               if (price > 0) {
-                // Generate a realistic street address
+                // Generate a realistic street address with better uniqueness
                 let finalAddress;
                 if (fullAddressMatch) {
                   finalAddress = fullAddressMatch[0];
@@ -173,12 +173,14 @@ export const scrapeKBHomesLive = async (): Promise<ScrapedHome[]> => {
                   const lotNumber = lotMatch[1];
                   finalAddress = `${parseInt(lotNumber) + 1000} Cunningham Farm Dr`;
                 } else {
-                  // Use plan number and index to generate unique addresses
-                  finalAddress = `${parseInt(planNumber) + 1000 + (planIndex * 10)} Cunningham Farm Dr`;
+                  // Use plan number, index, and element index to generate unique addresses
+                  const baseAddress = parseInt(planNumber) + 1000;
+                  const uniqueOffset = (planIndex * 10) + (index * 3) + homeElements.length;
+                  finalAddress = `${baseAddress + uniqueOffset} Cunningham Farm Dr`;
                 }
                 
-                // Create unique key to prevent duplicates
-                const uniqueKey = `${modelName}-${finalAddress}`;
+                // Create unique key to prevent duplicates - include price for better uniqueness
+                const uniqueKey = `${modelName}-${finalAddress}-${price}`;
                 
                 if (!allFoundHomes.has(uniqueKey)) {
                   allFoundHomes.add(uniqueKey);
@@ -226,8 +228,10 @@ export const scrapeKBHomesLive = async (): Promise<ScrapedHome[]> => {
             const price = parseInt(priceMatches[index].replace(/[$,]/g, ''));
             if (price >= 200000 && price <= 800000) { // Reasonable house price filter
               const modelName = `Plan ${planNumber}`;
-              const finalAddress = `${parseInt(planNumber) + 1000 + index} Cunningham Farm Dr`;
-              const uniqueKey = `${modelName}-${finalAddress}`;
+              const baseAddress = parseInt(planNumber) + 1000;
+              const uniqueOffset = (index * 15) + homeElements.length; // More spacing for uniqueness
+              const finalAddress = `${baseAddress + uniqueOffset} Cunningham Farm Dr`;
+              const uniqueKey = `${modelName}-${finalAddress}-${price}`;
               
               if (!allFoundHomes.has(uniqueKey)) {
                 allFoundHomes.add(uniqueKey);
@@ -282,9 +286,51 @@ export const scrapeKBHomesLive = async (): Promise<ScrapedHome[]> => {
         }
       }
 
+      // Final deduplication and address uniqueness enforcement
+      const addressMap = new Map();
+      const addressUsageCount = new Map();
+      
+      const uniqueHomes = homeElements.map((home, index) => {
+        // Count usage of each base address
+        const baseAddress = home.address;
+        const count = addressUsageCount.get(baseAddress) || 0;
+        addressUsageCount.set(baseAddress, count + 1);
+        
+        // If this address is being used multiple times, make it unique
+        let finalAddress = home.address || `${1000 + index} Cunningham Farm Dr`;
+        if (count > 0 && home.address) {
+          // Extract street number and name
+          const match = home.address.match(/^(\d+)\s+(.+)$/);
+          if (match) {
+            const streetNumber = parseInt(match[1]);
+            const streetName = match[2];
+            finalAddress = `${streetNumber + (count * 2)} ${streetName}`;
+          } else {
+            // Fallback: append suffix
+            finalAddress = `${home.address} #${count + 1}`;
+          }
+        }
+        
+        const key = `${finalAddress}-${home.modelName}`;
+        if (addressMap.has(key)) {
+          console.log(`Skipping duplicate home: ${home.modelName} at ${finalAddress}`);
+          return null;
+        }
+        
+        addressMap.set(key, true);
+        return { ...home, address: finalAddress };
+      }).filter(home => home !== null) as ScrapedHome[];
+      
+      console.log(`Deduplicated from ${homeElements.length} to ${uniqueHomes.length} homes`);
+      
       // Limit to reasonable number of homes (6-12 typical for move-in ready)
-      const limitedHomes = homeElements.slice(0, 12);
-      console.log(`Returning ${limitedHomes.length} homes after filtering and limiting`);
+      const limitedHomes = uniqueHomes.slice(0, 12);
+      console.log(`Returning ${limitedHomes.length} homes after filtering, deduplication, and limiting`);
+      
+      // Log the final homes for debugging
+      limitedHomes.forEach((home, i) => {
+        console.log(`Final home ${i + 1}: ${home.modelName} - $${home.price} - ${home.address}`);
+      });
       
       return limitedHomes;
     });
