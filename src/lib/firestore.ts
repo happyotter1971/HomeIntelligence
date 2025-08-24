@@ -230,30 +230,66 @@ export const getRecentPriceChanges = async (limitCount: number = 20): Promise<Pr
 };
 
 export const getPriceChangesForHome = async (homeId: string): Promise<PriceChangeWithRelations[]> => {
-  const constraints: QueryConstraint[] = [
-    where('homeId', '==', homeId),
-    orderBy('changeDate', 'desc')
-  ];
-  
-  const q = query(collection(db, 'priceChanges'), ...constraints);
-  const querySnapshot = await getDocs(q);
-  
-  const priceChanges: PriceChangeWithRelations[] = [];
-  
-  for (const docSnap of querySnapshot.docs) {
-    const priceChangeData = { id: docSnap.id, ...docSnap.data() } as PriceChange;
+  try {
+    // First try with orderBy
+    const constraints: QueryConstraint[] = [
+      where('homeId', '==', homeId),
+      orderBy('changeDate', 'desc')
+    ];
     
-    const builder = await getBuilder(priceChangeData.builderId);
-    const community = await getCommunity(priceChangeData.communityId);
+    const q = query(collection(db, 'priceChanges'), ...constraints);
+    const querySnapshot = await getDocs(q);
     
-    priceChanges.push({
-      ...priceChangeData,
-      builder,
-      community
+    const priceChanges: PriceChangeWithRelations[] = [];
+    
+    for (const docSnap of querySnapshot.docs) {
+      const priceChangeData = { id: docSnap.id, ...docSnap.data() } as PriceChange;
+      
+      const builder = await getBuilder(priceChangeData.builderId);
+      const community = await getCommunity(priceChangeData.communityId);
+      
+      priceChanges.push({
+        ...priceChangeData,
+        builder,
+        community
+      });
+    }
+    
+    return priceChanges;
+  } catch (error) {
+    console.error('Error with ordered query, trying without orderBy:', error);
+    // If the ordered query fails (due to missing index), try without orderBy
+    const constraints: QueryConstraint[] = [
+      where('homeId', '==', homeId)
+    ];
+    
+    const q = query(collection(db, 'priceChanges'), ...constraints);
+    const querySnapshot = await getDocs(q);
+    
+    const priceChanges: PriceChangeWithRelations[] = [];
+    
+    for (const docSnap of querySnapshot.docs) {
+      const priceChangeData = { id: docSnap.id, ...docSnap.data() } as PriceChange;
+      
+      const builder = await getBuilder(priceChangeData.builderId);
+      const community = await getCommunity(priceChangeData.communityId);
+      
+      priceChanges.push({
+        ...priceChangeData,
+        builder,
+        community
+      });
+    }
+    
+    // Sort manually by changeDate
+    priceChanges.sort((a, b) => {
+      const aSeconds = a.changeDate?.seconds || 0;
+      const bSeconds = b.changeDate?.seconds || 0;
+      return bSeconds - aSeconds; // desc order
     });
+    
+    return priceChanges;
   }
-  
-  return priceChanges;
 };
 
 // Debug function to check what's in the priceChanges collection

@@ -4,7 +4,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { onAuthStateChanged } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
-import { getHomeById, getPriceChangesForHome, getPriceChangesByModelAttributes, getAllPriceChangesForModel, debugPriceChangesCollection, findHomeByAttributes } from '@/lib/firestore';
+import { getHomeById } from '@/lib/firestore';
 import { HomeWithRelations, PriceChangeWithRelations } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -83,56 +83,39 @@ export default function HomeDetailPage({ params }: HomeDetailPageProps) {
       if (homeData) {
         setHome(homeData);
         
-        // Fetch price history separately to avoid blocking if it fails
+        // Fetch price history using API endpoint to avoid Firebase index issues
         try {
-          // Debug: Check what's in the priceChanges collection
-          await debugPriceChangesCollection();
+          console.log(`=== PRICE HISTORY DEBUG for home ${params.id} ===`);
           
-          // First try to get price changes by homeId
-          let priceChanges = await getPriceChangesForHome(params.id);
-          console.log('Price changes by homeId:', priceChanges);
+          const response = await fetch(`/api/price-changes/${params.id}`);
           
-          // If no price changes found by homeId, try by model attributes
-          if (priceChanges.length === 0 && homeData.builderId && homeData.communityId) {
-            console.log('No price changes found by homeId, trying by model attributes...');
-            console.log('Home data:', {
-              id: homeData.id,
-              modelName: homeData.modelName,
-              builderId: homeData.builderId,
-              communityId: homeData.communityId,
-              address: homeData.address
-            });
+          if (response.ok) {
+            const data = await response.json();
+            console.log('Price changes from API:', data);
             
-            priceChanges = await getPriceChangesByModelAttributes(
-              homeData.modelName,
-              homeData.builderId,
-              homeData.communityId
-            );
-            console.log('Price changes by model attributes:', priceChanges);
+            // Convert the API response to the expected format
+            const priceChanges: PriceChangeWithRelations[] = data.priceChanges.map((pc: any) => ({
+              ...pc,
+              builder: homeData.builder,
+              community: homeData.community
+            }));
             
-            // If still no price changes, try just by model name as last resort
-            if (priceChanges.length === 0) {
-              console.log('Still no price changes, trying by model name only...');
-              priceChanges = await getAllPriceChangesForModel(homeData.modelName);
-              console.log('Price changes by model name only:', priceChanges);
-              
-              // Filter to only show changes from the same community if we got results
-              if (priceChanges.length > 0) {
-                const filteredChanges = priceChanges.filter(pc => 
-                  pc.communityId === homeData.communityId
-                );
-                if (filteredChanges.length > 0) {
-                  priceChanges = filteredChanges;
-                  console.log('Filtered to same community:', priceChanges);
-                }
-              }
-            }
+            console.log(`Final price history for display (${priceChanges.length} items):`, priceChanges);
+            setPriceHistory(priceChanges);
+          } else {
+            const errorData = await response.json();
+            console.error('API error:', errorData);
+            setPriceHistory([]);
           }
-          
-          console.log(`Final price history for display (${priceChanges.length} items):`, priceChanges);
-          setPriceHistory(priceChanges);
         } catch (priceError) {
           console.error('Error fetching price history:', priceError);
+          console.error('Price history error details:', {
+            homeId: params.id,
+            modelName: homeData?.modelName,
+            builderId: homeData?.builderId,
+            communityId: homeData?.communityId,
+            error: priceError
+          });
           // Don't fail the whole page if price history fails
           setPriceHistory([]);
         }
@@ -302,7 +285,6 @@ export default function HomeDetailPage({ params }: HomeDetailPageProps) {
                           <div>
                             <p className="text-sm font-medium text-blue-900">Current Price</p>
                             <p className="text-2xl font-bold text-blue-600">{formatPrice(home.price)}</p>
-                            <p className="text-sm text-blue-700">{formatPricePerSquareFoot(home.price, home.squareFootage)}</p>
                           </div>
                           {totalChange !== 0 && (
                             <div className="text-right">
@@ -352,9 +334,6 @@ export default function HomeDetailPage({ params }: HomeDetailPageProps) {
                                   <span className="text-lg font-semibold text-gray-700">
                                     {formatPrice(oldestChange.oldPrice)}
                                   </span>
-                                  <p className="text-xs text-gray-500">
-                                    {formatPricePerSquareFoot(oldestChange.oldPrice, home.squareFootage)}
-                                  </p>
                                 </div>
                               </div>
                             </div>

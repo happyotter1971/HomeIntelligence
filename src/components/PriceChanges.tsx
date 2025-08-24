@@ -227,7 +227,14 @@ export default function PriceChanges({ maxItems = 10 }: PriceChangesProps) {
                   >
                     {/* Left side: Model name and trend icon */}
                     <div className="flex items-center gap-2 flex-shrink-0">
-                      <h4 className="font-semibold text-foreground">{change.modelName}</h4>
+                      <h4 className="font-semibold text-foreground">
+                        {change.modelName}
+                        {(change.homesiteNumber || change.address) && (
+                          <span className="font-normal text-muted-foreground">
+                            {' '}• {change.homesiteNumber ? `Lot ${change.homesiteNumber}` : change.address?.replace(' Cunningham Farm Drive', '').replace(' Cunningham Farm Dr', '')}
+                          </span>
+                        )}
+                      </h4>
                       {change.changeType === 'decrease' ? (
                         <TrendingDown className="h-3 w-3 text-green-600" />
                       ) : (
@@ -245,11 +252,6 @@ export default function PriceChanges({ maxItems = 10 }: PriceChangesProps) {
                         <Calendar className="h-3 w-3 flex-shrink-0" />
                         <span>{formatTimeAgo(change.changeDate)}</span>
                       </div>
-                      {change.daysSinceLastChange !== undefined && change.daysSinceLastChange > 0 && (
-                        <span className="px-1.5 py-0.5 bg-blue-50 text-blue-700 rounded text-xs whitespace-nowrap">
-                          {change.daysSinceLastChange}d
-                        </span>
-                      )}
                     </div>
                     
                     {/* Right side: Price change details */}
