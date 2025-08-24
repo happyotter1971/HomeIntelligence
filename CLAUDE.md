@@ -8,6 +8,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - `npm run build` - Build for production (includes TypeScript checking and linting)
 - `npm run start` - Start production server
 - `npm run lint` - Run ESLint
+- `npm run typecheck` - Run TypeScript type checking (via `npm run build`)
 
 ## Architecture Overview
 
@@ -31,6 +32,15 @@ Key relationships: `Builder` → `Community` → `Home` (with proper foreign key
 - **Configuration**: Pre-configured Firebase project `homeintelligence-e2202`
 
 All database functions in `src/lib/firestore.ts` return `undefined` for missing records (not `null`) to match TypeScript optional field types.
+
+### Web Scraping System
+
+The application includes an automated web scraping system that refreshes home data:
+
+- **Manual Trigger**: POST to `/api/scrape` to manually refresh data
+- **Automated**: Daily cron job at 2 AM UTC via `/api/cron/daily-scrape`
+- **Implementation**: `src/lib/scrape-and-update.ts` contains the scraping logic
+- **Target**: Builder websites for Dream Finders, KB Home, and Ryan Homes
 
 ### Data Population
 
@@ -59,10 +69,12 @@ Core interfaces are defined in `src/types/index.ts`:
 
 ### UI Architecture
 
-- **Styling**: Tailwind CSS with custom design system
+- **Styling**: Tailwind CSS with custom design system using CSS variables
 - **Components**: Custom components in `src/components/ui/` following shadcn/ui patterns
 - **Icons**: Lucide React icons throughout
+- **Images**: Firebase Storage integration configured for `firebasestorage.googleapis.com`
 - **Responsive**: Mobile-first design approach
+- **Import Aliases**: Use `@/*` for imports from `src/` (configured in tsconfig.json)
 
 ### State Management Patterns
 
@@ -78,6 +90,12 @@ The `getHomes()` function in firestore.ts automatically joins related builder an
 ### Deployment Considerations
 
 - Deployed on Vercel with automatic GitHub integration
-- `vercel.json` configured for Next.js optimization
+- `vercel.json` configured for Next.js optimization with daily cron jobs
 - All environment variables are embedded in the client bundle (Firebase config)
 - Static generation enabled for most pages except `/comparison` which uses search params
+- Automated daily scraping via Vercel cron jobs at 2 AM UTC
+
+### API Routes
+
+- `/api/scrape` - Manual trigger for web scraping (POST)
+- `/api/cron/daily-scrape` - Automated daily scraping endpoint
