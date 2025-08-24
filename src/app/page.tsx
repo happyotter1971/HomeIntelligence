@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { formatPrice } from '@/lib/utils';
 import Link from 'next/link';
+import Image from 'next/image';
 import { Home, Users, BarChart3, Building2, TrendingUp, TrendingDown, Minus } from 'lucide-react';
 
 export default function HomePage() {
@@ -166,9 +167,21 @@ export default function HomePage() {
         
         <div className="container mx-auto px-4 py-8 relative z-10">
           <div className="flex justify-between items-center mb-8">
-            <div>
-              <h1 className="text-4xl font-bold gradient-accent bg-clip-text text-transparent">Home Intelligence</h1>
-              <p className="text-muted-foreground mt-2">Welcome back, {getFirstName()}</p>
+            <div className="flex items-center gap-4">
+              <Image 
+                src="/home-intelligence-logo.svg" 
+                alt="Home Intelligence Logo" 
+                width={60} 
+                height={60}
+                className="flex-shrink-0"
+              />
+              <div className="flex flex-col justify-center">
+                <h1 className="text-4xl font-bold gradient-accent bg-clip-text text-transparent leading-tight">
+                  Dream Finders Homes: BuilderIntelligence
+                  <span className="text-muted-foreground font-normal text-xl ml-4">Welcome back, {getFirstName()}</span>
+                </h1>
+                <p className="text-sm text-muted-foreground mt-1 italic">Insight That Builds Results</p>
+              </div>
             </div>
             <Button variant="outline" onClick={() => auth.signOut()}>
               Sign Out
