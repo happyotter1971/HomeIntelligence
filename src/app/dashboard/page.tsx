@@ -44,10 +44,6 @@ export default function DashboardPage() {
     fetchData();
   }, []);
 
-  useEffect(() => {
-    applyFilters();
-  }, [applyFilters]);
-
   const fetchData = async () => {
     try {
       const [homesData, buildersData, communitiesData] = await Promise.all([
@@ -103,6 +99,10 @@ export default function DashboardPage() {
 
     setFilteredHomes(filtered);
   }, [homes, searchTerm, selectedBuilder, selectedCommunity, minPrice, maxPrice, bedrooms, status]);
+
+  useEffect(() => {
+    applyFilters();
+  }, [applyFilters]);
 
   const handleCompare = (home: HomeWithRelations) => {
     const isAlreadyComparing = compareList.some(h => h.id === home.id);
