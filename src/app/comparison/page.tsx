@@ -3,13 +3,13 @@
 import { useEffect, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { onAuthStateChanged } from 'firebase/auth';
-import { auth } from '@/lib/firebase';
-import { getHome } from '@/lib/firestore';
-import { HomeWithRelations } from '@/types';
+import { doc, getDoc } from 'firebase/firestore';
+import { auth, db } from '@/lib/firebase';
+import { Home, Builder, Community, HomeWithRelations } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { formatPrice, formatSquareFootage } from '@/lib/utils';
-import { ArrowLeft, Bed, Bath, Car, Home, MapPin } from 'lucide-react';
+import { ArrowLeft, Bed, Bath, Car, Home as HomeIcon, MapPin } from 'lucide-react';
 import Link from 'next/link';
 
 function ComparisonContent() {
@@ -32,15 +32,58 @@ function ComparisonContent() {
     const homeIds = searchParams.get('homes')?.split(',') || [];
     if (homeIds.length > 0) {
       fetchHomes(homeIds);
+    } else {
+      setLoading(false);
     }
   }, [searchParams]);
 
   const fetchHomes = async (homeIds: string[]) => {
     try {
-      const homePromises = homeIds.map(id => getHome(id));
+      // Fetch all homes in parallel first
+      const homePromises = homeIds.map(id => 
+        getDoc(doc(db, 'homes', id)).then(docSnap => 
+          docSnap.exists() ? { id: docSnap.id, ...docSnap.data() } as Home : null
+        )
+      );
+      
       const homesData = await Promise.all(homePromises);
-      const validHomes = homesData.filter(home => home !== undefined) as HomeWithRelations[];
-      setHomes(validHomes);
+      const validHomes = homesData.filter(home => home !== null) as Home[];
+      
+      if (validHomes.length === 0) {
+        setHomes([]);
+        return;
+      }
+      
+      // Get unique builder and community IDs
+      const builderIds = [...new Set(validHomes.map(home => home.builderId))];
+      const communityIds = [...new Set(validHomes.map(home => home.communityId))];
+      
+      // Fetch all builders and communities in parallel
+      const [buildersData, communitiesData] = await Promise.all([
+        Promise.all(builderIds.map(id => 
+          getDoc(doc(db, 'builders', id)).then(docSnap =>
+            docSnap.exists() ? { id: docSnap.id, ...docSnap.data() } as Builder : null
+          )
+        )),
+        Promise.all(communityIds.map(id =>
+          getDoc(doc(db, 'communities', id)).then(docSnap =>
+            docSnap.exists() ? { id: docSnap.id, ...docSnap.data() } as Community : null
+          )
+        ))
+      ]);
+      
+      // Create lookup maps
+      const buildersMap = new Map(buildersData.filter(b => b).map(b => [b!.id, b]));
+      const communitiesMap = new Map(communitiesData.filter(c => c).map(c => [c!.id, c]));
+      
+      // Combine the data
+      const homesWithRelations: HomeWithRelations[] = validHomes.map(home => ({
+        ...home,
+        builder: buildersMap.get(home.builderId),
+        community: communitiesMap.get(home.communityId)
+      }));
+      
+      setHomes(homesWithRelations);
     } catch (error) {
       console.error('Error fetching homes:', error);
     } finally {
@@ -72,13 +115,30 @@ function ComparisonContent() {
 
           <Card>
             <CardContent className="text-center py-12">
-              <Home className="h-16 w-16 mx-auto text-gray-400 mb-4" />
+              <HomeIcon className="h-16 w-16 mx-auto text-gray-400 mb-4" />
               <h2 className="text-xl font-semibold mb-2">No homes selected for comparison</h2>
-              <p className="text-gray-600 mb-4">
-                Go back to the dashboard and select homes to compare
+              <p className="text-gray-600 mb-6">
+                To compare homes, you need to first browse available properties and select up to 3 homes for side-by-side comparison.
               </p>
+              <div className="space-y-3">
+                <p className="text-sm text-gray-500">How to compare homes:</p>
+                <div className="text-left max-w-md mx-auto space-y-2 text-sm text-gray-600">
+                  <div className="flex items-center gap-2">
+                    <span className="bg-blue-100 text-blue-800 rounded-full w-6 h-6 flex items-center justify-center text-xs font-medium">1</span>
+                    Browse homes on the dashboard
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="bg-blue-100 text-blue-800 rounded-full w-6 h-6 flex items-center justify-center text-xs font-medium">2</span>
+                    Click "Compare" on homes you're interested in
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="bg-blue-100 text-blue-800 rounded-full w-6 h-6 flex items-center justify-center text-xs font-medium">3</span>
+                    Click "Compare Now" to see them side-by-side
+                  </div>
+                </div>
+              </div>
               <Link href="/dashboard">
-                <Button>
+                <Button className="mt-6">
                   Browse Homes
                 </Button>
               </Link>

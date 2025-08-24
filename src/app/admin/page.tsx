@@ -219,6 +219,19 @@ export default function AdminPage() {
     }
   };
 
+  const groupedHomes = () => {
+    const groups = homes.reduce((acc, home) => {
+      const builderName = home.builder?.name || 'Unknown Builder';
+      if (!acc[builderName]) {
+        acc[builderName] = [];
+      }
+      acc[builderName].push(home);
+      return acc;
+    }, {} as Record<string, HomeWithRelations[]>);
+
+    return Object.entries(groups).sort(([a], [b]) => a.localeCompare(b));
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -487,69 +500,87 @@ export default function AdminPage() {
           </Card>
         )}
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Manage Homes ({homes.length})</CardTitle>
-            <CardDescription>
-              Add, edit, or delete home listings
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b">
-                    <th className="text-left py-2">Model</th>
-                    <th className="text-left py-2">Builder</th>
-                    <th className="text-left py-2">Community</th>
-                    <th className="text-left py-2">Price</th>
-                    <th className="text-left py-2">Beds/Baths</th>
-                    <th className="text-left py-2">Status</th>
-                    <th className="text-left py-2">Actions</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y">
-                  {homes.map((home) => (
-                    <tr key={home.id}>
-                      <td className="py-3">{home.modelName}</td>
-                      <td className="py-3">{home.builder?.name}</td>
-                      <td className="py-3">{home.community?.name}</td>
-                      <td className="py-3 font-medium">{formatPrice(home.price)}</td>
-                      <td className="py-3">{home.bedrooms}bd/{home.bathrooms}ba</td>
-                      <td className="py-3">
-                        <span className="capitalize">{home.status.replace('-', ' ')}</span>
-                      </td>
-                      <td className="py-3">
-                        <div className="flex gap-2">
-                          <Button 
-                            size="sm" 
-                            variant="outline"
-                            onClick={() => handleEdit(home)}
-                          >
-                            <Edit className="h-4 w-4" />
-                          </Button>
-                          <Button 
-                            size="sm" 
-                            variant="destructive"
-                            onClick={() => handleDelete(home.id)}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-            
-            {homes.length === 0 && (
-              <div className="text-center py-8">
+        <div className="space-y-6">
+          <div className="flex justify-between items-center">
+            <h2 className="text-2xl font-bold text-gray-900">Manage Homes ({homes.length})</h2>
+            <p className="text-gray-600">Add, edit, or delete home listings</p>
+          </div>
+
+          {homes.length === 0 ? (
+            <Card>
+              <CardContent className="text-center py-8">
                 <p className="text-gray-500">No homes found. Add some homes to get started.</p>
-              </div>
-            )}
-          </CardContent>
-        </Card>
+              </CardContent>
+            </Card>
+          ) : (
+            groupedHomes().map(([builderName, builderHomes]) => (
+              <Card key={builderName}>
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="text-xl">{builderName}</CardTitle>
+                    <span className="bg-gray-100 text-gray-600 px-3 py-1 rounded-full text-sm font-medium">
+                      {builderHomes.length} home{builderHomes.length !== 1 ? 's' : ''}
+                    </span>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="overflow-x-auto">
+                    <table className="w-full">
+                      <thead>
+                        <tr className="border-b">
+                          <th className="text-left py-2">Model</th>
+                          <th className="text-left py-2">Community</th>
+                          <th className="text-left py-2">Price</th>
+                          <th className="text-left py-2">Beds/Baths</th>
+                          <th className="text-left py-2">Status</th>
+                          <th className="text-left py-2">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y">
+                        {builderHomes.map((home) => (
+                          <tr key={home.id}>
+                            <td className="py-3 font-medium">{home.modelName}</td>
+                            <td className="py-3">{home.community?.name}</td>
+                            <td className="py-3 font-medium">{formatPrice(home.price)}</td>
+                            <td className="py-3">{home.bedrooms}bd/{home.bathrooms}ba</td>
+                            <td className="py-3">
+                              <span className={`capitalize px-2 py-1 rounded-full text-xs font-medium ${
+                                home.status === 'available' ? 'bg-green-100 text-green-800' :
+                                home.status === 'quick-move-in' ? 'bg-blue-100 text-blue-800' :
+                                home.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                                'bg-gray-100 text-gray-800'
+                              }`}>
+                                {home.status.replace('-', ' ')}
+                              </span>
+                            </td>
+                            <td className="py-3">
+                              <div className="flex gap-2">
+                                <Button 
+                                  size="sm" 
+                                  variant="outline"
+                                  onClick={() => handleEdit(home)}
+                                >
+                                  <Edit className="h-4 w-4" />
+                                </Button>
+                                <Button 
+                                  size="sm" 
+                                  variant="destructive"
+                                  onClick={() => handleDelete(home.id)}
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </CardContent>
+              </Card>
+            ))
+          )}
+        </div>
       </div>
     </div>
   );

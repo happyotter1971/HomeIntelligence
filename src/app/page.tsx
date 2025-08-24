@@ -3,6 +3,8 @@
 import { useEffect, useState } from 'react';
 import { onAuthStateChanged, User as FirebaseUser } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
+import { getUserData } from '@/lib/auth';
+import { User } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import Link from 'next/link';
@@ -10,11 +12,18 @@ import { Home, Users, BarChart3, Building2 } from 'lucide-react';
 
 export default function HomePage() {
   const [user, setUser] = useState<FirebaseUser | null>(null);
+  const [userData, setUserData] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
       setUser(user);
+      if (user) {
+        const data = await getUserData(user.uid);
+        setUserData(data || null);
+      } else {
+        setUserData(null);
+      }
       setLoading(false);
     });
 
@@ -30,13 +39,20 @@ export default function HomePage() {
   }
 
   if (user) {
+    const getFirstName = () => {
+      if (userData?.displayName) {
+        return userData.displayName.split(' ')[0];
+      }
+      return user.email?.split('@')[0] || 'User';
+    };
+
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
         <div className="container mx-auto px-4 py-8">
           <div className="flex justify-between items-center mb-8">
             <div>
               <h1 className="text-4xl font-bold text-gray-900">Home Intelligence</h1>
-              <p className="text-gray-600 mt-2">Welcome back, {user.email}</p>
+              <p className="text-gray-600 mt-2">Welcome back, {getFirstName()}</p>
             </div>
             <Button variant="outline" onClick={() => auth.signOut()}>
               Sign Out
