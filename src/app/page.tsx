@@ -484,33 +484,12 @@ export default function HomePage() {
               Access real-time inventory data, pricing trends, and market intelligence.
             </p>
             
-            <div className="flex justify-center mb-16">
+            <div className="flex justify-center">
               <Link href="/auth/login">
                 <Button size="lg" className="px-12 py-4 text-lg bg-blue-600 text-white border-2 border-blue-700 hover:bg-blue-700 shadow-md rounded-lg">
                   Sign in with Google
                 </Button>
               </Link>
-            </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
-              <div className="text-center">
-                <div className="bg-white p-6 rounded-lg border-2 border-blue-200 shadow-md">
-                  <h3 className="text-xl font-bold text-gray-900 mb-3">Real-Time Inventory</h3>
-                  <p className="text-gray-600">Track available homes across Dream Finders, KB Home, and Ryan Homes with daily updates.</p>
-                </div>
-              </div>
-              <div className="text-center">
-                <div className="bg-white p-6 rounded-lg border-2 border-blue-200 shadow-md">
-                  <h3 className="text-xl font-bold text-gray-900 mb-3">Price Intelligence</h3>
-                  <p className="text-gray-600">Monitor pricing trends and competitive positioning to make informed decisions.</p>
-                </div>
-              </div>
-              <div className="text-center">
-                <div className="bg-white p-6 rounded-lg border-2 border-blue-200 shadow-md">
-                  <h3 className="text-xl font-bold text-gray-900 mb-3">Market Insights</h3>
-                  <p className="text-gray-600">Compare features, pricing, and availability across competing builders in your market.</p>
-                </div>
-              </div>
             </div>
           </div>
         </div>
