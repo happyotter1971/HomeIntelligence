@@ -12,7 +12,7 @@ import { Input } from '@/components/ui/input';
 import { Select } from '@/components/ui/select';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { formatPrice } from '@/lib/utils';
-import { ArrowLeft, Plus, Edit, Trash2, Shield, Download, RefreshCw, AlertTriangle, Building2 } from 'lucide-react';
+import { ArrowLeft, Plus, Edit, Trash2, Shield, Download, RefreshCw, AlertTriangle, Building2, CheckCircle, XCircle, Clock } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Timestamp } from 'firebase/firestore';
@@ -42,6 +42,8 @@ export default function AdminPage() {
   const [showAddForm, setShowAddForm] = useState(false);
   const [editingHome, setEditingHome] = useState<HomeWithRelations | null>(null);
   const [scraping, setScraping] = useState(false);
+  const [scrapeResult, setScrapeResult] = useState<{ success: boolean; message: string } | null>(null);
+  const [lastUpdateTime, setLastUpdateTime] = useState<Date | null>(null);
   const [formData, setFormData] = useState<HomeFormData>({
     modelName: '',
     builderId: '',
@@ -77,6 +79,30 @@ export default function AdminPage() {
     return () => unsubscribe();
   }, [router]);
 
+  const formatLastUpdateTime = (date: Date | null) => {
+    if (!date) return 'Never';
+    
+    const now = new Date();
+    const diffInMinutes = Math.floor((now.getTime() - date.getTime()) / (1000 * 60));
+    
+    if (diffInMinutes < 1) return 'Just now';
+    if (diffInMinutes < 60) return `${diffInMinutes} minute${diffInMinutes !== 1 ? 's' : ''} ago`;
+    
+    const diffInHours = Math.floor(diffInMinutes / 60);
+    if (diffInHours < 24) return `${diffInHours} hour${diffInHours !== 1 ? 's' : ''} ago`;
+    
+    const diffInDays = Math.floor(diffInHours / 24);
+    if (diffInDays < 7) return `${diffInDays} day${diffInDays !== 1 ? 's' : ''} ago`;
+    
+    return date.toLocaleDateString('en-US', { 
+      month: 'short', 
+      day: 'numeric', 
+      year: 'numeric',
+      hour: 'numeric',
+      minute: '2-digit'
+    });
+  };
+
   const fetchData = async () => {
     try {
       const [homesData, buildersData, communitiesData] = await Promise.all([
@@ -88,6 +114,15 @@ export default function AdminPage() {
       setHomes(homesData);
       setBuilders(buildersData);
       setCommunities(communitiesData);
+      
+      // Find the most recent update time from all homes
+      if (homesData.length > 0) {
+        const mostRecentUpdate = homesData.reduce((latest, home) => {
+          const homeUpdateTime = home.lastUpdated?.toDate ? home.lastUpdated.toDate() : new Date(0);
+          return homeUpdateTime > latest ? homeUpdateTime : latest;
+        }, new Date(0));
+        setLastUpdateTime(mostRecentUpdate);
+      }
     } catch (error) {
       console.error('Error fetching data:', error);
     } finally {
@@ -99,6 +134,7 @@ export default function AdminPage() {
   const handleManualScrape = async () => {
     try {
       setScraping(true);
+      setScrapeResult(null);
       
       const response = await fetch('/api/scrape', {
         method: 'POST',
@@ -112,13 +148,24 @@ export default function AdminPage() {
       if (result.success) {
         // Refresh the displayed data
         await fetchData();
-        alert(`Manual scrape completed! Updated ${result.homesUpdated} homes.`);
+        setScrapeResult({
+          success: true,
+          message: `Successfully updated ${result.homesUpdated} homes.`
+        });
+        // Clear the message after 5 seconds
+        setTimeout(() => setScrapeResult(null), 5000);
       } else {
-        alert(`Scrape failed: ${result.error}`);
+        setScrapeResult({
+          success: false,
+          message: `Scrape failed: ${result.error}`
+        });
       }
     } catch (error) {
       console.error('Error during manual scrape:', error);
-      alert('Manual scrape failed. Please try again.');
+      setScrapeResult({
+        success: false,
+        message: 'Manual scrape failed. Please try again.'
+      });
     } finally {
       setScraping(false);
     }
@@ -248,7 +295,7 @@ export default function AdminPage() {
       resetForm();
     } catch (error) {
       console.error('Error saving home:', error);
-      alert('Error saving home. Please try again.');
+      console.error('Error saving home:', error);
     }
   };
 
@@ -468,6 +515,22 @@ export default function AdminPage() {
             </Button>
           </div>
 
+        {/* Scrape Result Message */}
+        {scrapeResult && (
+          <div className={`mb-6 p-4 rounded-lg flex items-center gap-3 ${
+            scrapeResult.success 
+              ? 'bg-green-50 text-green-800 border border-green-200' 
+              : 'bg-red-50 text-red-800 border border-red-200'
+          }`}>
+            {scrapeResult.success ? (
+              <CheckCircle className="h-5 w-5 flex-shrink-0" />
+            ) : (
+              <XCircle className="h-5 w-5 flex-shrink-0" />
+            )}
+            <span className="font-medium">{scrapeResult.message}</span>
+          </div>
+        )}
+
         {/* Scraping Status Card */}
         <Card className="glass-effect border-0 shadow-lg mb-8">
           <CardHeader>
@@ -480,16 +543,59 @@ export default function AdminPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="bg-blue-50 p-4 rounded-lg border border-blue-100">
-                <div className="text-sm font-medium text-blue-900">Schedule</div>
-                <div className="text-blue-700">Daily at 2:00 AM</div>
-                <div className="text-xs text-blue-600 mt-1">Automatic updates from all builders</div>
+            <div className="space-y-4">
+              {/* Last Update Status */}
+              <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <div className="flex items-center gap-2 text-sm font-medium text-gray-900">
+                      <Clock className="h-4 w-4" />
+                      Last Data Update
+                    </div>
+                    <div className="text-lg font-semibold text-gray-700">
+                      {formatLastUpdateTime(lastUpdateTime)}
+                    </div>
+                    {lastUpdateTime && (
+                      <div className="text-xs text-gray-500 mt-1">
+                        {lastUpdateTime.toLocaleDateString('en-US', { 
+                          weekday: 'long',
+                          month: 'long', 
+                          day: 'numeric', 
+                          year: 'numeric',
+                          hour: 'numeric',
+                          minute: '2-digit'
+                        })}
+                      </div>
+                    )}
+                  </div>
+                  <div className={`px-3 py-1 rounded-full text-xs font-medium ${
+                    lastUpdateTime && (new Date().getTime() - lastUpdateTime.getTime()) < 3600000
+                      ? 'bg-green-100 text-green-800'
+                      : lastUpdateTime && (new Date().getTime() - lastUpdateTime.getTime()) < 86400000
+                      ? 'bg-yellow-100 text-yellow-800'
+                      : 'bg-red-100 text-red-800'
+                  }`}>
+                    {lastUpdateTime && (new Date().getTime() - lastUpdateTime.getTime()) < 3600000
+                      ? 'Fresh'
+                      : lastUpdateTime && (new Date().getTime() - lastUpdateTime.getTime()) < 86400000
+                      ? 'Recent'
+                      : 'Stale'}
+                  </div>
+                </div>
               </div>
-              <div className="bg-green-50 p-4 rounded-lg border border-green-100">
-                <div className="text-sm font-medium text-green-900">Manual Control</div>
-                <div className="text-green-700">Click &quot;Scrape Now&quot; above</div>
-                <div className="text-xs text-green-600 mt-1">Immediate data refresh available</div>
+              
+              {/* Schedule Info */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="bg-blue-50 p-4 rounded-lg border border-blue-100">
+                  <div className="text-sm font-medium text-blue-900">Schedule</div>
+                  <div className="text-blue-700">Daily at 2:00 AM</div>
+                  <div className="text-xs text-blue-600 mt-1">Automatic updates from all builders</div>
+                </div>
+                <div className="bg-green-50 p-4 rounded-lg border border-green-100">
+                  <div className="text-sm font-medium text-green-900">Manual Control</div>
+                  <div className="text-green-700">Click &quot;Scrape Now&quot; above</div>
+                  <div className="text-xs text-green-600 mt-1">Immediate data refresh available</div>
+                </div>
               </div>
             </div>
           </CardContent>

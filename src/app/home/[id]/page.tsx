@@ -4,12 +4,12 @@ import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { onAuthStateChanged } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
-import { getHomeById } from '@/lib/firestore';
-import { HomeWithRelations } from '@/types';
+import { getHomeById, getPriceChangesForHome, findHomeByAttributes } from '@/lib/firestore';
+import { HomeWithRelations, PriceChangeWithRelations } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { formatPrice, formatSquareFootage } from '@/lib/utils';
-import { ArrowLeft, Home, MapPin, Bed, Bath, Car, Square, Calendar, DollarSign, Zap } from 'lucide-react';
+import { formatPrice, formatSquareFootage, formatPricePerSquareFoot } from '@/lib/utils';
+import { ArrowLeft, Home, MapPin, Bed, Bath, Car, Square, Calendar, DollarSign, Zap, TrendingDown, TrendingUp, History } from 'lucide-react';
 import Link from 'next/link';
 
 interface HomeDetailPageProps {
@@ -20,9 +20,40 @@ interface HomeDetailPageProps {
 
 export default function HomeDetailPage({ params }: HomeDetailPageProps) {
   const [home, setHome] = useState<HomeWithRelations | null>(null);
+  const [priceHistory, setPriceHistory] = useState<PriceChangeWithRelations[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [backButtonText, setBackButtonText] = useState('Back');
   const router = useRouter();
+  
+  useEffect(() => {
+    // Set the back button text based on referrer
+    if (typeof window !== 'undefined') {
+      const referrer = document.referrer;
+      if (referrer.includes('/dashboard')) {
+        setBackButtonText('Back to Dashboard');
+      } else {
+        setBackButtonText('Back to Home');
+      }
+    }
+  }, []);
+  
+  const handleBack = () => {
+    // Check the referrer to determine where to go back
+    if (typeof window !== 'undefined') {
+      const referrer = document.referrer;
+      if (referrer.includes('/dashboard')) {
+        router.push('/dashboard');
+      } else if (referrer === '' || !referrer.includes(window.location.origin)) {
+        // If no referrer or external referrer, go to home
+        router.push('/');
+      } else {
+        router.back();
+      }
+    } else {
+      router.back();
+    }
+  };
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -37,15 +68,30 @@ export default function HomeDetailPage({ params }: HomeDetailPageProps) {
   const fetchHome = useCallback(async () => {
     try {
       setLoading(true);
+      console.log('Fetching home with ID:', params.id);
+      
       const homeData = await getHomeById(params.id);
+      console.log('Home data:', homeData);
+      
       if (homeData) {
         setHome(homeData);
+        
+        // Fetch price history separately to avoid blocking if it fails
+        try {
+          const priceChanges = await getPriceChangesForHome(params.id);
+          console.log('Price changes:', priceChanges);
+          setPriceHistory(priceChanges);
+        } catch (priceError) {
+          console.error('Error fetching price history:', priceError);
+          // Don't fail the whole page if price history fails
+          setPriceHistory([]);
+        }
       } else {
-        setError('Home not found');
+        setError('Home not found with ID: ' + params.id);
       }
     } catch (error) {
       console.error('Error fetching home:', error);
-      setError('Failed to load home details');
+      setError('Failed to load home details: ' + (error as Error).message);
     } finally {
       setLoading(false);
     }
@@ -68,12 +114,10 @@ export default function HomeDetailPage({ params }: HomeDetailPageProps) {
       <div className="min-h-screen bg-gray-50">
         <div className="container mx-auto px-4 py-6">
           <div className="flex items-center gap-4 mb-6">
-            <Link href="/dashboard">
-              <Button variant="outline" size="sm">
-                <ArrowLeft className="h-4 w-4 mr-2" />
-                Back to Dashboard
-              </Button>
-            </Link>
+            <Button variant="outline" size="sm" onClick={handleBack}>
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Back
+            </Button>
           </div>
           <div className="text-center py-12">
             <p className="text-red-500 text-lg">{error}</p>
@@ -87,12 +131,10 @@ export default function HomeDetailPage({ params }: HomeDetailPageProps) {
     <div className="min-h-screen bg-gray-50">
       <div className="container mx-auto px-4 py-6">
         <div className="flex items-center gap-4 mb-6">
-          <Link href="/dashboard">
-            <Button variant="outline" size="sm">
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Back to Dashboard
-            </Button>
-          </Link>
+          <Button variant="outline" size="sm" onClick={handleBack}>
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            {backButtonText}
+          </Button>
           <h1 className="text-3xl font-bold text-gray-900">{home.modelName}</h1>
         </div>
 
@@ -172,6 +214,121 @@ export default function HomeDetailPage({ params }: HomeDetailPageProps) {
                 </CardContent>
               </Card>
             )}
+
+            {/* Price History */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <History className="h-5 w-5" />
+                  Price History
+                </CardTitle>
+                <CardDescription>
+                  Track price changes over time
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                {priceHistory.length === 0 ? (
+                  <div className="text-center py-8">
+                    <p className="text-gray-500">No price changes recorded</p>
+                    <p className="text-sm text-gray-400 mt-2">Current price: {formatPrice(home.price)}</p>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {/* Current Price */}
+                    <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-sm font-medium text-blue-900">Current Price</p>
+                          <p className="text-2xl font-bold text-blue-600">{formatPrice(home.price)}</p>
+                          <p className="text-sm text-blue-700">{formatPricePerSquareFoot(home.price, home.squareFootage)}</p>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    {/* Price Change Timeline */}
+                    <div className="relative">
+                      <div className="absolute left-4 top-8 bottom-0 w-0.5 bg-gray-200"></div>
+                      {priceHistory.map((change, index) => {
+                        const changeDate = new Date(change.changeDate.seconds * 1000);
+                        const formatDate = (date: Date) => {
+                          return date.toLocaleDateString('en-US', {
+                            month: 'short',
+                            day: 'numeric',
+                            year: 'numeric'
+                          });
+                        };
+                        
+                        const formatTimeAgo = (date: Date) => {
+                          const now = new Date();
+                          const diffInHours = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60));
+                          
+                          if (diffInHours < 24) {
+                            return `${diffInHours}h ago`;
+                          } else if (diffInHours < 168) {
+                            const diffInDays = Math.floor(diffInHours / 24);
+                            return `${diffInDays}d ago`;
+                          } else {
+                            const diffInWeeks = Math.floor(diffInHours / 168);
+                            return `${diffInWeeks}w ago`;
+                          }
+                        };
+                        
+                        return (
+                          <div key={change.id} className="relative flex items-start gap-4 pb-6">
+                            <div className={`z-10 flex h-8 w-8 items-center justify-center rounded-full border-2 bg-white ${
+                              change.changeType === 'decrease' 
+                                ? 'border-green-500' 
+                                : 'border-red-500'
+                            }`}>
+                              {change.changeType === 'decrease' ? (
+                                <TrendingDown className="h-4 w-4 text-green-600" />
+                              ) : (
+                                <TrendingUp className="h-4 w-4 text-red-600" />
+                              )}
+                            </div>
+                            <div className="flex-1">
+                              <div className="flex items-center justify-between">
+                                <div>
+                                  <p className="text-sm font-medium text-gray-900">
+                                    {formatDate(changeDate)}
+                                  </p>
+                                  <p className="text-xs text-gray-500">
+                                    {formatTimeAgo(changeDate)}
+                                    {change.daysSinceLastChange && change.daysSinceLastChange > 0 && (
+                                      <span className="ml-2">• After {change.daysSinceLastChange} days</span>
+                                    )}
+                                  </p>
+                                </div>
+                                <div className="text-right">
+                                  <div className="flex items-center gap-2">
+                                    <span className="text-sm text-gray-500 line-through">
+                                      {formatPrice(change.oldPrice)}
+                                    </span>
+                                    <span className="text-sm">→</span>
+                                    <span className="font-semibold">
+                                      {formatPrice(change.newPrice)}
+                                    </span>
+                                  </div>
+                                  <span className={`text-xs font-medium ${
+                                    change.changeType === 'decrease' 
+                                      ? 'text-green-600' 
+                                      : 'text-red-600'
+                                  }`}>
+                                    {change.changeType === 'decrease' ? '↓' : '↑'}
+                                    {formatPrice(Math.abs(change.changeAmount))}
+                                    ({change.changePercentage > 0 ? '+' : ''}{change.changePercentage.toFixed(1)}%)
+                                  </span>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
           </div>
 
           {/* Sidebar */}

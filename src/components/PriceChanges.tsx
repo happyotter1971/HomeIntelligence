@@ -4,9 +4,9 @@ import { useEffect, useState, useCallback } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { formatPrice } from '@/lib/utils';
-import { getRecentPriceChanges } from '@/lib/firestore';
+import { getRecentPriceChanges, findHomeByAttributes } from '@/lib/firestore';
 import { PriceChangeWithRelations } from '@/types';
-import { TrendingUp, TrendingDown, Calendar, Building2, MapPin } from 'lucide-react';
+import { TrendingUp, TrendingDown, Calendar, Building2, MapPin, ExternalLink } from 'lucide-react';
 import Link from 'next/link';
 
 interface PriceChangesProps {
@@ -14,25 +14,67 @@ interface PriceChangesProps {
 }
 
 export default function PriceChanges({ maxItems = 10 }: PriceChangesProps) {
-  const [priceChanges, setPriceChanges] = useState<PriceChangeWithRelations[]>([]);
+  const [priceChanges, setPriceChanges] = useState<(PriceChangeWithRelations & { actualHomeId?: string })[]>([]);
   const [loading, setLoading] = useState(true);
-  const [groupedByCompany, setGroupedByCompany] = useState<{[key: string]: PriceChangeWithRelations[]}>({});
+  const [groupedByCompany, setGroupedByCompany] = useState<{[key: string]: (PriceChangeWithRelations & { actualHomeId?: string })[]}>({});
 
   const fetchPriceChanges = useCallback(async () => {
     try {
       setLoading(true);
-      const changes = await getRecentPriceChanges(maxItems);
-      setPriceChanges(changes);
+      const changes = await getRecentPriceChanges(maxItems * 5); // Fetch more to ensure we have enough unique homes
+      
+      // First, deduplicate price changes by creating a composite key
+      // Some homes might have multiple price changes in the database
+      const seenHomes = new Set<string>();
+      const uniquePriceChanges: PriceChangeWithRelations[] = [];
+      
+      for (const change of changes) {
+        // Create a composite key based on model name and community
+        // This should be unique enough for display purposes
+        const displayKey = `${change.modelName}-${change.communityId}`;
+        
+        if (!seenHomes.has(displayKey)) {
+          seenHomes.add(displayKey);
+          uniquePriceChanges.push(change);
+          
+          if (uniquePriceChanges.length >= maxItems) {
+            break; // We have enough unique homes
+          }
+        }
+      }
+      
+      // Now find the actual homes for navigation
+      const changesWithHomes = await Promise.all(uniquePriceChanges.map(async (change) => {
+        try {
+          // Try to find a home that matches the price change attributes
+          const home = await findHomeByAttributes(
+            change.modelName,
+            change.builderId,
+            change.communityId,
+            change.address
+          );
+          return { ...change, actualHomeId: home?.id };
+        } catch (err) {
+          console.error('Error finding home for price change:', err);
+          return { ...change, actualHomeId: undefined };
+        }
+      }));
+      
+      // Filter out changes without matching homes
+      const validChanges = changesWithHomes.filter(c => c.actualHomeId);
+      
+      console.log(`Price changes: Found ${changes.length} total, ${uniquePriceChanges.length} unique models, ${validChanges.length} with matching homes`);
+      setPriceChanges(validChanges);
       
       // Group by company
-      const grouped = changes.reduce((acc, change) => {
+      const grouped = validChanges.reduce((acc, change) => {
         const companyName = change.builder?.name || 'Unknown Builder';
         if (!acc[companyName]) {
           acc[companyName] = [];
         }
         acc[companyName].push(change);
         return acc;
-      }, {} as {[key: string]: PriceChangeWithRelations[]});
+      }, {} as {[key: string]: (PriceChangeWithRelations & { actualHomeId?: string })[]});
       
       setGroupedByCompany(grouped);
     } catch (error) {
@@ -45,6 +87,7 @@ export default function PriceChanges({ maxItems = 10 }: PriceChangesProps) {
   useEffect(() => {
     fetchPriceChanges();
   }, [fetchPriceChanges]);
+
 
   const formatDate = (timestamp: any) => {
     return new Date(timestamp.seconds * 1000).toLocaleDateString('en-US', {
@@ -151,10 +194,14 @@ export default function PriceChanges({ maxItems = 10 }: PriceChangesProps) {
               </div>
               
               <div className="space-y-1 pl-4 border-l-2 border-gray-200">
-                {changes.map((change) => (
-                  <div
+                {changes.map((change: any) => {
+                  const homeId = change.actualHomeId || change.homeId;
+                  return (
+                  <Link
                     key={change.id}
-                    className="flex items-center justify-between px-3 py-2 rounded-lg border bg-card/50 hover:bg-card/80 transition-colors text-sm"
+                    href={`/home/${homeId}`}
+                    className="flex items-center justify-between px-3 py-2 rounded-lg border bg-card/50 hover:bg-card/80 transition-colors text-sm cursor-pointer group"
+                    title={`Home ID: ${homeId}`}
                   >
                     {/* Left side: Model name and trend icon */}
                     <div className="flex items-center gap-2 flex-shrink-0">
@@ -200,9 +247,11 @@ export default function PriceChanges({ maxItems = 10 }: PriceChangesProps) {
                         {change.changeType === 'decrease' ? '-' : '+'}
                         {formatPrice(Math.abs(change.changeAmount))} ({change.changePercentage > 0 ? '+' : ''}{change.changePercentage.toFixed(1)}%)
                       </span>
+                      <ExternalLink className="h-3 w-3 ml-1 opacity-0 group-hover:opacity-100 transition-opacity" />
                     </div>
-                  </div>
-                ))}
+                  </Link>
+                  );
+                })}
               </div>
             </div>
           ))}

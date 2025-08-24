@@ -138,6 +138,44 @@ export const deleteHome = async (id: string) => {
 // Alias for consistency
 export const getHomeById = getHome;
 
+export const findHomeByAttributes = async (
+  modelName: string,
+  builderId: string,
+  communityId: string,
+  address?: string
+): Promise<HomeWithRelations | undefined> => {
+  const constraints: QueryConstraint[] = [
+    where('modelName', '==', modelName),
+    where('builderId', '==', builderId),
+    where('communityId', '==', communityId)
+  ];
+  
+  if (address) {
+    constraints.push(where('address', '==', address));
+  }
+  
+  constraints.push(limit(1));
+  
+  const q = query(collection(db, 'homes'), ...constraints);
+  const querySnapshot = await getDocs(q);
+  
+  if (!querySnapshot.empty) {
+    const docSnap = querySnapshot.docs[0];
+    const homeData = { id: docSnap.id, ...docSnap.data() } as Home;
+    
+    const builder = await getBuilder(homeData.builderId);
+    const community = await getCommunity(homeData.communityId);
+    
+    return {
+      ...homeData,
+      builder,
+      community
+    };
+  }
+  
+  return undefined;
+};
+
 // Price Change Functions
 
 export const addPriceChange = async (priceChangeData: Omit<PriceChange, 'id'>) => {
@@ -189,6 +227,33 @@ export const getPriceChanges = async (options?: {
 
 export const getRecentPriceChanges = async (limitCount: number = 20): Promise<PriceChangeWithRelations[]> => {
   return getPriceChanges({ limitCount, daysBack: 90 });
+};
+
+export const getPriceChangesForHome = async (homeId: string): Promise<PriceChangeWithRelations[]> => {
+  const constraints: QueryConstraint[] = [
+    where('homeId', '==', homeId),
+    orderBy('changeDate', 'desc')
+  ];
+  
+  const q = query(collection(db, 'priceChanges'), ...constraints);
+  const querySnapshot = await getDocs(q);
+  
+  const priceChanges: PriceChangeWithRelations[] = [];
+  
+  for (const docSnap of querySnapshot.docs) {
+    const priceChangeData = { id: docSnap.id, ...docSnap.data() } as PriceChange;
+    
+    const builder = await getBuilder(priceChangeData.builderId);
+    const community = await getCommunity(priceChangeData.communityId);
+    
+    priceChanges.push({
+      ...priceChangeData,
+      builder,
+      community
+    });
+  }
+  
+  return priceChanges;
 };
 
 // Price History Functions
