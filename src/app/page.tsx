@@ -487,7 +487,7 @@ export default function HomePage() {
             <div className="flex justify-center mb-16">
               <Link href="/auth/login">
                 <Button size="lg" className="px-12 py-4 text-lg bg-blue-600 text-white border-2 border-blue-700 hover:bg-blue-700 shadow-md rounded-lg">
-                  Get Started - Sign In with Google
+                  Sign in with Google
                 </Button>
               </Link>
             </div>
