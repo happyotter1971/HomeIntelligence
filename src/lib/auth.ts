@@ -5,7 +5,7 @@ import {
   onAuthStateChanged,
   User as FirebaseUser
 } from 'firebase/auth';
-import { doc, setDoc, getDoc } from 'firebase/firestore';
+import { doc, setDoc, getDoc, Timestamp } from 'firebase/firestore';
 import { auth, db } from './firebase';
 import { User } from '@/types';
 
@@ -15,10 +15,10 @@ export const signUp = async (email: string, password: string, displayName?: stri
   
   const userData: Omit<User, 'uid'> = {
     email: user.email!,
-    displayName: displayName || null,
+    displayName: displayName || undefined,
     role: 'user',
-    createdAt: new Date(),
-    lastLogin: new Date()
+    createdAt: Timestamp.now(),
+    lastLogin: Timestamp.now()
   };
   
   await setDoc(doc(db, 'users', user.uid), userData);
@@ -30,7 +30,7 @@ export const signIn = async (email: string, password: string) => {
   const user = userCredential.user;
   
   await setDoc(doc(db, 'users', user.uid), {
-    lastLogin: new Date()
+    lastLogin: Timestamp.now()
   }, { merge: true });
   
   return user;
