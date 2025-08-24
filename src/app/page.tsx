@@ -445,41 +445,73 @@ export default function HomePage() {
   }
 
   return (
-    <div className="min-h-screen relative overflow-hidden">
-      {/* Clean background */}
-      <div className="absolute inset-0 bg-slate-50"></div>
-      
-      <div className="container mx-auto px-6 py-24 relative z-10">
-        <div className="max-w-6xl mx-auto text-center">
-          <div className="flex items-center justify-center gap-6 mb-4">
-            <div className="p-4 bg-white rounded-2xl border-2 border-blue-200 shadow-md">
-              <Image 
-                src="/new-logo.svg" 
-                alt="BuilderIntelligence Logo" 
-                width={80} 
-                height={80}
-                className="flex-shrink-0"
-              />
+    <div className="min-h-screen bg-slate-50">
+      {/* Header with clean background */}
+      <div className="bg-white border-b-2 border-blue-200 shadow-md">
+        <div className="container mx-auto px-6 py-8 relative z-10">
+          <div className="flex justify-center items-center">
+            <div className="flex items-center gap-6">
+              <div className="p-3 bg-white rounded-2xl border-2 border-blue-200 shadow-md">
+                <Image 
+                  src="/new-logo.svg" 
+                  alt="BuilderIntelligence Logo" 
+                  width={64} 
+                  height={64}
+                  className="flex-shrink-0"
+                />
+              </div>
+              <div className="flex flex-col justify-center">
+                <h1 className="text-3xl md:text-4xl font-bold text-gray-900 leading-tight">
+                  <span className="text-blue-600">BuilderIntelligence</span>
+                </h1>
+                <p className="text-sm text-gray-600 mt-2 font-medium bg-blue-50 px-3 py-1 rounded-lg border border-blue-200">
+                  See the market clearly, build smarter
+                </p>
+              </div>
             </div>
-            <h1 className="text-4xl md:text-6xl font-semibold text-gray-900">
-              BuilderIntelligence
-            </h1>
           </div>
-          <p className="text-2xl md:text-3xl text-blue-600 font-bold mb-3 relative">
-            <span className="bg-blue-200 h-1 w-24 absolute bottom-0 left-1/2 transform -translate-x-1/2"></span>
-            See the market clearly
-          </p>
-          <p className="text-lg md:text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
-            Benchmark competitors, price confidently, build faster.
-            Gain competitive insights across leading builders in Indian Trail, NC.
-          </p>
-          
-          <div className="flex justify-center">
-            <Link href="/auth/login">
-              <Button size="lg" className="px-8 text-base">
-                Sign In with Google
-              </Button>
-            </Link>
+        </div>
+      </div>
+      
+      <div className="relative">
+        <div className="container mx-auto px-6 pt-16 pb-12">
+          <div className="max-w-4xl mx-auto text-center">
+            <h2 className="text-3xl md:text-5xl font-bold text-gray-900 mb-6">
+              Benchmark competitors, price confidently, build faster
+            </h2>
+            <p className="text-xl md:text-2xl text-gray-600 mb-12 max-w-3xl mx-auto leading-relaxed">
+              Gain competitive insights across leading builders in Indian Trail, NC.
+              Access real-time inventory data, pricing trends, and market intelligence.
+            </p>
+            
+            <div className="flex justify-center mb-16">
+              <Link href="/auth/login">
+                <Button size="lg" className="px-12 py-4 text-lg bg-blue-600 text-white border-2 border-blue-700 hover:bg-blue-700 shadow-md rounded-lg">
+                  Get Started - Sign In with Google
+                </Button>
+              </Link>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+              <div className="text-center">
+                <div className="bg-white p-6 rounded-lg border-2 border-blue-200 shadow-md">
+                  <h3 className="text-xl font-bold text-gray-900 mb-3">Real-Time Inventory</h3>
+                  <p className="text-gray-600">Track available homes across Dream Finders, KB Home, and Ryan Homes with daily updates.</p>
+                </div>
+              </div>
+              <div className="text-center">
+                <div className="bg-white p-6 rounded-lg border-2 border-blue-200 shadow-md">
+                  <h3 className="text-xl font-bold text-gray-900 mb-3">Price Intelligence</h3>
+                  <p className="text-gray-600">Monitor pricing trends and competitive positioning to make informed decisions.</p>
+                </div>
+              </div>
+              <div className="text-center">
+                <div className="bg-white p-6 rounded-lg border-2 border-blue-200 shadow-md">
+                  <h3 className="text-xl font-bold text-gray-900 mb-3">Market Insights</h3>
+                  <p className="text-gray-600">Compare features, pricing, and availability across competing builders in your market.</p>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
