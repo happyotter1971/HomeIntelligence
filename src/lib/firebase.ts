@@ -3,12 +3,12 @@ import { getAuth } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyBejrg3_W2Zdo5YpwR5XrF0kSe2fnrqAPo",
-  authDomain: "homeintelligence-e2202.firebaseapp.com",
-  projectId: "homeintelligence-e2202",
-  storageBucket: "homeintelligence-e2202.firebasestorage.app",
-  messagingSenderId: "916919546003",
-  appId: "1:916919546003:web:53bf3dc01282e791d39d66"
+  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
+  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
+  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
+  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID
 };
 
 const app = initializeApp(firebaseConfig);
