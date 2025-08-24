@@ -144,7 +144,7 @@ export default function HomePage() {
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-4 border-blue-600 mx-auto mb-4"></div>
           <h2 className="text-2xl font-bold text-gray-900">Loading BuilderIntelligence</h2>
-          <p className="text-gray-600 mt-2">Setting up your dashboard...</p>
+          <p className="text-gray-600 mt-2">Setting up your inventory browser...</p>
         </div>
       </div>
     );
@@ -208,7 +208,7 @@ export default function HomePage() {
 
             {/* Navigation Cards Section */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-              <Link href="/dashboard">
+              <Link href="/inventory">
                 <Card className="bg-white border-2 border-blue-200 hover:border-blue-300 hover:shadow-lg transition-all cursor-pointer h-full shadow-md">
                   <CardHeader className="pb-4">
                     <CardTitle className="flex items-center gap-2 text-gray-900">
@@ -329,7 +329,7 @@ export default function HomePage() {
                                 <tr key={comp.bedrooms} className="hover:bg-gray-50">
                                   <td className="py-2 px-3">
                                     <Link 
-                                      href={`/dashboard?bedrooms=${comp.bedrooms}`}
+                                      href={`/inventory?bedrooms=${comp.bedrooms}`}
                                       className="font-medium text-blue-600 hover:text-blue-800 hover:underline cursor-pointer"
                                     >
                                       {comp.bedrooms}BR

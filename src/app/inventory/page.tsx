@@ -11,10 +11,11 @@ import { Input } from '@/components/ui/input';
 import { Select } from '@/components/ui/select';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { formatPrice, formatSquareFootage, formatSquareFootageNumber, formatPricePerSquareFoot } from '@/lib/utils';
-import { Search, Filter, ArrowLeft, MapPin, Eye, Clock, Zap, Check } from 'lucide-react';
+import { Search, Filter, ArrowLeft, MapPin, Eye, Clock, Zap, Check, Building2 } from 'lucide-react';
 import Link from 'next/link';
+import Image from 'next/image';
 
-function DashboardContent() {
+function InventoryContent() {
   const [homes, setHomes] = useState<HomeWithRelations[]>([]);
   const [filteredHomes, setFilteredHomes] = useState<HomeWithRelations[]>([]);
   const [builders, setBuilders] = useState<Builder[]>([]);
@@ -172,27 +173,50 @@ function DashboardContent() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 relative">
-      {/* Dashboard background decorative elements */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-      </div>
-      
-      <div className="container mx-auto px-4 py-6 relative z-10">
-        <div className="bg-white border-b-2 border-blue-200 -mx-4 px-4 py-8 mb-6 shadow-md">
-          <div className="container mx-auto max-w-7xl">
+    <div className="min-h-screen bg-slate-50">
+      {/* Header with clean background */}
+      <div className="bg-white border-b-2 border-blue-200 shadow-md">
+        <div className="container mx-auto px-6 py-8 relative z-10">
+          <div className="flex justify-between items-center">
+            <div className="flex items-center gap-6">
+              <div className="p-3 bg-white rounded-2xl border-2 border-blue-200 shadow-md">
+                <Image 
+                  src="/new-logo.svg" 
+                  alt="BuilderIntelligence Logo" 
+                  width={64} 
+                  height={64}
+                  className="flex-shrink-0"
+                />
+              </div>
+              <div className="flex flex-col justify-center">
+                <h1 className="text-3xl md:text-4xl font-bold text-gray-900 leading-tight">
+                  <span className="text-blue-600">Quick Move-In</span>
+                  <span className="text-gray-700">: Inventory Browser</span>
+                </h1>
+                <p className="text-sm text-gray-600 mt-2 font-medium bg-blue-50 px-3 py-1 rounded-lg border border-blue-200">
+                  Browse homes ready for immediate move-in
+                </p>
+              </div>
+            </div>
             <div className="flex items-center gap-4">
               <Link href="/">
-                <Button variant="outline" size="sm">
+                <Button 
+                  variant="outline"
+                  className="bg-white border-gray-300 text-gray-700 hover:bg-blue-50 hover:border-blue-300 hover:text-blue-700 rounded-xl transition-all duration-200 shadow-lg"
+                >
                   <ArrowLeft className="h-4 w-4 mr-2" />
-                  Back
+                  Back to Home
                 </Button>
               </Link>
-              <h1 className="text-3xl font-bold text-gray-900">Quick Move-In Inventory</h1>
             </div>
           </div>
         </div>
+      </div>
+      
+      <div className="relative">
+        <div className="container mx-auto px-6 pt-8 pb-12">
 
-        <Card className="mb-6 border border-gray-100 bg-gray-50 shadow-sm">
+        <Card className="mb-6 bg-white border-2 border-blue-200 shadow-md">
           <CardContent className="pt-6">
             <div className="space-y-6">
               {/* Search Bar & Clear Button */}
@@ -298,11 +322,14 @@ function DashboardContent() {
 
         <div className="space-y-6">
           {groupedHomes().map(([builderName, homes]) => (
-            <Card key={builderName} className="border-0 shadow-lg bg-card/95 backdrop-blur-sm">
+            <Card key={builderName} className="bg-white border-2 border-blue-200 shadow-md">
               <CardHeader>
                 <div className="flex items-center justify-between">
-                  <CardTitle className="text-xl">{builderName}</CardTitle>
-                  <span className="bg-blue-600 text-white px-3 py-1 rounded-full text-sm font-medium shadow-sm border border-blue-700">
+                  <CardTitle className="text-xl flex items-center gap-2 text-gray-900">
+                    <Building2 className="h-5 w-5 text-blue-600" />
+                    {builderName}
+                  </CardTitle>
+                  <span className="bg-blue-50 text-blue-700 px-3 py-1 rounded-full text-sm font-medium border border-blue-200">
                     {homes.length} home{homes.length !== 1 ? 's' : ''}
                   </span>
                 </div>
@@ -377,27 +404,28 @@ function DashboardContent() {
           ))}
         </div>
 
-        {filteredHomes.length === 0 && (
-          <div className="text-center py-12">
-            <p className="text-gray-500 text-lg">No homes found matching your criteria</p>
-            <Button variant="outline" onClick={clearFilters} className="mt-4">
-              Clear Filters
-            </Button>
-          </div>
-        )}
+          {filteredHomes.length === 0 && (
+            <div className="text-center py-12">
+              <p className="text-gray-500 text-lg">No homes found matching your criteria</p>
+              <Button variant="outline" onClick={clearFilters} className="mt-4">
+                Clear Filters
+              </Button>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
 }
 
-export default function DashboardPage() {
+export default function InventoryPage() {
   return (
     <Suspense fallback={
       <div className="min-h-screen flex items-center justify-center">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
       </div>
     }>
-      <DashboardContent />
+      <InventoryContent />
     </Suspense>
   );
 }

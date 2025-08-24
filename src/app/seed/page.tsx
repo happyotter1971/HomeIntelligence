@@ -109,9 +109,9 @@ export default function SeedPage() {
                 </Button>
                 
                 {success && (
-                  <Link href="/dashboard">
+                  <Link href="/inventory">
                     <Button variant="outline">
-                      View Dashboard
+                      View Inventory
                     </Button>
                   </Link>
                 )}

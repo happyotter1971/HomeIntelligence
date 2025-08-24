@@ -30,8 +30,8 @@ export default function HomeDetailPage({ params }: HomeDetailPageProps) {
     // Set the back button text based on referrer
     if (typeof window !== 'undefined') {
       const referrer = document.referrer;
-      if (referrer.includes('/dashboard')) {
-        setBackButtonText('Back to Dashboard');
+      if (referrer.includes('/inventory')) {
+        setBackButtonText('Back to Inventory');
       } else {
         setBackButtonText('Back to Home');
       }
@@ -42,8 +42,8 @@ export default function HomeDetailPage({ params }: HomeDetailPageProps) {
     // Check the referrer to determine where to go back
     if (typeof window !== 'undefined') {
       const referrer = document.referrer;
-      if (referrer.includes('/dashboard')) {
-        router.push('/dashboard');
+      if (referrer.includes('/inventory')) {
+        router.push('/inventory');
       } else if (referrer === '' || !referrer.includes(window.location.origin)) {
         // If no referrer or external referrer, go to home
         router.push('/');

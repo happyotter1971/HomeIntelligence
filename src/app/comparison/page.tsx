@@ -9,8 +9,9 @@ import { Home, Builder, Community, HomeWithRelations } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { formatPrice, formatSquareFootage } from '@/lib/utils';
-import { ArrowLeft, Bed, Bath, Car, Home as HomeIcon, MapPin } from 'lucide-react';
+import { ArrowLeft, Bed, Bath, Car, Home as HomeIcon, MapPin, BarChart3 } from 'lucide-react';
 import Link from 'next/link';
+import Image from 'next/image';
 
 function ComparisonContent() {
   const [homes, setHomes] = useState<HomeWithRelations[]>([]);
@@ -102,18 +103,49 @@ function ComparisonContent() {
   if (homes.length === 0) {
     return (
       <div className="min-h-screen bg-slate-50">
-        <div className="container mx-auto px-4 py-6">
-          <div className="flex items-center gap-4 mb-6">
-            <Link href="/dashboard">
-              <Button variant="outline" size="sm">
-                <ArrowLeft className="h-4 w-4 mr-2" />
-                Back to Dashboard
-              </Button>
-            </Link>
-            <h1 className="text-3xl font-bold text-gray-900">Home Comparison</h1>
+        {/* Header with clean background */}
+        <div className="bg-white border-b-2 border-blue-200 shadow-md">
+          <div className="container mx-auto px-6 py-8 relative z-10">
+            <div className="flex justify-between items-center">
+              <div className="flex items-center gap-6">
+                <div className="p-3 bg-white rounded-2xl border-2 border-blue-200 shadow-md">
+                  <Image 
+                    src="/new-logo.svg" 
+                    alt="BuilderIntelligence Logo" 
+                    width={64} 
+                    height={64}
+                    className="flex-shrink-0"
+                  />
+                </div>
+                <div className="flex flex-col justify-center">
+                  <h1 className="text-3xl md:text-4xl font-bold text-gray-900 leading-tight">
+                    <span className="text-blue-600">Home Comparison</span>
+                    <span className="text-gray-700">: Side by Side</span>
+                  </h1>
+                  <p className="text-sm text-gray-600 mt-2 font-medium bg-blue-50 px-3 py-1 rounded-lg border border-blue-200">
+                    Compare up to 3 homes side-by-side
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-4">
+                <Link href="/inventory">
+                  <Button 
+                    variant="outline"
+                    className="bg-white border-gray-300 text-gray-700 hover:bg-blue-50 hover:border-blue-300 hover:text-blue-700 rounded-xl transition-all duration-200 shadow-lg"
+                  >
+                    <ArrowLeft className="h-4 w-4 mr-2" />
+                    Back to Inventory
+                  </Button>
+                </Link>
+              </div>
+            </div>
           </div>
+        </div>
+        
+        <div className="relative">
+          <div className="container mx-auto px-6 pt-8 pb-12">
 
-          <Card>
+          <Card className="bg-white border-2 border-blue-200 shadow-md">
             <CardContent className="text-center py-12">
               <HomeIcon className="h-16 w-16 mx-auto text-gray-400 mb-4" />
               <h2 className="text-xl font-semibold mb-2">No homes selected for comparison</h2>
@@ -125,7 +157,7 @@ function ComparisonContent() {
                 <div className="text-left max-w-md mx-auto space-y-2 text-sm text-gray-600">
                   <div className="flex items-center gap-2">
                     <span className="bg-blue-100 text-blue-800 rounded-full w-6 h-6 flex items-center justify-center text-xs font-medium">1</span>
-                    Browse homes on the dashboard
+                    Browse homes in the inventory
                   </div>
                   <div className="flex items-center gap-2">
                     <span className="bg-blue-100 text-blue-800 rounded-full w-6 h-6 flex items-center justify-center text-xs font-medium">2</span>
@@ -137,13 +169,14 @@ function ComparisonContent() {
                   </div>
                 </div>
               </div>
-              <Link href="/dashboard">
-                <Button className="mt-6">
+              <Link href="/inventory">
+                <Button className="mt-6 bg-blue-600 text-white border-2 border-blue-700 hover:bg-blue-700 shadow-md rounded-lg px-6 py-2">
                   Browse Homes
                 </Button>
               </Link>
             </CardContent>
           </Card>
+          </div>
         </div>
       </div>
     );
@@ -151,22 +184,52 @@ function ComparisonContent() {
 
   return (
     <div className="min-h-screen bg-slate-50">
-      <div className="container mx-auto px-4 py-6">
-        <div className="flex items-center gap-4 mb-6">
-          <Link href="/dashboard">
-            <Button variant="outline" size="sm">
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Back to Dashboard
-            </Button>
-          </Link>
-          <h1 className="text-3xl font-bold text-gray-900">
-            Compare Homes ({homes.length})
-          </h1>
+      {/* Header with clean background */}
+      <div className="bg-white border-b-2 border-blue-200 shadow-md">
+        <div className="container mx-auto px-6 py-8 relative z-10">
+          <div className="flex justify-between items-center">
+            <div className="flex items-center gap-6">
+              <div className="p-3 bg-white rounded-2xl border-2 border-blue-200 shadow-md">
+                <Image 
+                  src="/new-logo.svg" 
+                  alt="BuilderIntelligence Logo" 
+                  width={64} 
+                  height={64}
+                  className="flex-shrink-0"
+                />
+              </div>
+              <div className="flex flex-col justify-center">
+                <h1 className="text-3xl md:text-4xl font-bold text-gray-900 leading-tight">
+                  <span className="text-blue-600">Home Comparison</span>
+                  <span className="text-gray-700">: {homes.length} Selected</span>
+                </h1>
+                <p className="text-sm text-gray-600 mt-2 font-medium bg-blue-50 px-3 py-1 rounded-lg border border-blue-200">
+                  <BarChart3 className="h-4 w-4 inline mr-1" />
+                  Side-by-side comparison view
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-4">
+              <Link href="/inventory">
+                <Button 
+                  variant="outline"
+                  className="bg-white border-gray-300 text-gray-700 hover:bg-blue-50 hover:border-blue-300 hover:text-blue-700 rounded-xl transition-all duration-200 shadow-lg"
+                >
+                  <ArrowLeft className="h-4 w-4 mr-2" />
+                  Back to Inventory
+                </Button>
+              </Link>
+            </div>
+          </div>
         </div>
+      </div>
+      
+      <div className="relative">
+        <div className="container mx-auto px-6 pt-8 pb-12">
 
         <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6 mb-8">
           {homes.map((home, index) => (
-            <Card key={home.id} className="relative">
+            <Card key={home.id} className="relative bg-white border-2 border-blue-200 shadow-md">
               <CardHeader className="pb-3">
                 <div className="flex justify-between items-start">
                   <div>
@@ -259,7 +322,7 @@ function ComparisonContent() {
                 )}
 
                 <div className="pt-4 border-t">
-                  <Button className="w-full">
+                  <Button className="w-full bg-blue-600 text-white border-2 border-blue-700 hover:bg-blue-700 shadow-md rounded-lg">
                     View Full Details
                   </Button>
                 </div>
@@ -268,9 +331,12 @@ function ComparisonContent() {
           ))}
         </div>
 
-        <Card>
+        <Card className="bg-white border-2 border-blue-200 shadow-md">
           <CardHeader>
-            <CardTitle>Quick Comparison</CardTitle>
+            <CardTitle className="flex items-center gap-2 text-gray-900">
+              <BarChart3 className="h-5 w-5 text-blue-600" />
+              Quick Comparison
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="overflow-x-auto">
@@ -363,6 +429,7 @@ function ComparisonContent() {
             </div>
           </CardContent>
         </Card>
+        </div>
       </div>
     </div>
   );

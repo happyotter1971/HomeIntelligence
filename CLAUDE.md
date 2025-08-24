@@ -49,7 +49,7 @@ Visit `/seed` after user registration to populate database with sample data usin
 ### Key Application Pages
 
 - `/` - Landing page with authentication
-- `/dashboard` - Main home browsing with filtering and search
+- `/inventory` - Main home browsing with filtering and search
 - `/comparison` - Side-by-side comparison (up to 3 homes) 
 - `/admin` - Inventory management (requires admin role)
 - `/auth/login` and `/auth/register` - Authentication
