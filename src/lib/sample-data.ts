@@ -1,9 +1,17 @@
 import { collection, addDoc, doc, setDoc } from 'firebase/firestore';
 import { db } from './firebase';
 import { Timestamp } from 'firebase/firestore';
+import { scrapeAllBuilders } from './web-scraper';
 
 export const seedDatabase = async () => {
   try {
+    console.log('Starting database seeding with scraped data...');
+    
+    // First scrape all homes data from websites
+    const scrapedHomes = await scrapeAllBuilders();
+    console.log(`Scraped ${scrapedHomes.length} homes from builder websites`);
+    console.log('Scraped homes breakdown:', scrapedHomes.map(h => `${h.builderName} - ${h.modelName}`));
+
     // Add Builders
     const dreamFindersRef = await addDoc(collection(db, 'builders'), {
       name: 'Dream Finders Homes',
@@ -51,216 +59,62 @@ export const seedDatabase = async () => {
       zipCode: '28079'
     });
 
-    // Dream Finders Homes - Moore Farms
-    const dreamFinderHomes = [
-      {
-        builderId: dreamFindersRef.id,
-        communityId: mooreFarmsRef.id,
-        modelName: 'Liberty',
-        price: 499900,
-        bedrooms: 4,
-        bathrooms: 2.5,
-        squareFootage: 2320,
-        garageSpaces: 2,
-        status: 'available',
-        features: ['Open Floor Plan', 'Main Level Owner Suite', 'Granite Countertops'],
-        homesiteNumber: '45',
-        estimatedMonthlyPayment: 3200,
-        lastUpdated: Timestamp.now(),
-        createdAt: Timestamp.now()
-      },
-      {
-        builderId: dreamFindersRef.id,
-        communityId: mooreFarmsRef.id,
-        modelName: 'Bellwood',
-        price: 549900,
-        bedrooms: 4,
-        bathrooms: 3,
-        squareFootage: 2680,
-        garageSpaces: 2,
-        status: 'quick-move-in',
-        features: ['Two-Story', 'Bonus Room', 'Walk-in Pantry', 'Covered Porch'],
-        homesiteNumber: '52',
-        estimatedMonthlyPayment: 3500,
-        lastUpdated: Timestamp.now(),
-        createdAt: Timestamp.now()
-      },
-      {
-        builderId: dreamFindersRef.id,
-        communityId: mooreFarmsRef.id,
-        modelName: 'Charleston',
-        price: 596265,
-        bedrooms: 5,
-        bathrooms: 3,
-        squareFootage: 3305,
-        garageSpaces: 2,
-        status: 'available',
-        features: ['Five Bedrooms', 'Formal Dining', 'Study', 'Three-Car Garage Option'],
-        homesiteNumber: '67',
-        estimatedMonthlyPayment: 3800,
-        lastUpdated: Timestamp.now(),
-        createdAt: Timestamp.now()
-      }
-    ];
+    // Create builder and community mapping
+    const builderMap = {
+      'Dream Finders Homes': dreamFindersRef.id,
+      'KB Home': kbHomeRef.id,
+      'Ryan Homes': ryanHomesRef.id
+    };
 
-    // KB Home - Sheffield
-    const kbHomes = [
-      {
-        builderId: kbHomeRef.id,
-        communityId: sheffieldRef.id,
-        modelName: 'Plan 1820',
-        price: 355990,
-        bedrooms: 3,
-        bathrooms: 2,
-        squareFootage: 1820,
-        garageSpaces: 2,
-        status: 'available',
-        features: ['Single Story', 'Open Concept', 'Kitchen Island'],
-        estimatedMonthlyPayment: 2400,
-        lastUpdated: Timestamp.now(),
-        createdAt: Timestamp.now()
-      },
-      {
-        builderId: kbHomeRef.id,
-        communityId: sheffieldRef.id,
-        modelName: 'Plan 2156',
-        price: 389990,
-        bedrooms: 4,
-        bathrooms: 2.5,
-        squareFootage: 2156,
-        garageSpaces: 2,
-        status: 'quick-move-in',
-        features: ['Two Story', 'Loft', 'Walk-in Closets'],
-        estimatedMonthlyPayment: 2650,
-        lastUpdated: Timestamp.now(),
-        createdAt: Timestamp.now()
-      },
-      {
-        builderId: kbHomeRef.id,
-        communityId: sheffieldRef.id,
-        modelName: 'Plan 2486',
-        price: 429990,
-        bedrooms: 4,
-        bathrooms: 3,
-        squareFootage: 2486,
-        garageSpaces: 2,
-        status: 'available',
-        features: ['Master Suite Downstairs', 'Game Room', 'Covered Patio'],
-        estimatedMonthlyPayment: 2900,
-        lastUpdated: Timestamp.now(),
-        createdAt: Timestamp.now()
-      }
-    ];
+    const communityMap = {
+      'Moore Farms': mooreFarmsRef.id,
+      'Sheffield': sheffieldRef.id,
+      'Moore Farm': mooreFarmRyanRef.id
+    };
 
-    // Ryan Homes - Moore Farm
-    const ryanHomes = [
-      {
-        builderId: ryanHomesRef.id,
-        communityId: mooreFarmRyanRef.id,
-        modelName: 'Palladio Ranch',
-        price: 459990,
-        bedrooms: 3,
-        bathrooms: 2,
-        squareFootage: 1898,
-        garageSpaces: 2,
-        status: 'available',
-        features: ['Single Story', 'Main-Level Owner Suite', 'Open Floor Plan'],
-        estimatedMonthlyPayment: 3100,
-        lastUpdated: Timestamp.now(),
-        createdAt: Timestamp.now()
-      },
-      {
-        builderId: ryanHomesRef.id,
-        communityId: mooreFarmRyanRef.id,
-        modelName: 'Columbia',
-        price: 459990,
-        bedrooms: 4,
-        bathrooms: 2.5,
-        squareFootage: 2423,
-        garageSpaces: 2,
-        status: 'available',
-        features: ['Two Story', 'Owner Suite on Main', 'Morning Room'],
-        estimatedMonthlyPayment: 3100,
-        lastUpdated: Timestamp.now(),
-        createdAt: Timestamp.now()
-      },
-      {
-        builderId: ryanHomesRef.id,
-        communityId: mooreFarmRyanRef.id,
-        modelName: 'Hudson',
-        price: 484990,
-        bedrooms: 4,
-        bathrooms: 2.5,
-        squareFootage: 2718,
-        garageSpaces: 2,
-        status: 'quick-move-in',
-        features: ['Four+ Bedrooms', 'Bonus Room', 'Covered Deck'],
-        estimatedMonthlyPayment: 3300,
-        lastUpdated: Timestamp.now(),
-        createdAt: Timestamp.now()
-      },
-      {
-        builderId: ryanHomesRef.id,
-        communityId: mooreFarmRyanRef.id,
-        modelName: 'Palladio 2-Story',
-        price: 494990,
-        bedrooms: 3,
-        bathrooms: 2.5,
-        squareFootage: 2626,
-        garageSpaces: 2,
-        status: 'available',
-        features: ['Two Story', 'Flex Room', 'Walk-in Pantry'],
-        estimatedMonthlyPayment: 3400,
-        lastUpdated: Timestamp.now(),
-        createdAt: Timestamp.now()
-      },
-      {
-        builderId: ryanHomesRef.id,
-        communityId: mooreFarmRyanRef.id,
-        modelName: 'Lehigh',
-        price: 524990,
-        bedrooms: 4,
-        bathrooms: 3,
-        squareFootage: 3010,
-        garageSpaces: 2,
-        status: 'available',
-        features: ['Four+ Bedrooms', 'Study', 'Owner Suite on Main'],
-        estimatedMonthlyPayment: 3600,
-        lastUpdated: Timestamp.now(),
-        createdAt: Timestamp.now()
-      },
-      {
-        builderId: ryanHomesRef.id,
-        communityId: mooreFarmRyanRef.id,
-        modelName: 'York',
-        price: 561990,
-        bedrooms: 4,
-        bathrooms: 3.5,
-        squareFootage: 3656,
-        garageSpaces: 2,
-        status: 'available',
-        features: ['Four+ Bedrooms', 'Study', 'Game Room', 'Three-Car Garage Option'],
-        estimatedMonthlyPayment: 3900,
-        lastUpdated: Timestamp.now(),
-        createdAt: Timestamp.now()
+    // Convert scraped homes to database format
+    const homesToAdd = scrapedHomes.map(scrapedHome => {
+      const builderId = builderMap[scrapedHome.builderName as keyof typeof builderMap];
+      const communityId = communityMap[scrapedHome.communityName as keyof typeof communityMap];
+      
+      if (!builderId) {
+        console.error(`Missing builderId for builder: ${scrapedHome.builderName}`);
       }
-    ];
+      if (!communityId) {
+        console.error(`Missing communityId for community: ${scrapedHome.communityName}`);
+      }
+      
+      return {
+        builderId,
+        communityId,
+        modelName: scrapedHome.modelName,
+        price: scrapedHome.price,
+        bedrooms: scrapedHome.bedrooms,
+        bathrooms: scrapedHome.bathrooms,
+        squareFootage: scrapedHome.squareFootage,
+        garageSpaces: scrapedHome.garageSpaces,
+        status: scrapedHome.status,
+        features: scrapedHome.features,
+        estimatedMonthlyPayment: scrapedHome.estimatedMonthlyPayment,
+        lastUpdated: Timestamp.now(),
+        createdAt: Timestamp.now()
+      };
+    }).filter(home => home.builderId && home.communityId); // Filter out homes with missing IDs
 
     // Add all homes to Firestore
-    const allHomes = [...dreamFinderHomes, ...kbHomes, ...ryanHomes];
-    
-    for (const home of allHomes) {
+    console.log(`Adding ${homesToAdd.length} homes to database...`);
+    for (const home of homesToAdd) {
       await addDoc(collection(db, 'homes'), home);
     }
 
-    console.log('Sample data added successfully!');
+    console.log('Scraped data added successfully!');
     return {
       builders: 3,
       communities: 3,
-      homes: allHomes.length
+      homes: homesToAdd.length
     };
   } catch (error) {
-    console.error('Error adding sample data:', error);
+    console.error('Error adding scraped data:', error);
     throw error;
   }
 };

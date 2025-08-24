@@ -12,5 +12,11 @@
       "src": "/(.*)",
       "dest": "/$1"
     }
+  ],
+  "crons": [
+    {
+      "path": "/api/cron/daily-scrape",
+      "schedule": "0 2 * * *"
+    }
   ]
 }

@@ -6,13 +6,14 @@ import { onAuthStateChanged } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
 import { getUserData } from '@/lib/auth';
 import { getHomes, addHome, updateHome, deleteHome, getBuilders, getCommunities } from '@/lib/firestore';
+import { refreshHomesFromWebsites } from '@/lib/scrape-and-update';
 import { HomeWithRelations, Home, Builder, Community } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select } from '@/components/ui/select';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { formatPrice } from '@/lib/utils';
-import { ArrowLeft, Plus, Edit, Trash2, Shield } from 'lucide-react';
+import { ArrowLeft, Plus, Edit, Trash2, Shield, Download, RefreshCw } from 'lucide-react';
 import Link from 'next/link';
 import { Timestamp } from 'firebase/firestore';
 
@@ -40,6 +41,7 @@ export default function AdminPage() {
   const [isAuthorized, setIsAuthorized] = useState(false);
   const [showAddForm, setShowAddForm] = useState(false);
   const [editingHome, setEditingHome] = useState<HomeWithRelations | null>(null);
+  const [scraping, setScraping] = useState(false);
   const [formData, setFormData] = useState<HomeFormData>({
     modelName: '',
     builderId: '',
@@ -90,6 +92,47 @@ export default function AdminPage() {
       console.error('Error fetching data:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleRefreshData = async () => {
+    try {
+      setLoading(true);
+      await refreshHomesFromWebsites();
+      // Refresh the displayed data
+      await fetchData();
+      alert('Successfully refreshed home data from builder websites!');
+    } catch (error) {
+      console.error('Error refreshing data:', error);
+      alert('Failed to refresh data. Please try again.');
+    }
+  };
+
+  const handleManualScrape = async () => {
+    try {
+      setScraping(true);
+      
+      const response = await fetch('/api/scrape', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      
+      const result = await response.json();
+      
+      if (result.success) {
+        // Refresh the displayed data
+        await fetchData();
+        alert(`Manual scrape completed! Updated ${result.homesUpdated} homes.`);
+      } else {
+        alert(`Scrape failed: ${result.error}`);
+      }
+    } catch (error) {
+      console.error('Error during manual scrape:', error);
+      alert('Manual scrape failed. Please try again.');
+    } finally {
+      setScraping(false);
     }
   };
 
@@ -223,9 +266,37 @@ export default function AdminPage() {
             </Button>
           </Link>
           <h1 className="text-3xl font-bold text-gray-900">Admin Panel</h1>
-          <div className="ml-auto">
+          <div className="ml-auto flex gap-2">
+            <Button 
+              variant="outline"
+              onClick={handleManualScrape}
+              disabled={scraping || loading}
+              className="flex items-center gap-2"
+            >
+              {scraping ? (
+                <>
+                  <RefreshCw className="h-4 w-4 animate-spin" />
+                  Scraping...
+                </>
+              ) : (
+                <>
+                  <Download className="h-4 w-4" />
+                  Scrape Now
+                </>
+              )}
+            </Button>
+            <Button 
+              variant="outline"
+              onClick={handleRefreshData}
+              disabled={loading || scraping}
+              className="flex items-center gap-2"
+            >
+              <Shield className="h-4 w-4" />
+              Refresh from Websites
+            </Button>
             <Button 
               onClick={() => setShowAddForm(true)}
+              disabled={scraping}
               className="flex items-center gap-2"
             >
               <Plus className="h-4 w-4" />
@@ -233,6 +304,33 @@ export default function AdminPage() {
             </Button>
           </div>
         </div>
+
+        {/* Scraping Status Card */}
+        <Card className="mb-6">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <RefreshCw className="h-5 w-5" />
+              Automated Scraping
+            </CardTitle>
+            <CardDescription>
+              Home data is automatically scraped from builder websites
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="bg-blue-50 p-4 rounded-lg">
+                <div className="text-sm font-medium text-blue-900">Schedule</div>
+                <div className="text-blue-700">Daily at 2:00 AM</div>
+                <div className="text-xs text-blue-600 mt-1">Automatic updates from all builders</div>
+              </div>
+              <div className="bg-green-50 p-4 rounded-lg">
+                <div className="text-sm font-medium text-green-900">Manual Control</div>
+                <div className="text-green-700">Click "Scrape Now" above</div>
+                <div className="text-xs text-green-600 mt-1">Immediate data refresh available</div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
 
         {showAddForm && (
           <Card className="mb-6">

@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { seedDatabase } from '@/lib/sample-data';
+import { clearAllData } from '@/lib/clear-database';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Database, CheckCircle, AlertCircle } from 'lucide-react';
@@ -19,6 +20,12 @@ export default function SeedPage() {
     setSuccess(false);
 
     try {
+      // First clear existing data to avoid duplicates
+      console.log('Clearing existing data...');
+      await clearAllData();
+      
+      // Then seed with fresh data
+      console.log('Seeding with fresh scraped data...');
       const result = await seedDatabase();
       setStats(result);
       setSuccess(true);
@@ -45,9 +52,9 @@ export default function SeedPage() {
 
           <Card>
             <CardHeader>
-              <CardTitle>Sample Data</CardTitle>
+              <CardTitle>Scraped Real Data</CardTitle>
               <CardDescription>
-                This will add sample builders, communities, and homes to your database
+                This will scrape live data from builder websites and populate your database
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -67,10 +74,10 @@ export default function SeedPage() {
                   </div>
                 </div>
                 <div className="bg-purple-50 p-4 rounded-lg">
-                  <div className="text-2xl font-bold text-purple-600">12</div>
+                  <div className="text-2xl font-bold text-purple-600">17+</div>
                   <div className="text-sm text-purple-700">Home Models</div>
                   <div className="text-xs text-purple-600 mt-1">
-                    Various floor plans and prices
+                    Live data from builder websites
                   </div>
                 </div>
               </div>
@@ -86,8 +93,8 @@ export default function SeedPage() {
                 <div className="flex items-center gap-2 p-4 bg-green-50 text-green-700 rounded-lg">
                   <CheckCircle className="h-5 w-5" />
                   <span>
-                    Successfully added {stats.builders} builders, {stats.communities} communities, 
-                    and {stats.homes} homes!
+                    Successfully scraped and added {stats.builders} builders, {stats.communities} communities, 
+                    and {stats.homes} homes from live websites!
                   </span>
                 </div>
               )}
