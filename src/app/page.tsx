@@ -159,7 +159,7 @@ export default function HomePage() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
             <Link href="/dashboard">
-              <Card className="hover:shadow-lg transition-shadow cursor-pointer">
+              <Card className="hover:shadow-lg transition-shadow cursor-pointer h-full">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <Home className="h-5 w-5 text-blue-600" />
@@ -171,7 +171,7 @@ export default function HomePage() {
             </Link>
 
             <Link href="/comparison">
-              <Card className="hover:shadow-lg transition-shadow cursor-pointer">
+              <Card className="hover:shadow-lg transition-shadow cursor-pointer h-full">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <BarChart3 className="h-5 w-5 text-green-600" />
@@ -183,7 +183,7 @@ export default function HomePage() {
             </Link>
 
             <Link href="/admin">
-              <Card className="hover:shadow-lg transition-shadow cursor-pointer">
+              <Card className="hover:shadow-lg transition-shadow cursor-pointer h-full">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <Users className="h-5 w-5 text-purple-600" />
@@ -200,7 +200,7 @@ export default function HomePage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <BarChart3 className="h-5 w-5 text-blue-600" />
-                Dream Finders vs. Competition
+                Dream Finders vs. Competition - Quick Move-In Inventory Comparison
               </CardTitle>
               <CardDescription>
                 Price comparison analysis for similar home configurations
@@ -289,7 +289,6 @@ export default function HomePage() {
                                   </div>
                                 ) : (
                                   <div>
-                                    <div className="font-medium text-orange-600">Not Available</div>
                                     <div className="text-sm text-gray-500">0 homes</div>
                                   </div>
                                 )}
@@ -298,9 +297,9 @@ export default function HomePage() {
                                 {comp.kbPrice ? (
                                   <div>
                                     <div className="font-medium">{formatPrice(comp.kbPrice)}</div>
-                                    <div className={`text-sm flex items-center gap-1 ${getPriceComparisonColor(comp.kbDiff)}`}>
-                                      {getPriceComparisonIcon(comp.kbDiff)}
-                                      {comp.kbDiff ? getPriceComparisonText(comp.kbDiff) : `${comp.kbCount} home${comp.kbCount > 1 ? 's' : ''} available`}
+                                    <div className={`text-sm ${comp.kbDiff ? 'flex items-center gap-1' : ''} ${getPriceComparisonColor(comp.kbDiff)}`}>
+                                      {comp.kbDiff && getPriceComparisonIcon(comp.kbDiff)}
+                                      {comp.kbDiff ? getPriceComparisonText(comp.kbDiff) : `${comp.kbCount} home${comp.kbCount > 1 ? 's' : ''}`}
                                     </div>
                                   </div>
                                 ) : (
@@ -311,9 +310,9 @@ export default function HomePage() {
                                 {comp.ryanPrice ? (
                                   <div>
                                     <div className="font-medium">{formatPrice(comp.ryanPrice)}</div>
-                                    <div className={`text-sm flex items-center gap-1 ${getPriceComparisonColor(comp.ryanDiff)}`}>
-                                      {getPriceComparisonIcon(comp.ryanDiff)}
-                                      {comp.ryanDiff ? getPriceComparisonText(comp.ryanDiff) : `${comp.ryanCount} home${comp.ryanCount > 1 ? 's' : ''} available`}
+                                    <div className={`text-sm ${comp.ryanDiff ? 'flex items-center gap-1' : ''} ${getPriceComparisonColor(comp.ryanDiff)}`}>
+                                      {comp.ryanDiff && getPriceComparisonIcon(comp.ryanDiff)}
+                                      {comp.ryanDiff ? getPriceComparisonText(comp.ryanDiff) : `${comp.ryanCount} home${comp.ryanCount > 1 ? 's' : ''}`}
                                     </div>
                                   </div>
                                 ) : (
@@ -322,6 +321,11 @@ export default function HomePage() {
                               </td>
                               <td className="py-4 px-2">
                                 {(() => {
+                                  // If Dream Finders has no homes, show "Not Applicable"
+                                  if (!comp.dreamfindersPrice) {
+                                    return <span className="text-gray-500">Not Applicable</span>;
+                                  }
+                                  
                                   const competitorPrices = [comp.kbPrice, comp.ryanPrice].filter(Boolean);
                                   if (competitorPrices.length === 0) {
                                     return <span className="text-gray-500">No competition</span>;

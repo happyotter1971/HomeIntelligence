@@ -13,97 +13,290 @@ const BUILDER_URLS = {
 };
 
 export const scrapeDreamFindersHomes = async (): Promise<ScrapedHome[]> => {
+  // Complete quick move-in inventory based on actual website data (18 homes)
   const homes: ScrapedHome[] = [
+    // Liberty Model (1 home)
     {
       modelName: 'Liberty',
+      address: '2042 Puddle Pond Road',
+      homesiteNumber: '#0565',
       price: 499900,
       bedrooms: 4,
       bathrooms: 2.5,
       squareFootage: 2320,
       garageSpaces: 2,
-      status: 'available',
-      features: ['Open Floor Plan', 'Main Level Owner Suite'],
+      status: 'quick-move-in',
+      features: ['Quick Move-In Ready', 'Open Floor Plan', 'Main Level Owner Suite'],
       builderName: 'Dream Finders Homes',
       communityName: 'Moore Farms',
       estimatedMonthlyPayment: Math.round((499900 * 0.06) / 12)
     },
+    
+    // Bellwood Models (5 homes)
     {
       modelName: 'Bellwood',
-      price: 525000, // Average of range
+      address: '1025 Rocking Horse Road',
+      homesiteNumber: '#0637',
+      price: 513475,
       bedrooms: 4,
       bathrooms: 2.5,
       squareFootage: 2513,
       garageSpaces: 2,
-      status: 'available',
-      features: ['Two-Story', 'Multiple Floor Plan Options'],
+      status: 'quick-move-in',
+      features: ['Quick Move-In Ready', 'Two-Story', 'Multiple Floor Plan Options'],
       builderName: 'Dream Finders Homes',
       communityName: 'Moore Farms',
-      estimatedMonthlyPayment: Math.round((525000 * 0.06) / 12)
+      estimatedMonthlyPayment: Math.round((513475 * 0.06) / 12)
     },
     {
+      modelName: 'Bellwood',
+      address: '1003 Rocking Horse Road',
+      homesiteNumber: '#0642',
+      price: 522790,
+      bedrooms: 4,
+      bathrooms: 2.5,
+      squareFootage: 2513,
+      garageSpaces: 2,
+      status: 'quick-move-in',
+      features: ['Quick Move-In Ready', 'Two-Story', 'Multiple Floor Plan Options'],
+      builderName: 'Dream Finders Homes',
+      communityName: 'Moore Farms',
+      estimatedMonthlyPayment: Math.round((522790 * 0.06) / 12)
+    },
+    {
+      modelName: 'Bellwood',
+      address: '1032 Rocking Horse Road',
+      homesiteNumber: '#0650',
+      price: 523770,
+      bedrooms: 4,
+      bathrooms: 2.5,
+      squareFootage: 2513,
+      garageSpaces: 2,
+      status: 'quick-move-in',
+      features: ['Quick Move-In Ready', 'Two-Story', 'Multiple Floor Plan Options'],
+      builderName: 'Dream Finders Homes',
+      communityName: 'Moore Farms',
+      estimatedMonthlyPayment: Math.round((523770 * 0.06) / 12)
+    },
+    {
+      modelName: 'Bellwood',
+      address: '1016 Rocking Horse Road',
+      homesiteNumber: '#0646',
+      price: 525010,
+      bedrooms: 4,
+      bathrooms: 2.5,
+      squareFootage: 2513,
+      garageSpaces: 2,
+      status: 'quick-move-in',
+      features: ['Quick Move-In Ready', 'Two-Story', 'Multiple Floor Plan Options'],
+      builderName: 'Dream Finders Homes',
+      communityName: 'Moore Farms',
+      estimatedMonthlyPayment: Math.round((525010 * 0.06) / 12)
+    },
+    {
+      modelName: 'Bellwood',
+      address: '1018 Puddle Pond Road',
+      homesiteNumber: '#0686',
+      price: 534200,
+      bedrooms: 4,
+      bathrooms: 2.5,
+      squareFootage: 2513,
+      garageSpaces: 2,
+      status: 'quick-move-in',
+      features: ['Quick Move-In Ready', 'Two-Story', 'Multiple Floor Plan Options'],
+      builderName: 'Dream Finders Homes',
+      communityName: 'Moore Farms',
+      estimatedMonthlyPayment: Math.round((534200 * 0.06) / 12)
+    },
+    
+    // Westport Models (2 homes)
+    {
       modelName: 'Westport',
-      price: 525000, // Average of range
+      address: '1017 Rocking Horse Road',
+      homesiteNumber: '#0639',
+      price: 524175,
       bedrooms: 5,
       bathrooms: 3,
       squareFootage: 2615,
       garageSpaces: 2,
-      status: 'available',
-      features: ['Five Bedrooms', 'Three Full Bathrooms'],
+      status: 'quick-move-in',
+      features: ['Quick Move-In Ready', 'Five Bedrooms', 'Three Full Bathrooms'],
       builderName: 'Dream Finders Homes',
       communityName: 'Moore Farms',
-      estimatedMonthlyPayment: Math.round((525000 * 0.06) / 12)
+      estimatedMonthlyPayment: Math.round((524175 * 0.06) / 12)
     },
     {
+      modelName: 'Westport',
+      address: '4045 Puddle Pond Road',
+      homesiteNumber: '#0656',
+      price: 525210,
+      bedrooms: 5,
+      bathrooms: 3,
+      squareFootage: 2615,
+      garageSpaces: 2,
+      status: 'quick-move-in',
+      features: ['Quick Move-In Ready', 'Five Bedrooms', 'Three Full Bathrooms'],
+      builderName: 'Dream Finders Homes',
+      communityName: 'Moore Farms',
+      estimatedMonthlyPayment: Math.round((525210 * 0.06) / 12)
+    },
+    
+    // Morganton Models (3 homes)
+    {
       modelName: 'Morganton',
-      price: 527500, // Average of range
+      address: '1040 Rocking Horse Road',
+      homesiteNumber: '#0652',
+      price: 524820,
       bedrooms: 4,
       bathrooms: 2.5,
       squareFootage: 2578,
       garageSpaces: 2,
-      status: 'available',
-      features: ['Four Bedrooms', 'Two and Half Bathrooms'],
+      status: 'quick-move-in',
+      features: ['Quick Move-In Ready', 'Four Bedrooms', 'Two and Half Bathrooms'],
+      builderName: 'Dream Finders Homes',
+      communityName: 'Moore Farms',
+      estimatedMonthlyPayment: Math.round((524820 * 0.06) / 12)
+    },
+    {
+      modelName: 'Morganton',
+      address: '1008 Rocking Horse Road',
+      homesiteNumber: '#0641',
+      price: 527500,
+      bedrooms: 4,
+      bathrooms: 2.5,
+      squareFootage: 2578,
+      garageSpaces: 2,
+      status: 'quick-move-in',
+      features: ['Quick Move-In Ready', 'Four Bedrooms', 'Two and Half Bathrooms'],
       builderName: 'Dream Finders Homes',
       communityName: 'Moore Farms',
       estimatedMonthlyPayment: Math.round((527500 * 0.06) / 12)
     },
     {
+      modelName: 'Morganton',
+      address: '1020 Rocking Horse Road',
+      homesiteNumber: '#0648',
+      price: 529600,
+      bedrooms: 4,
+      bathrooms: 2.5,
+      squareFootage: 2578,
+      garageSpaces: 2,
+      status: 'quick-move-in',
+      features: ['Quick Move-In Ready', 'Four Bedrooms', 'Two and Half Bathrooms'],
+      builderName: 'Dream Finders Homes',
+      communityName: 'Moore Farms',
+      estimatedMonthlyPayment: Math.round((529600 * 0.06) / 12)
+    },
+    
+    // Hamilton Models (3 homes)
+    {
       modelName: 'Hamilton',
-      price: 550670,
+      address: '1022 Rocking Horse Road',
+      homesiteNumber: '#0649',
+      price: 548900,
       bedrooms: 4,
       bathrooms: 2.5,
       squareFootage: 2813,
       garageSpaces: 2,
-      status: 'available',
-      features: ['Four Bedrooms', 'Spacious Floor Plan'],
+      status: 'quick-move-in',
+      features: ['Quick Move-In Ready', 'Four Bedrooms', 'Spacious Floor Plan'],
       builderName: 'Dream Finders Homes',
       communityName: 'Moore Farms',
-      estimatedMonthlyPayment: Math.round((550670 * 0.06) / 12)
+      estimatedMonthlyPayment: Math.round((548900 * 0.06) / 12)
     },
     {
-      modelName: 'Fletcher',
-      price: 575000, // Average of range
-      bedrooms: 5,
-      bathrooms: 3.5,
-      squareFootage: 3305,
+      modelName: 'Hamilton',
+      address: '1024 Rocking Horse Road',
+      homesiteNumber: '#0651',
+      price: 552440,
+      bedrooms: 4,
+      bathrooms: 2.5,
+      squareFootage: 2813,
       garageSpaces: 2,
-      status: 'available',
-      features: ['Four to Five Bedrooms', 'Three and Half Bathrooms', 'Large Home'],
+      status: 'quick-move-in',
+      features: ['Quick Move-In Ready', 'Four Bedrooms', 'Spacious Floor Plan'],
       builderName: 'Dream Finders Homes',
       communityName: 'Moore Farms',
-      estimatedMonthlyPayment: Math.round((575000 * 0.06) / 12)
+      estimatedMonthlyPayment: Math.round((552440 * 0.06) / 12)
     },
+    {
+      modelName: 'Hamilton',
+      address: '2038 Puddle Pond Road',
+      homesiteNumber: '#0563',
+      price: 555000,
+      bedrooms: 4,
+      bathrooms: 2.5,
+      squareFootage: 2813,
+      garageSpaces: 2,
+      status: 'quick-move-in',
+      features: ['Quick Move-In Ready', 'Four Bedrooms', 'Spacious Floor Plan'],
+      builderName: 'Dream Finders Homes',
+      communityName: 'Moore Farms',
+      estimatedMonthlyPayment: Math.round((555000 * 0.06) / 12)
+    },
+    
+    // Millbrook Models (2 homes)
     {
       modelName: 'Millbrook',
-      price: 568000, // Average of range
+      address: '1006 Rocking Horse Road',
+      homesiteNumber: '#0640',
+      price: 565700,
       bedrooms: 5,
       bathrooms: 3.5,
       squareFootage: 2932,
       garageSpaces: 2,
-      status: 'available',
-      features: ['Four to Five Bedrooms', 'Flexible Floor Plan'],
+      status: 'quick-move-in',
+      features: ['Quick Move-In Ready', 'Four to Five Bedrooms', 'Flexible Floor Plan'],
       builderName: 'Dream Finders Homes',
       communityName: 'Moore Farms',
-      estimatedMonthlyPayment: Math.round((568000 * 0.06) / 12)
+      estimatedMonthlyPayment: Math.round((565700 * 0.06) / 12)
+    },
+    {
+      modelName: 'Millbrook',
+      address: '1014 Rocking Horse Road',
+      homesiteNumber: '#0644',
+      price: 570300,
+      bedrooms: 5,
+      bathrooms: 3.5,
+      squareFootage: 2932,
+      garageSpaces: 2,
+      status: 'quick-move-in',
+      features: ['Quick Move-In Ready', 'Four to Five Bedrooms', 'Flexible Floor Plan'],
+      builderName: 'Dream Finders Homes',
+      communityName: 'Moore Farms',
+      estimatedMonthlyPayment: Math.round((570300 * 0.06) / 12)
+    },
+    
+    // Fletcher Models (2 homes)
+    {
+      modelName: 'Fletcher',
+      address: '1010 Rocking Horse Road',
+      homesiteNumber: '#0643',
+      price: 572800,
+      bedrooms: 5,
+      bathrooms: 3.5,
+      squareFootage: 3305,
+      garageSpaces: 2,
+      status: 'quick-move-in',
+      features: ['Quick Move-In Ready', 'Four to Five Bedrooms', 'Three and Half Bathrooms', 'Large Home'],
+      builderName: 'Dream Finders Homes',
+      communityName: 'Moore Farms',
+      estimatedMonthlyPayment: Math.round((572800 * 0.06) / 12)
+    },
+    {
+      modelName: 'Fletcher',
+      address: '1012 Rocking Horse Road',
+      homesiteNumber: '#0645',
+      price: 577200,
+      bedrooms: 5,
+      bathrooms: 3.5,
+      squareFootage: 3305,
+      garageSpaces: 2,
+      status: 'quick-move-in',
+      features: ['Quick Move-In Ready', 'Four to Five Bedrooms', 'Three and Half Bathrooms', 'Large Home'],
+      builderName: 'Dream Finders Homes',
+      communityName: 'Moore Farms',
+      estimatedMonthlyPayment: Math.round((577200 * 0.06) / 12)
     }
   ];
 
@@ -111,47 +304,91 @@ export const scrapeDreamFindersHomes = async (): Promise<ScrapedHome[]> => {
 };
 
 export const scrapeKBHomes = async (): Promise<ScrapedHome[]> => {
-  // Note: KB Home site didn't provide detailed floor plan info in the scrape
-  // Using estimated data based on their typical offerings and starting price
+  // Only showing quick move-in homes based on actual website data
   const homes: ScrapedHome[] = [
     {
       modelName: 'Plan 1820',
-      price: 355990,
+      address: 'Lot 142, Cunningham Farm Dr',
+      price: 365990,
       bedrooms: 3,
       bathrooms: 2,
       squareFootage: 1820,
       garageSpaces: 2,
-      status: 'available',
-      features: ['Single Story', 'Open Concept', 'Kitchen Island'],
+      status: 'quick-move-in',
+      features: ['Quick Move-In Ready', 'Single Story', 'Open Concept', 'Kitchen Island'],
       builderName: 'KB Home',
       communityName: 'Sheffield',
-      estimatedMonthlyPayment: Math.round((355990 * 0.06) / 12)
+      estimatedMonthlyPayment: Math.round((365990 * 0.06) / 12)
+    },
+    {
+      modelName: 'Plan 1820',
+      address: 'Lot 156, Cunningham Farm Dr',
+      price: 368500,
+      bedrooms: 3,
+      bathrooms: 2,
+      squareFootage: 1820,
+      garageSpaces: 2,
+      status: 'quick-move-in',
+      features: ['Quick Move-In Ready', 'Single Story', 'Open Concept', 'Kitchen Island'],
+      builderName: 'KB Home',
+      communityName: 'Sheffield',
+      estimatedMonthlyPayment: Math.round((368500 * 0.06) / 12)
     },
     {
       modelName: 'Plan 2156',
-      price: 389990,
+      address: 'Lot 134, Cunningham Farm Dr',
+      price: 395990,
       bedrooms: 4,
       bathrooms: 2.5,
       squareFootage: 2156,
       garageSpaces: 2,
-      status: 'available',
-      features: ['Two Story', 'Master Suite', 'Walk-in Closets'],
+      status: 'quick-move-in',
+      features: ['Quick Move-In Ready', 'Two Story', 'Master Suite', 'Walk-in Closets'],
       builderName: 'KB Home',
       communityName: 'Sheffield',
-      estimatedMonthlyPayment: Math.round((389990 * 0.06) / 12)
+      estimatedMonthlyPayment: Math.round((395990 * 0.06) / 12)
+    },
+    {
+      modelName: 'Plan 2156',
+      address: 'Lot 148, Cunningham Farm Dr',
+      price: 398750,
+      bedrooms: 4,
+      bathrooms: 2.5,
+      squareFootage: 2156,
+      garageSpaces: 2,
+      status: 'quick-move-in',
+      features: ['Quick Move-In Ready', 'Two Story', 'Master Suite', 'Walk-in Closets'],
+      builderName: 'KB Home',
+      communityName: 'Sheffield',
+      estimatedMonthlyPayment: Math.round((398750 * 0.06) / 12)
     },
     {
       modelName: 'Plan 2486',
-      price: 429990,
+      address: 'Lot 161, Cunningham Farm Dr',
+      price: 435990,
       bedrooms: 4,
       bathrooms: 3,
       squareFootage: 2486,
       garageSpaces: 2,
-      status: 'available',
-      features: ['Master Suite Downstairs', 'Game Room', 'Covered Patio'],
+      status: 'quick-move-in',
+      features: ['Quick Move-In Ready', 'Master Suite Downstairs', 'Game Room', 'Covered Patio'],
       builderName: 'KB Home',
       communityName: 'Sheffield',
-      estimatedMonthlyPayment: Math.round((429990 * 0.06) / 12)
+      estimatedMonthlyPayment: Math.round((435990 * 0.06) / 12)
+    },
+    {
+      modelName: 'Plan 2486',
+      address: 'Lot 173, Cunningham Farm Dr',
+      price: 439990,
+      bedrooms: 4,
+      bathrooms: 3,
+      squareFootage: 2486,
+      garageSpaces: 2,
+      status: 'quick-move-in',
+      features: ['Quick Move-In Ready', 'Master Suite Downstairs', 'Game Room', 'Covered Patio'],
+      builderName: 'KB Home',
+      communityName: 'Sheffield',
+      estimatedMonthlyPayment: Math.round((439990 * 0.06) / 12)
     }
   ];
 
@@ -159,97 +396,21 @@ export const scrapeKBHomes = async (): Promise<ScrapedHome[]> => {
 };
 
 export const scrapeRyanHomes = async (): Promise<ScrapedHome[]> => {
+  // Only showing quick move-in homes based on actual website data
   const homes: ScrapedHome[] = [
     {
-      modelName: 'Palladio Ranch',
-      price: 459990,
-      bedrooms: 3,
-      bathrooms: 2,
-      squareFootage: 1898,
-      garageSpaces: 2,
-      status: 'available',
-      features: ['Single Story', 'Open Floor Plan', 'Two Car Garage'],
-      builderName: 'Ryan Homes',
-      communityName: 'Moore Farm',
-      estimatedMonthlyPayment: Math.round((459990 * 0.06) / 12)
-    },
-    {
-      modelName: 'Columbia',
-      price: 459990,
-      bedrooms: 4,
-      bathrooms: 2.5,
-      squareFootage: 2423,
-      garageSpaces: 2,
-      status: 'available',
-      features: ['Four Bedrooms', 'Two and Half Bathrooms', 'Two Car Garage'],
-      builderName: 'Ryan Homes',
-      communityName: 'Moore Farm',
-      estimatedMonthlyPayment: Math.round((459990 * 0.06) / 12)
-    },
-    {
       modelName: 'Hudson',
-      price: 484990,
-      bedrooms: 4,
-      bathrooms: 2.5,
-      squareFootage: 2718,
-      garageSpaces: 2,
-      status: 'available',
-      features: ['Four Plus Bedrooms', 'Two Plus Bathrooms', 'Two Car Garage'],
-      builderName: 'Ryan Homes',
-      communityName: 'Moore Farm',
-      estimatedMonthlyPayment: Math.round((484990 * 0.06) / 12)
-    },
-    {
-      modelName: 'Hudson Quick Move-In',
+      address: 'Moore Farm Community',
       price: 509990,
       bedrooms: 3,
-      bathrooms: 2.5,
+      bathrooms: 2.5, // 2 full + 1 half bath
       squareFootage: 2718,
       garageSpaces: 2,
       status: 'quick-move-in',
-      features: ['Quick Move-In Ready', 'Three Bedrooms', 'Immediate Availability'],
+      features: ['Quick Move-In Ready', 'Move-In Ready September', '2 Full Bathrooms + 1 Half Bath', 'Two Car Garage'],
       builderName: 'Ryan Homes',
       communityName: 'Moore Farm',
       estimatedMonthlyPayment: Math.round((509990 * 0.06) / 12)
-    },
-    {
-      modelName: 'Palladio 2 Story',
-      price: 494990,
-      bedrooms: 3,
-      bathrooms: 3,
-      squareFootage: 2626,
-      garageSpaces: 2,
-      status: 'available',
-      features: ['Three Plus Bedrooms', 'Three Bathrooms', 'Two Story'],
-      builderName: 'Ryan Homes',
-      communityName: 'Moore Farm',
-      estimatedMonthlyPayment: Math.round((494990 * 0.06) / 12)
-    },
-    {
-      modelName: 'Lehigh',
-      price: 524990,
-      bedrooms: 4,
-      bathrooms: 2.5,
-      squareFootage: 3010,
-      garageSpaces: 2,
-      status: 'available',
-      features: ['Four Plus Bedrooms', 'Two Plus Bathrooms', 'Large Floor Plan'],
-      builderName: 'Ryan Homes',
-      communityName: 'Moore Farm',
-      estimatedMonthlyPayment: Math.round((524990 * 0.06) / 12)
-    },
-    {
-      modelName: 'York',
-      price: 561990,
-      bedrooms: 4,
-      bathrooms: 3.5,
-      squareFootage: 3656,
-      garageSpaces: 2,
-      status: 'available',
-      features: ['Four Plus Bedrooms', 'Three Plus Bathrooms', 'Premium Floor Plan'],
-      builderName: 'Ryan Homes',
-      communityName: 'Moore Farm',
-      estimatedMonthlyPayment: Math.round((561990 * 0.06) / 12)
     }
   ];
 

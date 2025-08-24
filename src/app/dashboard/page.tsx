@@ -1,20 +1,20 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
-import { useRouter } from 'next/navigation';
+import { useEffect, useState, useCallback, Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { onAuthStateChanged } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
 import { getHomes, getBuilders, getCommunities } from '@/lib/firestore';
 import { HomeWithRelations, Builder, Community } from '@/types';
-import { HomeCard } from '@/components/home-card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select } from '@/components/ui/select';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Search, Filter, ArrowLeft } from 'lucide-react';
+import { formatPrice, formatSquareFootage, formatSquareFootageNumber, formatPricePerSquareFoot } from '@/lib/utils';
+import { Search, Filter, ArrowLeft, MapPin, Eye, Clock, Zap } from 'lucide-react';
 import Link from 'next/link';
 
-export default function DashboardPage() {
+function DashboardContent() {
   const [homes, setHomes] = useState<HomeWithRelations[]>([]);
   const [filteredHomes, setFilteredHomes] = useState<HomeWithRelations[]>([]);
   const [builders, setBuilders] = useState<Builder[]>([]);
@@ -29,6 +29,7 @@ export default function DashboardPage() {
   const [status, setStatus] = useState('');
   const [compareList, setCompareList] = useState<HomeWithRelations[]>([]);
   const router = useRouter();
+  const searchParams = useSearchParams();
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -43,6 +44,14 @@ export default function DashboardPage() {
   useEffect(() => {
     fetchData();
   }, []);
+
+  // Handle URL search parameters
+  useEffect(() => {
+    const bedroomsParam = searchParams.get('bedrooms');
+    if (bedroomsParam) {
+      setBedrooms(bedroomsParam);
+    }
+  }, [searchParams]);
 
   const fetchData = async () => {
     try {
@@ -100,6 +109,11 @@ export default function DashboardPage() {
     setFilteredHomes(filtered);
   }, [homes, searchTerm, selectedBuilder, selectedCommunity, minPrice, maxPrice, bedrooms, status]);
 
+  // All homes are now quick move-in, so this function is simplified
+  const quickMoveInHomes = useCallback(() => {
+    return filteredHomes; // All homes are quick move-in
+  }, [filteredHomes]);
+
   const groupedHomes = useCallback(() => {
     const groups = filteredHomes.reduce((acc, home) => {
       const builderName = home.builder?.name || 'Unknown Builder';
@@ -109,6 +123,18 @@ export default function DashboardPage() {
       acc[builderName].push(home);
       return acc;
     }, {} as Record<string, HomeWithRelations[]>);
+
+    // Sort homes within each builder group by price (lowest to highest), then by square footage (lowest to highest)
+    Object.keys(groups).forEach(builderName => {
+      groups[builderName].sort((a, b) => {
+        // Primary sort: price (lowest to highest)
+        if (a.price !== b.price) {
+          return a.price - b.price;
+        }
+        // Secondary sort: square footage (lowest to highest)
+        return a.squareFootage - b.squareFootage;
+      });
+    });
 
     return Object.entries(groups).sort(([a], [b]) => a.localeCompare(b));
   }, [filteredHomes]);
@@ -155,7 +181,7 @@ export default function DashboardPage() {
               Back
             </Button>
           </Link>
-          <h1 className="text-3xl font-bold text-gray-900">Home Dashboard</h1>
+          <h1 className="text-3xl font-bold text-gray-900">Quick Move-In Inventory</h1>
         </div>
 
         <Card className="mb-6">
@@ -260,31 +286,89 @@ export default function DashboardPage() {
         )}
 
         <div className="mb-4 flex justify-between items-center">
-          <p className="text-gray-600">
-            Showing {filteredHomes.length} of {homes.length} homes
-          </p>
+          <div>
+            <p className="text-gray-600">
+              Showing {filteredHomes.length} of {homes.length} quick move-in ready homes
+            </p>
+            <p className="text-sm text-green-600 flex items-center gap-1 mt-1">
+              <Zap className="h-4 w-4" />
+              All homes are available for immediate move-in
+            </p>
+          </div>
         </div>
 
-        <div className="space-y-8">
+        <div className="space-y-6">
           {groupedHomes().map(([builderName, homes]) => (
-            <div key={builderName} className="space-y-4">
-              <div className="flex items-center justify-between">
-                <h2 className="text-2xl font-bold text-gray-900">{builderName}</h2>
-                <span className="bg-gray-100 text-gray-600 px-3 py-1 rounded-full text-sm font-medium">
-                  {homes.length} home{homes.length !== 1 ? 's' : ''}
-                </span>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {homes.map(home => (
-                  <HomeCard
-                    key={home.id}
-                    home={home}
-                    onCompare={handleCompare}
-                    isComparing={compareList.some(h => h.id === home.id)}
-                  />
-                ))}
-              </div>
-            </div>
+            <Card key={builderName}>
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-xl">{builderName}</CardTitle>
+                  <span className="bg-gray-100 text-gray-600 px-3 py-1 rounded-full text-sm font-medium">
+                    {homes.length} home{homes.length !== 1 ? 's' : ''}
+                  </span>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead>
+                      <tr className="border-b">
+                        <th className="text-left py-3 px-2">Model</th>
+                        <th className="text-left py-3 px-2">Community</th>
+                        <th className="text-left py-3 px-2">Price</th>
+                        <th className="text-left py-3 px-2">Price/Sq Ft</th>
+                        <th className="text-left py-3 px-2">Sq Ft</th>
+                        <th className="text-left py-3 px-2">Beds</th>
+                        <th className="text-left py-3 px-2">Baths</th>
+                        <th className="text-left py-3 px-2">Garage</th>
+                        <th className="text-left py-3 px-2">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y">
+                      {homes.map((home) => (
+                        <tr key={home.id} className="hover:bg-green-50">
+                          <td className="py-4 px-2">
+                            <div className="font-medium text-gray-900">{home.modelName}</div>
+                            {home.address && (
+                              <div className="text-sm text-gray-500">{home.address}</div>
+                            )}
+                            {home.homesiteNumber && (
+                              <div className="text-sm text-gray-500">Homesite: {home.homesiteNumber}</div>
+                            )}
+                          </td>
+                          <td className="py-4 px-2 text-gray-600">{home.community?.name}</td>
+                          <td className="py-4 px-2">
+                            <div className="font-semibold text-gray-900">{formatPrice(home.price)}</div>
+                          </td>
+                          <td className="py-4 px-2 text-gray-600">{formatPricePerSquareFoot(home.price, home.squareFootage)}</td>
+                          <td className="py-4 px-2 text-gray-600">{formatSquareFootageNumber(home.squareFootage)}</td>
+                          <td className="py-4 px-2 text-gray-600">{home.bedrooms}</td>
+                          <td className="py-4 px-2 text-gray-600">{home.bathrooms}</td>
+                          <td className="py-4 px-2 text-gray-600">{home.garageSpaces}</td>
+                          <td className="py-4 px-2">
+                            <div className="flex gap-2">
+                              <Link href={`/home/${home.id}`}>
+                                <Button size="sm" variant="outline">
+                                  <Eye className="h-4 w-4 mr-1" />
+                                  View
+                                </Button>
+                              </Link>
+                              <Button 
+                                size="sm" 
+                                variant={compareList.some(h => h.id === home.id) ? "secondary" : "outline"}
+                                onClick={() => handleCompare(home)}
+                              >
+                                {compareList.some(h => h.id === home.id) ? 'Remove' : 'Compare'}
+                              </Button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </CardContent>
+            </Card>
           ))}
         </div>
 
@@ -298,5 +382,17 @@ export default function DashboardPage() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function DashboardPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    }>
+      <DashboardContent />
+    </Suspense>
   );
 }

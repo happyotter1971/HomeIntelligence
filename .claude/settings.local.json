@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:dreamfindershomes.com)",
+      "WebFetch(domain:www.kbhome.com)",
+      "WebFetch(domain:www.ryanhomes.com)",
+      "Bash(git add:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

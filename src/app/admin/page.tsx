@@ -13,7 +13,7 @@ import { Input } from '@/components/ui/input';
 import { Select } from '@/components/ui/select';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { formatPrice } from '@/lib/utils';
-import { ArrowLeft, Plus, Edit, Trash2, Shield, Download, RefreshCw } from 'lucide-react';
+import { ArrowLeft, Plus, Edit, Trash2, Shield, Download, RefreshCw, AlertTriangle, Building2 } from 'lucide-react';
 import Link from 'next/link';
 import { Timestamp } from 'firebase/firestore';
 
@@ -174,6 +174,37 @@ export default function AdminPage() {
     setShowAddForm(true);
   };
 
+  const checkForDuplicates = (homeData: Omit<Home, 'id'>) => {
+    return homes.filter(existingHome => {
+      // Skip the home we're editing
+      if (editingHome && existingHome.id === editingHome.id) {
+        return false;
+      }
+      
+      // Check for duplicates based on multiple criteria
+      const sameModel = existingHome.modelName.toLowerCase() === homeData.modelName.toLowerCase();
+      const sameBuilder = existingHome.builderId === homeData.builderId;
+      const sameCommunity = existingHome.communityId === homeData.communityId;
+      
+      // If address is provided, use it as primary duplicate check
+      if (homeData.address && existingHome.address) {
+        return existingHome.address.toLowerCase() === homeData.address.toLowerCase();
+      }
+      
+      // If homesite number is provided, use it as primary duplicate check
+      if (homeData.homesiteNumber && existingHome.homesiteNumber) {
+        return existingHome.homesiteNumber === homeData.homesiteNumber && sameBuilder && sameCommunity;
+      }
+      
+      // Otherwise check for same model, builder, community, and exact specs
+      return sameModel && sameBuilder && sameCommunity && 
+             existingHome.price === homeData.price &&
+             existingHome.bedrooms === homeData.bedrooms &&
+             existingHome.bathrooms === homeData.bathrooms &&
+             existingHome.squareFootage === homeData.squareFootage;
+    });
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -195,6 +226,22 @@ export default function AdminPage() {
         createdAt: editingHome ? editingHome.createdAt : Timestamp.now()
       };
 
+      // Check for duplicates only when adding new homes
+      if (!editingHome) {
+        const duplicates = checkForDuplicates(homeData);
+        if (duplicates.length > 0) {
+          const duplicateInfo = duplicates.map(h => 
+            `${h.modelName} - ${h.address || h.homesiteNumber || 'No address'}`
+          ).join(', ');
+          
+          const confirmMessage = `Warning: Potential duplicate found!\n\nExisting home(s): ${duplicateInfo}\n\nDo you want to add this home anyway?`;
+          
+          if (!window.confirm(confirmMessage)) {
+            return; // Don't save if user cancels
+          }
+        }
+      }
+
       if (editingHome) {
         await updateHome(editingHome.id, homeData);
       } else {
@@ -205,6 +252,7 @@ export default function AdminPage() {
       resetForm();
     } catch (error) {
       console.error('Error saving home:', error);
+      alert('Error saving home. Please try again.');
     }
   };
 
@@ -230,6 +278,52 @@ export default function AdminPage() {
     }, {} as Record<string, HomeWithRelations[]>);
 
     return Object.entries(groups).sort(([a], [b]) => a.localeCompare(b));
+  };
+
+  const findAllDuplicates = () => {
+    const duplicateGroups: HomeWithRelations[][] = [];
+    const processed = new Set<string>();
+
+    homes.forEach(home => {
+      if (processed.has(home.id)) return;
+
+      const potentialDuplicates = homes.filter(otherHome => {
+        if (otherHome.id === home.id || processed.has(otherHome.id)) return false;
+
+        // Same address check
+        if (home.address && otherHome.address) {
+          return home.address.toLowerCase() === otherHome.address.toLowerCase();
+        }
+
+        // Same homesite number in same community
+        if (home.homesiteNumber && otherHome.homesiteNumber) {
+          return home.homesiteNumber === otherHome.homesiteNumber && 
+                 home.communityId === otherHome.communityId;
+        }
+
+        // Same model with identical specs
+        return home.modelName.toLowerCase() === otherHome.modelName.toLowerCase() &&
+               home.builderId === otherHome.builderId &&
+               home.communityId === otherHome.communityId &&
+               home.price === otherHome.price &&
+               home.bedrooms === otherHome.bedrooms &&
+               home.bathrooms === otherHome.bathrooms &&
+               home.squareFootage === otherHome.squareFootage;
+      });
+
+      if (potentialDuplicates.length > 0) {
+        const group = [home, ...potentialDuplicates];
+        duplicateGroups.push(group);
+        group.forEach(h => processed.add(h.id));
+      }
+    });
+
+    return duplicateGroups;
+  };
+
+  const isDuplicateHome = (homeId: string) => {
+    const duplicateGroups = findAllDuplicates();
+    return duplicateGroups.some(group => group.some(home => home.id === homeId));
   };
 
   if (loading) {
@@ -502,9 +596,99 @@ export default function AdminPage() {
 
         <div className="space-y-6">
           <div className="flex justify-between items-center">
-            <h2 className="text-2xl font-bold text-gray-900">Manage Homes ({homes.length})</h2>
-            <p className="text-gray-600">Add, edit, or delete home listings</p>
+            <h2 className="text-2xl font-bold text-gray-900">Quick Move-In Inventory ({homes.length})</h2>
+            <p className="text-gray-600">Manage homes ready for immediate move-in</p>
           </div>
+
+          {/* Builder Summary Section */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Building2 className="h-5 w-5" />
+                Builder Summary
+              </CardTitle>
+              <CardDescription>
+                Total homes by builder
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {groupedHomes().map(([builderName, builderHomes]) => (
+                  <div key={builderName} className="bg-gray-50 p-4 rounded-lg">
+                    <div className="flex items-center justify-between">
+                      <h3 className="font-semibold text-gray-900">{builderName}</h3>
+                      <span className="text-2xl font-bold text-blue-600">{builderHomes.length}</span>
+                    </div>
+                    <p className="text-sm text-gray-500 mt-1">
+                      {builderHomes.length === 1 ? 'home' : 'homes'} listed
+                    </p>
+                    {/* Show breakdown by status */}
+                    <div className="flex gap-3 mt-3 text-xs">
+                      {(() => {
+                        const statusCounts = builderHomes.reduce((acc, home) => {
+                          acc[home.status] = (acc[home.status] || 0) + 1;
+                          return acc;
+                        }, {} as Record<string, number>);
+                        
+                        return Object.entries(statusCounts).map(([status, count]) => (
+                          <span key={status} className={`px-2 py-1 rounded-full ${
+                            status === 'available' ? 'bg-green-100 text-green-700' :
+                            status === 'quick-move-in' ? 'bg-blue-100 text-blue-700' :
+                            status === 'pending' ? 'bg-yellow-100 text-yellow-700' :
+                            'bg-gray-100 text-gray-700'
+                          }`}>
+                            {count} {status.replace('-', ' ')}
+                          </span>
+                        ));
+                      })()}
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <div className="mt-4 p-4 bg-blue-50 rounded-lg">
+                <div className="flex items-center justify-between">
+                  <span className="font-medium text-blue-900">Total Homes</span>
+                  <span className="text-2xl font-bold text-blue-600">{homes.length}</span>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {(() => {
+            const duplicateGroups = findAllDuplicates();
+            if (duplicateGroups.length > 0) {
+              return (
+                <Card className="border-red-200 bg-red-50">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2 text-red-800">
+                      <AlertTriangle className="h-5 w-5" />
+                      Duplicate Homes Detected ({duplicateGroups.length} group{duplicateGroups.length > 1 ? 's' : ''})
+                    </CardTitle>
+                    <CardDescription className="text-red-700">
+                      The following homes appear to be duplicates. Review and remove duplicates to maintain data quality.
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      {duplicateGroups.map((group, index) => (
+                        <div key={index} className="bg-white p-4 rounded-lg border">
+                          <h4 className="font-medium text-gray-900 mb-2">Duplicate Group {index + 1}:</h4>
+                          <ul className="space-y-1 text-sm">
+                            {group.map(home => (
+                              <li key={home.id} className="text-gray-600">
+                                • {home.modelName} - {home.builder?.name} - {home.address || home.homesiteNumber || 'No address'} - {formatPrice(home.price)}
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              );
+            }
+            return null;
+          })()}
 
           {homes.length === 0 ? (
             <Card>
@@ -531,18 +715,33 @@ export default function AdminPage() {
                           <th className="text-left py-2">Model</th>
                           <th className="text-left py-2">Community</th>
                           <th className="text-left py-2">Price</th>
-                          <th className="text-left py-2">Beds/Baths</th>
+                          <th className="text-left py-2">Bedrooms</th>
+                          <th className="text-left py-2">Bathrooms</th>
                           <th className="text-left py-2">Status</th>
                           <th className="text-left py-2">Actions</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y">
                         {builderHomes.map((home) => (
-                          <tr key={home.id}>
-                            <td className="py-3 font-medium">{home.modelName}</td>
+                          <tr key={home.id} className={isDuplicateHome(home.id) ? "bg-red-50 border-l-4 border-red-400" : ""}>
+                            <td className="py-3">
+                              <div className="flex items-center gap-2">
+                                <span className="font-medium">{home.modelName}</span>
+                                {isDuplicateHome(home.id) && (
+                                  <AlertTriangle className="h-4 w-4 text-red-500" title="Potential duplicate detected" />
+                                )}
+                              </div>
+                              {home.address && (
+                                <div className="text-sm text-gray-500">{home.address}</div>
+                              )}
+                              {home.homesiteNumber && (
+                                <div className="text-sm text-gray-500">Homesite: {home.homesiteNumber}</div>
+                              )}
+                            </td>
                             <td className="py-3">{home.community?.name}</td>
                             <td className="py-3 font-medium">{formatPrice(home.price)}</td>
-                            <td className="py-3">{home.bedrooms}bd/{home.bathrooms}ba</td>
+                            <td className="py-3 text-center">{home.bedrooms}</td>
+                            <td className="py-3 text-center">{home.bathrooms}</td>
                             <td className="py-3">
                               <span className={`capitalize px-2 py-1 rounded-full text-xs font-medium ${
                                 home.status === 'available' ? 'bg-green-100 text-green-800' :

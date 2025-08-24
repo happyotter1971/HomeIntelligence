@@ -16,3 +16,16 @@ export function formatPrice(price: number): string {
 export function formatSquareFootage(sqft: number): string {
   return new Intl.NumberFormat("en-US").format(sqft) + " sq ft";
 }
+
+export function formatSquareFootageNumber(sqft: number): string {
+  return new Intl.NumberFormat("en-US").format(sqft);
+}
+
+export function formatPricePerSquareFoot(price: number, squareFootage: number): string {
+  const pricePerSqFt = price / squareFootage;
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+    maximumFractionDigits: 0,
+  }).format(pricePerSqFt);
+}

@@ -132,3 +132,6 @@ export const deleteHome = async (id: string) => {
   const docRef = doc(db, 'homes', id);
   await deleteDoc(docRef);
 };
+
+// Alias for consistency
+export const getHomeById = getHome;
