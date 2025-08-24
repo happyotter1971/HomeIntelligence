@@ -68,7 +68,14 @@ export async function GET(request: NextRequest) {
         address: h.address,
         lastUpdated: h.lastUpdated?.toDate?.() || h.lastUpdated
       })),
-      matches: []
+      matches: [] as Array<{
+        priceChangeId: string;
+        homeId: string;
+        priceChangeNewPrice?: number;
+        homeCurrentPrice?: number;
+        priceMatch?: boolean;
+        issue: string;
+      }>
     };
     
     // Find matches between price changes and homes

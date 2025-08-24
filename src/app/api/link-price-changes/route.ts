@@ -29,7 +29,11 @@ export async function POST(request: NextRequest) {
       modelName,
       homesFound: homesSnapshot.size,
       priceChangesFound: priceChangesSnapshot.size,
-      created: []
+      created: [] as Array<{
+        homeId: string;
+        priceChangeId: string;
+        address: any;
+      }>
     };
     
     // For each home that doesn't have price changes, create synthetic ones
