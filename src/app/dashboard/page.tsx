@@ -11,7 +11,7 @@ import { Input } from '@/components/ui/input';
 import { Select } from '@/components/ui/select';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { formatPrice, formatSquareFootage, formatSquareFootageNumber, formatPricePerSquareFoot } from '@/lib/utils';
-import { Search, Filter, ArrowLeft, MapPin, Eye, Clock, Zap } from 'lucide-react';
+import { Search, Filter, ArrowLeft, MapPin, Eye, Clock, Zap, Check } from 'lucide-react';
 import Link from 'next/link';
 
 function DashboardContent() {
@@ -191,105 +191,96 @@ function DashboardContent() {
           <h1 className="text-3xl font-bold gradient-accent bg-clip-text text-transparent">Quick Move-In Inventory</h1>
         </div>
 
-        <Card className="mb-6 glass-effect border-0 shadow-lg">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Filter className="h-5 w-5" />
-              Filters
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-6 gap-4">
-              <div className="md:col-span-2">
+        <Card className="mb-6 border-0 bg-gradient-to-r from-blue-50 to-indigo-50 shadow-sm">
+          <CardContent className="pt-6">
+            <div className="space-y-6">
+              {/* Search Bar & Clear Button */}
+              <div className="flex gap-3">
                 <Input
-                  placeholder="Search homes..."
+                  placeholder="🔍 Search by model name, builder, or community..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
+                  className="flex-1 h-12 text-lg border-0 bg-white shadow-sm rounded-lg"
                 />
-                <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                <Button variant="outline" onClick={clearFilters} className="h-12 px-6 bg-white/70 border-0 shadow-sm hover:bg-white whitespace-nowrap">
+                  Clear All Filters
+                </Button>
               </div>
               
-              <Select value={selectedBuilder} onChange={(e) => setSelectedBuilder(e.target.value)}>
-                <option value="">All Builders</option>
-                {builders.map(builder => (
-                  <option key={builder.id} value={builder.id}>{builder.name}</option>
-                ))}
-              </Select>
-              
-              <Select value={selectedCommunity} onChange={(e) => setSelectedCommunity(e.target.value)}>
-                <option value="">All Communities</option>
-                {communities.map(community => (
-                  <option key={community.id} value={community.id}>{community.name}</option>
-                ))}
-              </Select>
-              
-              <Input
-                placeholder="Min Price"
-                type="number"
-                value={minPrice}
-                onChange={(e) => setMinPrice(e.target.value)}
-              />
-              
-              <Input
-                placeholder="Max Price"
-                type="number"
-                value={maxPrice}
-                onChange={(e) => setMaxPrice(e.target.value)}
-              />
-              
-              <Select value={bedrooms} onChange={(e) => setBedrooms(e.target.value)}>
-                <option value="">Any Bedrooms</option>
-                <option value="3">3 Bedrooms</option>
-                <option value="4">4 Bedrooms</option>
-                <option value="5">5+ Bedrooms</option>
-              </Select>
-              
-              <Select value={status} onChange={(e) => setStatus(e.target.value)}>
-                <option value="">All Status</option>
-                <option value="available">Available</option>
-                <option value="quick-move-in">Quick Move-In</option>
-                <option value="pending">Pending</option>
-              </Select>
-              
-              <Button variant="outline" onClick={clearFilters}>
-                Clear Filters
-              </Button>
+              {/* Filter Groups */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {/* Builder & Community */}
+                <div className="space-y-3">
+                  <h4 className="text-sm font-semibold text-gray-700 uppercase tracking-wide">Location</h4>
+                  <div className="space-y-2">
+                    <Select value={selectedBuilder} onChange={(e) => setSelectedBuilder(e.target.value)} className="bg-white border-0 shadow-sm rounded-md">
+                      <option value="">All Builders</option>
+                      {builders.map(builder => (
+                        <option key={builder.id} value={builder.id}>{builder.name}</option>
+                      ))}
+                    </Select>
+                    <Select value={selectedCommunity} onChange={(e) => setSelectedCommunity(e.target.value)} className="bg-white border-0 shadow-sm rounded-md">
+                      <option value="">All Communities</option>
+                      {communities.map(community => (
+                        <option key={community.id} value={community.id}>{community.name}</option>
+                      ))}
+                    </Select>
+                  </div>
+                </div>
+                
+                {/* Price Range */}
+                <div className="space-y-3">
+                  <h4 className="text-sm font-semibold text-gray-700 uppercase tracking-wide">Price Range</h4>
+                  <div className="space-y-2">
+                    <Input
+                      placeholder="Min Price"
+                      type="number"
+                      value={minPrice}
+                      onChange={(e) => setMinPrice(e.target.value)}
+                      className="bg-white border-0 shadow-sm rounded-md"
+                    />
+                    <Input
+                      placeholder="Max Price"
+                      type="number"
+                      value={maxPrice}
+                      onChange={(e) => setMaxPrice(e.target.value)}
+                      className="bg-white border-0 shadow-sm rounded-md"
+                    />
+                  </div>
+                </div>
+                
+                {/* Home Details */}
+                <div className="space-y-3">
+                  <h4 className="text-sm font-semibold text-gray-700 uppercase tracking-wide">Home Details</h4>
+                  <div className="space-y-2">
+                    <Select value={bedrooms} onChange={(e) => setBedrooms(e.target.value)} className="bg-white border-0 shadow-sm rounded-md">
+                      <option value="">Any Bedrooms</option>
+                      <option value="3">3 Bedrooms</option>
+                      <option value="4">4 Bedrooms</option>
+                      <option value="5">5+ Bedrooms</option>
+                    </Select>
+                    <Select value={status} onChange={(e) => setStatus(e.target.value)} className="bg-white border-0 shadow-sm rounded-md">
+                      <option value="">All Status</option>
+                      <option value="available">Available</option>
+                      <option value="quick-move-in">Quick Move-In</option>
+                      <option value="pending">Pending</option>
+                    </Select>
+                  </div>
+                </div>
+              </div>
             </div>
           </CardContent>
         </Card>
 
-        {compareList.length > 0 && (
-          <Card className="mb-6 gradient-secondary border-0 shadow-lg">
-            <CardHeader>
-              <CardTitle>Compare Homes ({compareList.length}/3)</CardTitle>
-              <CardDescription>
-                Selected homes for comparison
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="flex gap-4 items-center">
-                <div className="flex gap-2 flex-1">
-                  {compareList.map(home => (
-                    <div key={home.id} className="gradient-primary px-3 py-1 rounded-lg text-sm text-white shadow-md">
-                      {home.modelName} - {home.builder?.name}
-                      <button
-                        onClick={() => handleCompare(home)}
-                        className="ml-2 text-primary hover:text-primary/70"
-                      >
-                        ×
-                      </button>
-                    </div>
-                  ))}
-                </div>
-                <Link href={`/comparison?homes=${compareList.map(h => h.id).join(',')}`}>
-                  <Button>
-                    Compare Now
-                  </Button>
-                </Link>
-              </div>
-            </CardContent>
-          </Card>
+{/* Floating Compare Button - only show when 2+ homes selected */}
+        {compareList.length >= 2 && (
+          <div className="fixed bottom-6 right-6 z-50">
+            <Link href={`/comparison?homes=${compareList.map(h => h.id).join(',')}`}>
+              <Button size="lg" className="shadow-lg bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white px-6 py-3 rounded-full">
+                Compare {compareList.length} Home{compareList.length !== 1 ? 's' : ''} Now
+              </Button>
+            </Link>
+          </div>
         )}
 
         <div className="mb-4 flex justify-between items-center">
@@ -333,15 +324,30 @@ function DashboardContent() {
                     </thead>
                     <tbody className="divide-y">
                       {homes.map((home) => (
-                        <tr key={home.id} className="hover:bg-accent/50 transition-colors duration-200">
+                        <tr 
+                          key={home.id} 
+                          className={`hover:bg-accent/50 transition-colors duration-200 ${compareList.some(h => h.id === home.id) ? 'bg-blue-50/50' : ''}`}
+                        >
                           <td className="py-4 px-2">
-                            <div className="font-semibold text-foreground">{home.modelName}</div>
-                            {home.address && (
-                              <div className="text-sm text-muted-foreground">{home.address}</div>
-                            )}
-                            {home.homesiteNumber && (
-                              <div className="text-sm text-muted-foreground">Homesite: {home.homesiteNumber}</div>
-                            )}
+                            <div className="flex items-center gap-3">
+                              <input
+                                type="checkbox"
+                                checked={compareList.some(h => h.id === home.id)}
+                                onChange={() => handleCompare(home)}
+                                disabled={!compareList.some(h => h.id === home.id) && compareList.length >= 3}
+                                className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
+                                title={compareList.length >= 3 && !compareList.some(h => h.id === home.id) ? "Maximum 3 homes can be compared" : "Select to compare"}
+                              />
+                              <div>
+                                <div className="font-semibold text-foreground">{home.modelName}</div>
+                                {home.address && (
+                                  <div className="text-sm text-muted-foreground">{home.address}</div>
+                                )}
+                                {home.homesiteNumber && (
+                                  <div className="text-sm text-muted-foreground">Homesite: {home.homesiteNumber}</div>
+                                )}
+                              </div>
+                            </div>
                           </td>
                           <td className="py-4 px-2 text-muted-foreground">{home.community?.name}</td>
                           <td className="py-4 px-2">
@@ -353,21 +359,12 @@ function DashboardContent() {
                           <td className="py-4 px-2 text-muted-foreground">{home.bathrooms}</td>
                           <td className="py-4 px-2 text-muted-foreground">{home.garageSpaces}</td>
                           <td className="py-4 px-2">
-                            <div className="flex gap-2">
-                              <Link href={`/home/${home.id}`}>
-                                <Button size="sm" variant="outline">
-                                  <Eye className="h-4 w-4 mr-1" />
-                                  View
-                                </Button>
-                              </Link>
-                              <Button 
-                                size="sm" 
-                                variant={compareList.some(h => h.id === home.id) ? "secondary" : "outline"}
-                                onClick={() => handleCompare(home)}
-                              >
-                                {compareList.some(h => h.id === home.id) ? 'Remove' : 'Compare'}
+                            <Link href={`/home/${home.id}`}>
+                              <Button size="sm" variant="outline">
+                                <Eye className="h-4 w-4 mr-1" />
+                                View
                               </Button>
-                            </div>
+                            </Link>
                           </td>
                         </tr>
                       ))}

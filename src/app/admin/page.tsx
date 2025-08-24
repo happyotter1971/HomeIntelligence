@@ -6,7 +6,6 @@ import { onAuthStateChanged } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
 import { getUserData } from '@/lib/auth';
 import { getHomes, addHome, updateHome, deleteHome, getBuilders, getCommunities } from '@/lib/firestore';
-import { refreshHomesFromWebsites } from '@/lib/scrape-and-update';
 import { HomeWithRelations, Home, Builder, Community } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -95,18 +94,6 @@ export default function AdminPage() {
     }
   };
 
-  const handleRefreshData = async () => {
-    try {
-      setLoading(true);
-      await refreshHomesFromWebsites();
-      // Refresh the displayed data
-      await fetchData();
-      alert('Successfully refreshed home data from builder websites!');
-    } catch (error) {
-      console.error('Error refreshing data:', error);
-      alert('Failed to refresh data. Please try again.');
-    }
-  };
 
   const handleManualScrape = async () => {
     try {
@@ -399,15 +386,6 @@ export default function AdminPage() {
                   Scrape Now
                 </>
               )}
-            </Button>
-            <Button 
-              variant="outline"
-              onClick={handleRefreshData}
-              disabled={loading || scraping}
-              className="flex items-center gap-2"
-            >
-              <Shield className="h-4 w-4" />
-              Refresh from Websites
             </Button>
             <Button 
               onClick={() => setShowAddForm(true)}

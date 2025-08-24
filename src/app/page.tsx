@@ -19,7 +19,7 @@ export default function HomePage() {
   const [userData, setUserData] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [homes, setHomes] = useState<HomeWithRelations[]>([]);
-  const [analysisLoading, setAnalysisLoading] = useState(false);
+  const [analysisLoading, setAnalysisLoading] = useState(true);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
@@ -49,66 +49,74 @@ export default function HomePage() {
 
   const fetchHomesData = async () => {
     try {
-      setAnalysisLoading(true);
       const homesData = await getHomes();
       setHomes(homesData);
+      // Set loading to false immediately after homes are loaded
+      setAnalysisLoading(false);
     } catch (error) {
       console.error('Error fetching homes data:', error);
-    } finally {
       setAnalysisLoading(false);
     }
   };
 
   const competitiveAnalysis = useMemo(() => {
-    if (!homes.length) return null;
+    if (!homes.length) return [];
 
-    // Group homes by builder and bedroom count
-    const dreamfindersHomes = homes.filter(h => h.builder?.name?.toLowerCase().includes('dream'));
-    const kbHomes = homes.filter(h => h.builder?.name?.toLowerCase().includes('kb'));
-    const ryanHomes = homes.filter(h => h.builder?.name?.toLowerCase().includes('ryan'));
+    // Pre-group homes by builder for efficiency
+    const homesByBuilder = homes.reduce((acc, home) => {
+      const builderName = home.builder?.name?.toLowerCase() || '';
+      if (builderName.includes('dream')) {
+        acc.dreamfinders.push(home);
+      } else if (builderName.includes('kb')) {
+        acc.kb.push(home);
+      } else if (builderName.includes('ryan')) {
+        acc.ryan.push(home);
+      }
+      return acc;
+    }, { dreamfinders: [] as HomeWithRelations[], kb: [] as HomeWithRelations[], ryan: [] as HomeWithRelations[] });
 
-    // Get unique bedroom counts for comparison from all builders
-    const allBedroomCounts = [
-      ...dreamfindersHomes.map(h => h.bedrooms),
-      ...kbHomes.map(h => h.bedrooms),
-      ...ryanHomes.map(h => h.bedrooms)
-    ];
-    const bedroomCounts = Array.from(new Set(allBedroomCounts)).sort();
+    // Get unique bedroom counts and pre-group by bedrooms
+    const bedroomGroups = new Map<number, { dreamfinders: HomeWithRelations[], kb: HomeWithRelations[], ryan: HomeWithRelations[] }>();
+    
+    [homesByBuilder.dreamfinders, homesByBuilder.kb, homesByBuilder.ryan].flat().forEach(home => {
+      if (!bedroomGroups.has(home.bedrooms)) {
+        bedroomGroups.set(home.bedrooms, { dreamfinders: [], kb: [], ryan: [] });
+      }
+      
+      const group = bedroomGroups.get(home.bedrooms)!;
+      const builderName = home.builder?.name?.toLowerCase() || '';
+      if (builderName.includes('dream')) {
+        group.dreamfinders.push(home);
+      } else if (builderName.includes('kb')) {
+        group.kb.push(home);
+      } else if (builderName.includes('ryan')) {
+        group.ryan.push(home);
+      }
+    });
 
-    const comparisons = bedroomCounts.map(bedrooms => {
-      const dfHomes = dreamfindersHomes.filter(h => h.bedrooms === bedrooms);
-      const kbHomesFiltered = kbHomes.filter(h => h.bedrooms === bedrooms);
-      const ryanHomesFiltered = ryanHomes.filter(h => h.bedrooms === bedrooms);
+    // Calculate averages efficiently
+    const getAverage = (homes: HomeWithRelations[]) => 
+      homes.length > 0 ? homes.reduce((sum, h) => sum + h.price, 0) / homes.length : null;
 
-      // Show comparison even if Dream Finders has no homes for this bedroom count
-      // This gives visibility into competitor offerings we don't currently have
+    return Array.from(bedroomGroups.entries())
+      .sort(([a], [b]) => a - b)
+      .map(([bedrooms, groups]) => {
+        const dfAvgPrice = getAverage(groups.dreamfinders);
+        const kbAvgPrice = getAverage(groups.kb);
+        const ryanAvgPrice = getAverage(groups.ryan);
 
-      // Calculate average prices
-      const dfAvgPrice = dfHomes.length > 0 ? 
-        dfHomes.reduce((sum, h) => sum + h.price, 0) / dfHomes.length : null;
-      const kbAvgPrice = kbHomesFiltered.length > 0 ? 
-        kbHomesFiltered.reduce((sum, h) => sum + h.price, 0) / kbHomesFiltered.length : null;
-      const ryanAvgPrice = ryanHomesFiltered.length > 0 ? 
-        ryanHomesFiltered.reduce((sum, h) => sum + h.price, 0) / ryanHomesFiltered.length : null;
-
-      // Calculate price differences (only if both prices exist)
-      const kbDiff = (dfAvgPrice && kbAvgPrice) ? dfAvgPrice - kbAvgPrice : null;
-      const ryanDiff = (dfAvgPrice && ryanAvgPrice) ? dfAvgPrice - ryanAvgPrice : null;
-
-      return {
-        bedrooms,
-        dreamfindersPrice: dfAvgPrice,
-        dreamfindersCount: dfHomes.length,
-        kbPrice: kbAvgPrice,
-        kbCount: kbHomesFiltered.length,
-        kbDiff,
-        ryanPrice: ryanAvgPrice,
-        ryanCount: ryanHomesFiltered.length,
-        ryanDiff
-      };
-    }).filter(Boolean);
-
-    return comparisons;
+        return {
+          bedrooms,
+          dreamfindersPrice: dfAvgPrice,
+          dreamfindersCount: groups.dreamfinders.length,
+          kbPrice: kbAvgPrice,
+          kbCount: groups.kb.length,
+          kbDiff: (dfAvgPrice && kbAvgPrice) ? dfAvgPrice - kbAvgPrice : null,
+          ryanPrice: ryanAvgPrice,
+          ryanCount: groups.ryan.length,
+          ryanDiff: (dfAvgPrice && ryanAvgPrice) ? dfAvgPrice - ryanAvgPrice : null
+        };
+      });
   }, [homes]);
 
   const getPriceComparisonIcon = (diff: number | null) => {
@@ -179,14 +187,16 @@ export default function HomePage() {
               <div className="flex flex-col justify-center">
                 <h1 className="text-4xl font-bold gradient-accent bg-clip-text text-transparent leading-tight">
                   Dream Finders Homes: BuilderIntelligence
-                  <span className="text-muted-foreground font-normal text-xl ml-4">Welcome back, {getFirstName()}</span>
                 </h1>
                 <p className="text-sm text-muted-foreground mt-1 italic">Insight That Builds Results</p>
               </div>
             </div>
-            <Button variant="outline" onClick={() => auth.signOut()}>
-              Sign Out
-            </Button>
+            <div className="flex items-center gap-4">
+              <span className="text-muted-foreground">Welcome back, {getFirstName()}!</span>
+              <Button variant="outline" onClick={() => auth.signOut()}>
+                Sign Out
+              </Button>
+            </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
@@ -387,7 +397,7 @@ export default function HomePage() {
           {/* Price Changes Section */}
           <PriceChanges maxItems={10} />
 
-          <Card className="glass-effect border-0 shadow-lg">
+          <Card className="glass-effect border-0 shadow-lg mt-8">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Building2 className="h-5 w-5" />
@@ -442,60 +452,16 @@ export default function HomePage() {
             BuilderIntelligence
           </h1>
           <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
-            Compare new home inventory across leading builders in Indian Trail, NC. 
-            Find your perfect home with comprehensive data and insights.
+            Analyze new home inventory across leading builders in Indian Trail, NC. 
+            Gain competitive insights to benchmark your offerings and identify market opportunities.
           </p>
           
-          <div className="flex justify-center mb-12">
+          <div className="flex justify-center">
             <Link href="/auth/login">
               <Button size="lg" className="px-8">
                 Sign In with Google
               </Button>
             </Link>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-16">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2 justify-center">
-                  <Home className="h-6 w-6 text-blue-600" />
-                  Browse Homes
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-gray-600">
-                  View available homes from Dream Finders, KB Home, and Ryan Homes
-                </p>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2 justify-center">
-                  <BarChart3 className="h-6 w-6 text-green-600" />
-                  Compare Features
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-gray-600">
-                  Side-by-side comparisons of price, size, and features
-                </p>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2 justify-center">
-                  <Building2 className="h-6 w-6 text-purple-600" />
-                  Market Insights
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-gray-600">
-                  Real-time inventory updates and market trends
-                </p>
-              </CardContent>
-            </Card>
           </div>
         </div>
       </div>
