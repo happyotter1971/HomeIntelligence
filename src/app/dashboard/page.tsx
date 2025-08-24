@@ -100,6 +100,19 @@ export default function DashboardPage() {
     setFilteredHomes(filtered);
   }, [homes, searchTerm, selectedBuilder, selectedCommunity, minPrice, maxPrice, bedrooms, status]);
 
+  const groupedHomes = useCallback(() => {
+    const groups = filteredHomes.reduce((acc, home) => {
+      const builderName = home.builder?.name || 'Unknown Builder';
+      if (!acc[builderName]) {
+        acc[builderName] = [];
+      }
+      acc[builderName].push(home);
+      return acc;
+    }, {} as Record<string, HomeWithRelations[]>);
+
+    return Object.entries(groups).sort(([a], [b]) => a.localeCompare(b));
+  }, [filteredHomes]);
+
   useEffect(() => {
     applyFilters();
   }, [applyFilters]);
@@ -252,14 +265,26 @@ export default function DashboardPage() {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredHomes.map(home => (
-            <HomeCard
-              key={home.id}
-              home={home}
-              onCompare={handleCompare}
-              isComparing={compareList.some(h => h.id === home.id)}
-            />
+        <div className="space-y-8">
+          {groupedHomes().map(([builderName, homes]) => (
+            <div key={builderName} className="space-y-4">
+              <div className="flex items-center justify-between">
+                <h2 className="text-2xl font-bold text-gray-900">{builderName}</h2>
+                <span className="bg-gray-100 text-gray-600 px-3 py-1 rounded-full text-sm font-medium">
+                  {homes.length} home{homes.length !== 1 ? 's' : ''}
+                </span>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {homes.map(home => (
+                  <HomeCard
+                    key={home.id}
+                    home={home}
+                    onCompare={handleCompare}
+                    isComparing={compareList.some(h => h.id === home.id)}
+                  />
+                ))}
+              </div>
+            </div>
           ))}
         </div>
 
