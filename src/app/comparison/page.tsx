@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { onAuthStateChanged } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
@@ -12,7 +12,7 @@ import { formatPrice, formatSquareFootage } from '@/lib/utils';
 import { ArrowLeft, Bed, Bath, Car, Home, MapPin } from 'lucide-react';
 import Link from 'next/link';
 
-export default function ComparisonPage() {
+function ComparisonContent() {
   const [homes, setHomes] = useState<HomeWithRelations[]>([]);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
@@ -305,5 +305,17 @@ export default function ComparisonPage() {
         </Card>
       </div>
     </div>
+  );
+}
+
+export default function ComparisonPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    }>
+      <ComparisonContent />
+    </Suspense>
   );
 }
