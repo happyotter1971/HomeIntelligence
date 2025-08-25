@@ -877,7 +877,7 @@ export default function AdminPage() {
                     <table className="w-full">
                       <thead>
                         <tr className="border-b">
-                          <th className="text-left py-2">Model</th>
+                          <th className="text-left py-2">Address</th>
                           <th className="text-left py-2">Community</th>
                           <th className="text-left py-2">Price</th>
                           <th className="text-left py-2">Bedrooms</th>
@@ -890,16 +890,13 @@ export default function AdminPage() {
                           <tr key={home.id} className={isDuplicateHome(home.id) ? "bg-red-50 border-l-4 border-red-400" : ""}>
                             <td className="py-3">
                               <div className="flex items-center gap-2">
-                                <span className="font-medium">{home.modelName}</span>
+                                <span className="font-medium">{home.address || 'No Address'}</span>
                                 {isDuplicateHome(home.id) && (
                                   <div title="Potential duplicate detected">
                                     <AlertTriangle className="h-4 w-4 text-red-500" />
                                   </div>
                                 )}
                               </div>
-                              {home.address && (
-                                <div className="text-sm text-gray-500">{home.address}</div>
-                              )}
                               {home.homesiteNumber && (
                                 <div className="text-sm text-gray-500">Homesite: {home.homesiteNumber}</div>
                               )}
