@@ -266,25 +266,26 @@ export default function HomeDetailPage({ params }: HomeDetailPageProps) {
                     <p className="text-sm text-gray-400 mt-2">Current price: {formatPrice(home.price)}</p>
                   </div>
                 ) : (() => {
-                  // Calculate total change from original to current
-                  console.log('Rendering price history with', priceHistory.length, 'items');
+                  // Get original price from the oldest price change
                   const sortedHistory = [...priceHistory].sort((a, b) => 
                     (a.changeDate?.seconds || 0) - (b.changeDate?.seconds || 0)
                   );
                   const oldestChange = sortedHistory[0];
-                  console.log('Oldest change:', oldestChange);
                   const originalPrice = oldestChange?.oldPrice || home.price;
-                  const totalChange = home.price - originalPrice;
-                  const totalChangePercent = ((totalChange / originalPrice) * 100).toFixed(1);
+                  const currentPrice = home.price;
+                  
+                  // Calculate total change from original to current
+                  const totalChange = currentPrice - originalPrice;
+                  const totalChangePercent = originalPrice > 0 ? ((totalChange / originalPrice) * 100).toFixed(1) : '0';
                   
                   return (
                     <div className="space-y-3">
-                      {/* Price Summary */}
+                      {/* Current Price Summary */}
                       <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
                         <div className="flex items-center justify-between">
                           <div>
                             <p className="text-sm font-medium text-blue-900">Current Price</p>
-                            <p className="text-2xl font-bold text-blue-600">{formatPrice(home.price)}</p>
+                            <p className="text-2xl font-bold text-blue-600">{formatPrice(currentPrice)}</p>
                           </div>
                           {totalChange !== 0 && (
                             <div className="text-right">
@@ -300,81 +301,44 @@ export default function HomeDetailPage({ params }: HomeDetailPageProps) {
                         </div>
                       </div>
                     
-                    {/* Price Change Timeline */}
-                    <div className="relative">
-                      <div className="absolute left-4 top-8 bottom-0 w-0.5 bg-gray-200"></div>
-                      
-                      {/* Original Price Entry - Use the oldest price change */}
-                      {priceHistory.length > 0 && (() => {
-                        // Sort to get the oldest price change first
-                        const sortedHistory = [...priceHistory].sort((a, b) => 
-                          (a.changeDate?.seconds || 0) - (b.changeDate?.seconds || 0)
-                        );
-                        const oldestChange = sortedHistory[0];
+                      {/* Simple Timeline: Original → Current */}
+                      <div className="relative">
+                        <div className="absolute left-4 top-8 bottom-8 w-0.5 bg-gray-200"></div>
                         
-                        return (
-                          <div className="relative flex items-start gap-4 pb-6">
-                            <div className="z-10 flex h-8 w-8 items-center justify-center rounded-full border-2 bg-white border-gray-400">
-                              <DollarSign className="h-4 w-4 text-gray-600" />
-                            </div>
-                            <div className="flex-1">
-                              <div className="flex items-center justify-between">
-                                <div>
-                                  <p className="text-sm font-medium text-gray-900">Original Price</p>
-                                  <p className="text-xs text-gray-500">
-                                    {oldestChange.oldPriceDate ? 
-                                      new Date(oldestChange.oldPriceDate.seconds * 1000).toLocaleDateString('en-US', {
-                                        month: 'short',
-                                        day: 'numeric',
-                                        year: 'numeric'
-                                      }) : 'Starting price'}
-                                  </p>
-                                </div>
-                                <div className="text-right">
-                                  <span className="text-lg font-semibold text-gray-700">
-                                    {formatPrice(oldestChange.oldPrice)}
-                                  </span>
-                                </div>
+                        {/* Original Price */}
+                        <div className="relative flex items-start gap-4 pb-6">
+                          <div className="z-10 flex h-8 w-8 items-center justify-center rounded-full border-2 bg-white border-gray-400">
+                            <DollarSign className="h-4 w-4 text-gray-600" />
+                          </div>
+                          <div className="flex-1">
+                            <div className="flex items-center justify-between">
+                              <div>
+                                <p className="text-sm font-medium text-gray-900">Original Price</p>
+                                <p className="text-xs text-gray-500">
+                                  {oldestChange?.oldPriceDate ? 
+                                    new Date(oldestChange.oldPriceDate.seconds * 1000).toLocaleDateString('en-US', {
+                                      month: 'short',
+                                      day: 'numeric',
+                                      year: 'numeric'
+                                    }) : 'Starting price'}
+                                </p>
+                              </div>
+                              <div className="text-right">
+                                <span className="text-lg font-semibold text-gray-700">
+                                  {formatPrice(originalPrice)}
+                                </span>
                               </div>
                             </div>
                           </div>
-                        );
-                      })()}
-                      
-                      {/* Price Changes - Show in chronological order (oldest to newest) */}
-                      {[...priceHistory].reverse().map((change, index) => {
-                        const changeDate = new Date(change.changeDate.seconds * 1000);
-                        const formatDate = (date: Date) => {
-                          return date.toLocaleDateString('en-US', {
-                            month: 'short',
-                            day: 'numeric',
-                            year: 'numeric'
-                          });
-                        };
+                        </div>
                         
-                        const formatTimeAgo = (date: Date) => {
-                          const now = new Date();
-                          const diffInHours = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60));
-                          
-                          if (diffInHours < 24) {
-                            return `${diffInHours}h ago`;
-                          } else if (diffInHours < 168) {
-                            const diffInDays = Math.floor(diffInHours / 24);
-                            return `${diffInDays}d ago`;
-                          } else {
-                            const diffInWeeks = Math.floor(diffInHours / 168);
-                            return `${diffInWeeks}w ago`;
-                          }
-                        };
-                        
-                        return (
-                          <div key={change.id} className="relative flex items-start gap-4 pb-6">
+                        {/* Current Price (only show if different from original) */}
+                        {totalChange !== 0 && (
+                          <div className="relative flex items-start gap-4">
                             <div className={`z-10 flex h-8 w-8 items-center justify-center rounded-full border-2 bg-white ${
-                              change.changeType === 'decrease' 
-                                ? 'border-green-500' 
-                                : 'border-red-500'
+                              totalChange < 0 ? 'border-green-500' : 'border-red-500'
                             }`}>
-                              {change.changeType === 'decrease' ? (
+                              {totalChange < 0 ? (
                                 <TrendingDown className="h-4 w-4 text-green-600" />
                               ) : (
                                 <TrendingUp className="h-4 w-4 text-red-600" />
@@ -383,43 +347,39 @@ export default function HomeDetailPage({ params }: HomeDetailPageProps) {
                             <div className="flex-1">
                               <div className="flex items-center justify-between">
                                 <div>
-                                  <p className="text-sm font-medium text-gray-900">
-                                    {formatDate(changeDate)}
-                                  </p>
+                                  <p className="text-sm font-medium text-gray-900">Current Price</p>
                                   <p className="text-xs text-gray-500">
-                                    {formatTimeAgo(changeDate)}
-                                    {change.daysSinceLastChange && change.daysSinceLastChange > 0 && (
-                                      <span className="ml-2">• After {change.daysSinceLastChange} days</span>
-                                    )}
+                                    As of {new Date().toLocaleDateString('en-US', {
+                                      month: 'short',
+                                      day: 'numeric', 
+                                      year: 'numeric'
+                                    })}
                                   </p>
                                 </div>
                                 <div className="text-right">
                                   <div className="flex items-center gap-2">
                                     <span className="text-sm text-gray-500 line-through">
-                                      {formatPrice(change.oldPrice)}
+                                      {formatPrice(originalPrice)}
                                     </span>
                                     <span className="text-sm">→</span>
-                                    <span className="font-semibold">
-                                      {formatPrice(change.newPrice)}
+                                    <span className="text-lg font-semibold">
+                                      {formatPrice(currentPrice)}
                                     </span>
                                   </div>
                                   <span className={`text-xs font-medium ${
-                                    change.changeType === 'decrease' 
-                                      ? 'text-green-600' 
-                                      : 'text-red-600'
+                                    totalChange < 0 ? 'text-green-600' : 'text-red-600'
                                   }`}>
-                                    {change.changeType === 'decrease' ? '↓' : '↑'}
-                                    {formatPrice(Math.abs(change.changeAmount))}
-                                    ({change.changePercentage > 0 ? '+' : ''}{change.changePercentage.toFixed(1)}%)
+                                    {totalChange < 0 ? '↓' : '↑'}
+                                    {formatPrice(Math.abs(totalChange))}
+                                    ({totalChange < 0 ? '' : '+'}{totalChangePercent}%)
                                   </span>
                                 </div>
                               </div>
                             </div>
                           </div>
-                        );
-                      })}
+                        )}
+                      </div>
                     </div>
-                  </div>
                   );
                 })()}
               </CardContent>
