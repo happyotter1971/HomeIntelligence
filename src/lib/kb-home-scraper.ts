@@ -323,8 +323,8 @@ export const scrapeKBHomesLive = async (): Promise<ScrapedHome[]> => {
       
       console.log(`Deduplicated from ${homeElements.length} to ${uniqueHomes.length} homes`);
       
-      // Limit to reasonable number of homes (6-12 typical for move-in ready)
-      const limitedHomes = uniqueHomes.slice(0, 12);
+      // Limit to expected number of homes (6 for KB Home move-in ready)
+      const limitedHomes = uniqueHomes.slice(0, 6);
       console.log(`Returning ${limitedHomes.length} homes after filtering, deduplication, and limiting`);
       
       // Log the final homes for debugging
@@ -377,12 +377,14 @@ export const scrapeKBHomesLive = async (): Promise<ScrapedHome[]> => {
         console.log('Could not save debug screenshot (likely on serverless environment)');
       }
     } else if (homes.length < 6) {
-      console.log(`Warning: Only found ${homes.length} homes, expected around 6. This might indicate partial data extraction.`);
+      console.log(`Warning: Only found ${homes.length} homes, expected 6. This might indicate partial data extraction.`);
       homes.forEach((home, i) => {
         console.log(`Home ${i + 1}: ${home.modelName} - $${home.price} - ${home.address}`);
       });
+    } else if (homes.length === 6) {
+      console.log('Successfully extracted expected number of homes (6):', homes.length);
     } else {
-      console.log('Successfully extracted expected number of homes:', homes.length);
+      console.log('Successfully extracted homes:', homes.length);
     }
 
     return homes;
