@@ -28,23 +28,23 @@ export async function GET(req: NextRequest) {
     // Get all homes
     const allHomes = await getHomes();
     
-    // Filter for DreamFinder homes only
-    const dreamFinderHomes = allHomes.filter(home => 
-      home.builder?.name.includes('Dream Finders') && 
-      home.status === 'quick-move-in'
+    // Filter for all quick-move-in homes from all builders
+    const quickMoveInHomes = allHomes.filter(home => 
+      home.status === 'quick-move-in' && 
+      home.builder?.name // Ensure builder exists
     );
 
-    console.log(`Found ${dreamFinderHomes.length} DreamFinder quick-move-in homes to evaluate`);
+    console.log(`Found ${quickMoveInHomes.length} quick-move-in homes from all builders to evaluate`);
 
     const results = {
-      total: dreamFinderHomes.length,
+      total: quickMoveInHomes.length,
       evaluated: 0,
       errors: 0,
       skipped: 0
     };
 
     // Process homes one by one to avoid rate limiting
-    for (const home of dreamFinderHomes) {
+    for (const home of quickMoveInHomes) {
       try {
         console.log(`Evaluating ${home.modelName} (${home.id})...`);
 
@@ -82,7 +82,7 @@ export async function GET(req: NextRequest) {
           modelName: home.modelName,
           price: home.price,
           address: home.address || 'Address not available',
-          builderName: home.builder?.name || 'Dream Finders',
+          builderName: home.builder?.name || 'Unknown Builder',
           communityName: home.community?.name || 'Unknown Community'
         });
 

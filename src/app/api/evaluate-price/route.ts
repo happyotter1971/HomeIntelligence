@@ -59,7 +59,7 @@ export async function POST(req: NextRequest) {
       excludeId: home.id
     });
     
-    if (comparables.length < 3) {
+    if (comparables.length < 1) {
       return NextResponse.json({
         classification: 'insufficient_data',
         message: 'Not enough comparable homes found for evaluation',

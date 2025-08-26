@@ -22,11 +22,19 @@ export async function findComparableHomes(
       // Exclude the subject home
       if (home.id === criteria.excludeId) return false;
       
-      // Same city and zip
-      if (home.community?.city !== criteria.city || home.community?.zipCode !== criteria.zipCode) {
-        // Allow nearby zips in Indian Trail area
-        const nearbyZips = ['28079', '28104', '28110'];
-        if (!nearbyZips.includes(home.community?.zipCode || '')) {
+      // Same city and zip, or nearby areas
+      const sameCity = home.community?.city === criteria.city;
+      const sameZip = home.community?.zipCode === criteria.zipCode;
+      
+      if (!sameCity && !sameZip) {
+        // Allow nearby cities and zips in the greater Charlotte-Indian Trail area
+        const nearbyCities = ['Indian Trail', 'Charlotte', 'Matthews', 'Mint Hill'];
+        const nearbyZips = ['28079', '28104', '28110', '28105', '28227', '28078'];
+        
+        const nearbyCity = nearbyCities.includes(home.community?.city || '');
+        const nearbyZip = nearbyZips.includes(home.community?.zipCode || '');
+        
+        if (!nearbyCity || !nearbyZip) {
           return false;
         }
       }

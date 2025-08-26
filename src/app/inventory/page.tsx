@@ -17,7 +17,7 @@ import Image from 'next/image';
 import PriceEvaluationBadge from '@/components/PriceEvaluationBadge';
 import PriceEvaluationModal from '@/components/PriceEvaluationModal';
 import { PriceEvaluation } from '@/lib/openai/types';
-import { getEvaluationsForBuilder, StoredEvaluation } from '@/lib/price-evaluation/storage';
+import { getEvaluationsForBuilder, getAllStoredEvaluations, StoredEvaluation } from '@/lib/price-evaluation/storage';
 
 function InventoryContent() {
   const [homes, setHomes] = useState<HomeWithRelations[]>([]);
@@ -171,35 +171,40 @@ function InventoryContent() {
     setShowEvalModal(true);
   };
 
-  const evaluateAllDreamFinderHomes = async (homes: HomeWithRelations[]) => {
-    const dreamFinderHomes = homes.filter(home => 
-      home.builder?.name.includes('Dream Finders')
+  const evaluateAllHomes = async () => {
+    // Get all quick-move-in homes from all builders
+    const quickMoveInHomes = filteredHomes.filter(home => 
+      home.status === 'quick-move-in'
     );
 
-    if (dreamFinderHomes.length === 0) return;
+    if (quickMoveInHomes.length === 0) return;
 
-    setEvaluatingHomes(new Set(dreamFinderHomes.map(h => h.id)));
+    setEvaluatingHomes(new Set(quickMoveInHomes.map(h => h.id)));
 
     let completed = 0;
     let errors = 0;
 
-    for (const home of dreamFinderHomes) {
+    for (const home of quickMoveInHomes) {
       try {
         const response = await fetch('/api/evaluate-price', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'
           },
-          body: JSON.stringify({ home })
+          body: JSON.stringify({ homeId: home.id })
         });
 
         if (response.ok) {
-          const evaluation = await response.json();
-          setEvaluations(prev => ({
-            ...prev,
-            [home.id]: evaluation
-          }));
-          completed++;
+          const result = await response.json();
+          if (result.evaluation) {
+            setEvaluations(prev => ({
+              ...prev,
+              [home.id]: result.evaluation
+            }));
+            completed++;
+          } else {
+            console.log(`Skipping ${home.modelName} - ${result.message || 'No evaluation returned'}`);
+          }
         } else {
           errors++;
           console.error(`Failed to evaluate home ${home.id}`);
@@ -222,30 +227,37 @@ function InventoryContent() {
   const loadStoredEvaluations = useCallback(async () => {
     if (evaluationsLoaded) return;
 
-    const dreamFinderHomes = homes.filter(home => 
-      home.builder?.name.includes('Dream Finders')
-    );
-
-    if (dreamFinderHomes.length === 0) {
+    if (homes.length === 0) {
       setEvaluationsLoaded(true);
       return;
     }
 
     try {
-      const storedEvaluationsMap = await getEvaluationsForBuilder('Dream Finders Homes');
-      const storedEvaluations = Object.values(storedEvaluationsMap);
+      // Get all stored evaluations at once
+      const allStoredEvaluations = await getAllStoredEvaluations();
       
       const evaluationMap: {[homeId: string]: PriceEvaluation} = {};
-      dreamFinderHomes.forEach(home => {
-        const storedEvaluation = storedEvaluations.find(e => 
+      
+      // Match evaluations by homeId first, then by address and model name
+      homes.forEach(home => {
+        // Try exact homeId match first
+        if (allStoredEvaluations[home.id]) {
+          evaluationMap[home.id] = allStoredEvaluations[home.id].evaluation;
+          return;
+        }
+        
+        // Fall back to matching by address and model name for any builder
+        const storedEvaluation = Object.values(allStoredEvaluations).find(e => 
           e.homeData.address === home.address &&
           e.homeData.modelName === home.modelName
         );
+        
         if (storedEvaluation) {
           evaluationMap[home.id] = storedEvaluation.evaluation;
         }
       });
 
+      console.log(`Loaded ${Object.keys(evaluationMap).length} evaluations for ${homes.length} homes`);
       setEvaluations(evaluationMap);
       setEvaluationsLoaded(true);
     } catch (error) {
@@ -357,6 +369,30 @@ function InventoryContent() {
           </CardContent>
         </Card>
 
+        {/* Evaluate All Button */}
+        <div className="mb-6">
+          <Card className="bg-white">
+            <CardContent className="py-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="font-semibold text-gray-900 mb-1">AI Price Evaluation</h3>
+                  <p className="text-sm text-gray-600">
+                    Analyze pricing for all {filteredHomes.filter(home => home.status === 'quick-move-in').length} quick-move-in homes using AI
+                  </p>
+                </div>
+                <button
+                  onClick={evaluateAllHomes}
+                  disabled={evaluatingHomes.size > 0}
+                  className="inline-flex items-center gap-2 px-4 py-2 rounded-md bg-blue-500 text-white hover:bg-blue-600 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
+                >
+                  <TrendingUp className="w-4 h-4" />
+                  {evaluatingHomes.size > 0 ? 'Evaluating...' : 'Evaluate All Prices'}
+                </button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
         {/* Results Summary */}
         <div className="mb-4 flex justify-between items-center">
           <p className="text-gray-600">
@@ -391,17 +427,6 @@ function InventoryContent() {
                       ({homes.length} homes)
                     </span>
                   </div>
-                  
-                  {builderName.includes('Dream Finders') && (
-                    <button
-                      onClick={() => evaluateAllDreamFinderHomes(homes)}
-                      disabled={evaluatingHomes.size > 0}
-                      className="inline-flex items-center gap-2 px-3 py-1.5 rounded-md bg-blue-500 text-white hover:bg-blue-600 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors text-sm"
-                    >
-                      <TrendingUp className="w-4 h-4" />
-                      {evaluatingHomes.size > 0 ? 'Evaluating...' : 'Evaluate Prices'}
-                    </button>
-                  )}
                 </div>
               </CardHeader>
               <CardContent className="pt-0">
@@ -442,7 +467,7 @@ function InventoryContent() {
                               {formatPricePerSquareFoot(home.price, home.squareFootage)} per sq ft
                             </p>
                           </div>
-                          {builderName.includes('Dream Finders') && evaluations[home.id] && (
+                          {evaluations[home.id] && (
                             <div className="flex-shrink-0">
                               <PriceEvaluationBadge
                                 homeId={home.id}
