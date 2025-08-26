@@ -286,8 +286,8 @@ function InventoryContent() {
                 </Button>
               </Link>
               <div>
-                <h1 className="text-xl font-semibold text-gray-900">Quick Move-In Inventory</h1>
-                <p className="text-xs text-gray-500">Browse homes ready for immediate move-in</p>
+                <h1 className="text-xl font-semibold text-gray-900">Price Evaluation</h1>
+                <p className="text-xs text-gray-500">AI-powered analysis of home pricing vs. market comparables</p>
               </div>
             </div>
           </div>
@@ -399,7 +399,7 @@ function InventoryContent() {
                       className="inline-flex items-center gap-2 px-3 py-1.5 rounded-md bg-blue-500 text-white hover:bg-blue-600 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors text-sm"
                     >
                       <TrendingUp className="w-4 h-4" />
-                      {evaluatingHomes.size > 0 ? 'Evaluating...' : 'Evaluate All'}
+                      {evaluatingHomes.size > 0 ? 'Evaluating...' : 'Evaluate Prices'}
                     </button>
                   )}
                 </div>
@@ -435,10 +435,24 @@ function InventoryContent() {
                       </div>
                       
                       <div className="mb-3">
-                        <p className="text-2xl font-bold text-gray-900">{formatPrice(home.price)}</p>
-                        <p className="text-sm text-gray-500">
-                          {formatPricePerSquareFoot(home.price, home.squareFootage)} per sq ft
-                        </p>
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="flex-1">
+                            <p className="text-2xl font-bold text-gray-900">{formatPrice(home.price)}</p>
+                            <p className="text-sm text-gray-500">
+                              {formatPricePerSquareFoot(home.price, home.squareFootage)} per sq ft
+                            </p>
+                          </div>
+                          {builderName.includes('Dream Finders') && evaluations[home.id] && (
+                            <div className="flex-shrink-0">
+                              <PriceEvaluationBadge
+                                homeId={home.id}
+                                initialEvaluation={evaluations[home.id]}
+                                compact={true}
+                                onEvaluate={(evaluation) => handleEvaluationComplete(home, evaluation)}
+                              />
+                            </div>
+                          )}
+                        </div>
                       </div>
                       
                       <div className="flex items-center gap-4 text-sm text-gray-600 mb-3">
@@ -456,16 +470,6 @@ function InventoryContent() {
                         </span>
                       </div>
                       
-                      {builderName.includes('Dream Finders') && evaluations[home.id] && (
-                        <div className="mt-3">
-                          <PriceEvaluationBadge
-                            homeId={home.id}
-                            initialEvaluation={evaluations[home.id]}
-                            compact={true}
-                            onEvaluate={(evaluation) => handleEvaluationComplete(home, evaluation)}
-                          />
-                        </div>
-                      )}
                       
                       <div className="flex gap-2 mt-3">
                         <Link href={`/home/${home.id}`} className="flex-1">

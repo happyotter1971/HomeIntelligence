@@ -196,13 +196,15 @@ export default function HomePage() {
             <Link href="/inventory" className="block">
               <Card className="bg-white hover:shadow-lg transition-shadow cursor-pointer h-full">
                 <CardHeader className="pb-3">
-                  <div className="flex items-start justify-between">
-                    <div className="p-2 bg-blue-50 rounded-lg mb-3">
+                  <div className="flex items-center gap-4">
+                    <div className="p-2 bg-blue-50 rounded-lg flex-shrink-0">
                       <Home className="h-8 w-8 text-blue-500" />
                     </div>
+                    <div className="flex-1">
+                      <CardTitle className="text-lg font-semibold text-gray-900">Price Evaluation</CardTitle>
+                      <CardDescription className="text-sm text-gray-600">AI-powered analysis of home prices vs. market comparables</CardDescription>
+                    </div>
                   </div>
-                  <CardTitle className="text-lg font-semibold text-gray-900">Quick Move-In Inventory</CardTitle>
-                  <CardDescription className="text-sm text-gray-600">Browse homes ready for immediate move-in</CardDescription>
                 </CardHeader>
               </Card>
             </Link>
@@ -210,13 +212,15 @@ export default function HomePage() {
             <Link href="/comparison" className="block">
               <Card className="bg-white hover:shadow-lg transition-shadow cursor-pointer h-full">
                 <CardHeader className="pb-3">
-                  <div className="flex items-start justify-between">
-                    <div className="p-2 bg-blue-50 rounded-lg mb-3">
+                  <div className="flex items-center gap-4">
+                    <div className="p-2 bg-blue-50 rounded-lg flex-shrink-0">
                       <BarChart3 className="h-8 w-8 text-blue-500" />
                     </div>
+                    <div className="flex-1">
+                      <CardTitle className="text-lg font-semibold text-gray-900">Compare Homes</CardTitle>
+                      <CardDescription className="text-sm text-gray-600">Side-by-side home comparisons</CardDescription>
+                    </div>
                   </div>
-                  <CardTitle className="text-lg font-semibold text-gray-900">Compare Homes</CardTitle>
-                  <CardDescription className="text-sm text-gray-600">Side-by-side home comparisons</CardDescription>
                 </CardHeader>
               </Card>
             </Link>
@@ -224,13 +228,15 @@ export default function HomePage() {
             <Link href="/admin" className="block">
               <Card className="bg-white hover:shadow-lg transition-shadow cursor-pointer h-full">
                 <CardHeader className="pb-3">
-                  <div className="flex items-start justify-between">
-                    <div className="p-2 bg-blue-50 rounded-lg mb-3">
+                  <div className="flex items-center gap-4">
+                    <div className="p-2 bg-blue-50 rounded-lg flex-shrink-0">
                       <Settings className="h-8 w-8 text-blue-500" />
                     </div>
+                    <div className="flex-1">
+                      <CardTitle className="text-lg font-semibold text-gray-900">Admin Panel</CardTitle>
+                      <CardDescription className="text-sm text-gray-600">Manage home inventory data</CardDescription>
+                    </div>
                   </div>
-                  <CardTitle className="text-lg font-semibold text-gray-900">Admin Panel</CardTitle>
-                  <CardDescription className="text-sm text-gray-600">Manage home inventory data</CardDescription>
                 </CardHeader>
               </Card>
             </Link>

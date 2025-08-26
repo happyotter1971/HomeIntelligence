@@ -9,7 +9,10 @@ import { HomeWithRelations, PriceChangeWithRelations } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { formatPrice, formatSquareFootage, formatPricePerSquareFoot } from '@/lib/utils';
-import { ArrowLeft, Home, MapPin, Bed, Bath, Car, Square, Calendar, DollarSign, Zap, TrendingDown, TrendingUp, History } from 'lucide-react';
+import { ArrowLeft, Home, MapPin, Bed, Bath, Car, Square, Calendar, DollarSign, Zap, TrendingDown, TrendingUp, History, CheckCircle, Minus, AlertCircle, Target, Users, BarChart3 } from 'lucide-react';
+import { PriceEvaluation } from '@/lib/openai/types';
+import { getStoredEvaluation } from '@/lib/price-evaluation/storage';
+import PriceEvaluationBadge from '@/components/PriceEvaluationBadge';
 import Link from 'next/link';
 
 interface HomeDetailPageProps {
@@ -21,6 +24,7 @@ interface HomeDetailPageProps {
 export default function HomeDetailPage({ params }: HomeDetailPageProps) {
   const [home, setHome] = useState<HomeWithRelations | null>(null);
   const [priceHistory, setPriceHistory] = useState<PriceChangeWithRelations[]>([]);
+  const [evaluation, setEvaluation] = useState<PriceEvaluation | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [backButtonText, setBackButtonText] = useState('Back');
@@ -82,6 +86,18 @@ export default function HomeDetailPage({ params }: HomeDetailPageProps) {
       
       if (homeData) {
         setHome(homeData);
+        
+        // Load price evaluation if it's a Dream Finders home
+        if (homeData.builder?.name.includes('Dream Finders')) {
+          try {
+            const storedEvaluation = await getStoredEvaluation(params.id);
+            if (storedEvaluation) {
+              setEvaluation(storedEvaluation.evaluation);
+            }
+          } catch (evalError) {
+            console.error('Error loading price evaluation:', evalError);
+          }
+        }
         
         // Fetch price history using API endpoint to avoid Firebase index issues
         try {
@@ -244,6 +260,189 @@ export default function HomeDetailPage({ params }: HomeDetailPageProps) {
                       </div>
                     ))}
                   </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Price Evaluation */}
+            {home.builder?.name.includes('Dream Finders') && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Target className="h-5 w-5" />
+                      Price Evaluation
+                    </div>
+                    {!evaluation && (
+                      <PriceEvaluationBadge
+                        homeId={home.id}
+                        onEvaluate={(newEvaluation) => setEvaluation(newEvaluation)}
+                      />
+                    )}
+                  </CardTitle>
+                  <CardDescription>
+                    AI-powered analysis of this home's pricing vs. market comparables
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {evaluation ? (
+                    <div className="space-y-6">
+                      {/* Overall Assessment */}
+                      <div className="flex items-start gap-4 p-4 border rounded-lg">
+                        <div className="flex-shrink-0">
+                          {evaluation.classification === 'below_market' && (
+                            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-green-100">
+                              <CheckCircle className="h-6 w-6 text-green-600" />
+                            </div>
+                          )}
+                          {evaluation.classification === 'market_fair' && (
+                            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-blue-100">
+                              <Minus className="h-6 w-6 text-blue-600" />
+                            </div>
+                          )}
+                          {evaluation.classification === 'above_market' && (
+                            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-orange-100">
+                              <TrendingUp className="h-6 w-6 text-orange-600" />
+                            </div>
+                          )}
+                          {evaluation.classification === 'insufficient_data' && (
+                            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gray-100">
+                              <AlertCircle className="h-6 w-6 text-gray-600" />
+                            </div>
+                          )}
+                        </div>
+                        <div className="flex-1">
+                          <h3 className="text-lg font-semibold text-gray-900 mb-1">
+                            {evaluation.classification === 'below_market' && 'Good Deal'}
+                            {evaluation.classification === 'market_fair' && 'Fair Price'}
+                            {evaluation.classification === 'above_market' && 'Above Market'}
+                            {evaluation.classification === 'insufficient_data' && 'Insufficient Data'}
+                          </h3>
+                          <p className="text-sm text-gray-600 mb-3">
+                            Confidence: {evaluation.confidence}% • Based on {evaluation.market_baselines.filtered_comp_count} comparable homes
+                          </p>
+                          {evaluation.evidence && evaluation.evidence.length > 0 && (
+                            <ul className="text-sm text-gray-700 space-y-1">
+                              {evaluation.evidence.map((item, index) => (
+                                <li key={index} className="flex items-start gap-2">
+                                  <span className="text-blue-500 mt-1">•</span>
+                                  <span>{item}</span>
+                                </li>
+                              ))}
+                            </ul>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Price Comparison */}
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div className="bg-gray-50 p-4 rounded-lg">
+                          <h4 className="font-medium text-gray-900 mb-2">This Home</h4>
+                          <div className="text-2xl font-bold text-gray-900">
+                            {formatPrice(evaluation.subject_metrics.list_price)}
+                          </div>
+                          <div className="text-sm text-gray-500">
+                            ${evaluation.subject_metrics.price_per_sqft}/sqft
+                          </div>
+                        </div>
+                        
+                        <div className="bg-blue-50 p-4 rounded-lg">
+                          <h4 className="font-medium text-gray-900 mb-2">Market Median</h4>
+                          <div className="text-2xl font-bold text-blue-600">
+                            {formatPrice(evaluation.market_baselines.comp_list_price.median)}
+                          </div>
+                          <div className="text-sm text-gray-500">
+                            ${evaluation.market_baselines.comp_price_per_sqft.median}/sqft
+                          </div>
+                        </div>
+                        
+                        <div className={`p-4 rounded-lg ${
+                          evaluation.price_gap.vs_median_list < 0 ? 'bg-green-50' : 'bg-red-50'
+                        }`}>
+                          <h4 className="font-medium text-gray-900 mb-2">Price Gap</h4>
+                          <div className={`text-2xl font-bold ${
+                            evaluation.price_gap.vs_median_list < 0 ? 'text-green-600' : 'text-red-600'
+                          }`}>
+                            {evaluation.price_gap.vs_median_list < 0 ? '-' : '+'}
+                            {formatPrice(Math.abs(evaluation.price_gap.vs_median_list))}
+                          </div>
+                          <div className={`text-sm ${
+                            evaluation.price_gap.vs_median_ppsf < 0 ? 'text-green-600' : 'text-red-600'
+                          }`}>
+                            {evaluation.price_gap.vs_median_ppsf < 0 ? '-' : '+'}
+                            ${Math.abs(evaluation.price_gap.vs_median_ppsf)}/sqft
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Suggested Price Range */}
+                      <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
+                        <h4 className="font-medium text-gray-900 mb-2 flex items-center gap-2">
+                          <BarChart3 className="h-4 w-4" />
+                          Suggested Price Range
+                        </h4>
+                        <div className="flex items-center gap-4 text-sm">
+                          <span className="font-semibold text-blue-600">
+                            {formatPrice(evaluation.suggested_price_range.low)} - {formatPrice(evaluation.suggested_price_range.high)}
+                          </span>
+                          <span className="text-gray-600">
+                            Based on comparable homes in the area
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Key Comparables */}
+                      {evaluation.key_comparables && evaluation.key_comparables.length > 0 && (
+                        <div>
+                          <h4 className="font-medium text-gray-900 mb-3 flex items-center gap-2">
+                            <Users className="h-4 w-4" />
+                            Key Comparable Homes
+                          </h4>
+                          <div className="space-y-3">
+                            {evaluation.key_comparables.map((comp, index) => (
+                              <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                                <div className="flex-1">
+                                  <div className="font-medium text-gray-900">{comp.address}</div>
+                                  <div className="text-sm text-gray-500">
+                                    {comp.distance_miles.toFixed(1)} miles • {comp.status}
+                                  </div>
+                                  {comp.notes && (
+                                    <div className="text-xs text-gray-600 mt-1">{comp.notes}</div>
+                                  )}
+                                </div>
+                                <div className="text-right">
+                                  <div className="font-semibold text-gray-900">
+                                    ${comp.ppsf}/sqft
+                                  </div>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Assumptions */}
+                      {evaluation.assumptions && evaluation.assumptions.length > 0 && (
+                        <div className="bg-yellow-50 p-4 rounded-lg border border-yellow-200">
+                          <h4 className="font-medium text-gray-900 mb-2">Analysis Assumptions</h4>
+                          <ul className="text-sm text-gray-700 space-y-1">
+                            {evaluation.assumptions.map((assumption, index) => (
+                              <li key={index} className="flex items-start gap-2">
+                                <span className="text-yellow-600 mt-1">•</span>
+                                <span>{assumption}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="text-center py-8">
+                      <Target className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                      <h3 className="text-lg font-semibold text-gray-900 mb-2">No Price Evaluation Available</h3>
+                      <p className="text-gray-600 mb-4">Click "Evaluate Price" to get an AI-powered market analysis</p>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             )}

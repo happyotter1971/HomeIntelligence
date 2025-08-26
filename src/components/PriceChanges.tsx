@@ -251,28 +251,26 @@ export default function PriceChanges({ maxItems = 10 }: PriceChangesProps) {
                     title={`Home ID: ${homeId}`}
                   >
                     {/* Left side: Address with trend icon */}
-                    <div className="flex items-center gap-3 flex-shrink-0">
+                    <div className="flex items-center gap-3 flex-1 min-w-0">
                       {change.changeType === 'decrease' ? (
-                        <TrendingDown className="h-4 w-4 text-green-500" />
+                        <TrendingDown className="h-4 w-4 text-green-500 flex-shrink-0" />
                       ) : (
-                        <TrendingUp className="h-4 w-4 text-red-500" />
+                        <TrendingUp className="h-4 w-4 text-red-500 flex-shrink-0" />
                       )}
-                      <div className="flex flex-col">
+                      <div className="flex items-center gap-2 min-w-0 flex-1">
                         {change.address ? (
-                          <h4 className="font-medium text-gray-900">
+                          <span className="font-medium text-gray-900 truncate">
                             {change.address}
-                          </h4>
+                          </span>
                         ) : (
-                          <h4 className="font-medium text-gray-400">
+                          <span className="font-medium text-gray-400 truncate">
                             Address Not Available
-                          </h4>
+                          </span>
                         )}
-                        <div className="flex items-center gap-2 text-xs text-gray-500 mt-1">
-                          <MapPin className="h-3 w-3" />
-                          <span>{change.community?.name}</span>
-                          <Calendar className="h-3 w-3 ml-2" />
-                          <span>{formatTimeAgo(change.changeDate)}</span>
-                        </div>
+                        <span className="text-xs text-gray-500 flex-shrink-0">•</span>
+                        <span className="text-xs text-gray-500 truncate">{change.community?.name}</span>
+                        <span className="text-xs text-gray-500 flex-shrink-0">•</span>
+                        <span className="text-xs text-gray-500 flex-shrink-0">{formatTimeAgo(change.changeDate)}</span>
                       </div>
                     </div>
                     
