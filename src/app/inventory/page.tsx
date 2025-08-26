@@ -11,9 +11,13 @@ import { Input } from '@/components/ui/input';
 import { Select } from '@/components/ui/select';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { formatPrice, formatSquareFootage, formatSquareFootageNumber, formatPricePerSquareFoot } from '@/lib/utils';
-import { Search, Filter, ArrowLeft, MapPin, Eye, Clock, Zap, Check, Building2 } from 'lucide-react';
+import { Search, Filter, ArrowLeft, MapPin, Eye, Clock, Zap, Check, Building2, TrendingUp, TrendingDown, Minus } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
+import PriceEvaluationBadge from '@/components/PriceEvaluationBadge';
+import PriceEvaluationModal from '@/components/PriceEvaluationModal';
+import { PriceEvaluation } from '@/lib/openai/types';
+import { getEvaluationsForBuilder } from '@/lib/price-evaluation/storage';
 
 function InventoryContent() {
   const [homes, setHomes] = useState<HomeWithRelations[]>([]);
@@ -29,6 +33,12 @@ function InventoryContent() {
   const [bedrooms, setBedrooms] = useState('');
   const [status, setStatus] = useState('');
   const [compareList, setCompareList] = useState<HomeWithRelations[]>([]);
+  const [selectedHomeForEval, setSelectedHomeForEval] = useState<HomeWithRelations | null>(null);
+  const [currentEvaluation, setCurrentEvaluation] = useState<PriceEvaluation | null>(null);
+  const [showEvalModal, setShowEvalModal] = useState(false);
+  const [evaluations, setEvaluations] = useState<{[homeId: string]: PriceEvaluation}>({});
+  const [evaluationsLoaded, setEvaluationsLoaded] = useState(false);
+  const [evaluatingHomes, setEvaluatingHomes] = useState<Set<string>>(new Set());
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -163,6 +173,102 @@ function InventoryContent() {
     setBedrooms('');
     setStatus('');
   };
+
+  const handleEvaluationComplete = (home: HomeWithRelations, evaluation: PriceEvaluation) => {
+    setSelectedHomeForEval(home);
+    setCurrentEvaluation(evaluation);
+    setShowEvalModal(true);
+  };
+
+  const evaluateAllDreamFinderHomes = async (homes: HomeWithRelations[]) => {
+    const dreamFinderHomes = homes.filter(home => 
+      home.builder?.name.includes('Dream Finders')
+    );
+
+    if (dreamFinderHomes.length === 0) return;
+
+    // Mark all homes as evaluating
+    setEvaluatingHomes(new Set(dreamFinderHomes.map(h => h.id)));
+
+    let completed = 0;
+    let errors = 0;
+
+    for (const home of dreamFinderHomes) {
+      try {
+        const response = await fetch('/api/evaluate-price', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ homeId: home.id, forceUpdate: true }),
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          // Update the evaluations state immediately
+          setEvaluations(prev => ({
+            ...prev,
+            [home.id]: data.evaluation
+          }));
+          completed++;
+        } else {
+          console.error(`Failed to evaluate ${home.modelName}`);
+          errors++;
+        }
+
+        // Remove this home from evaluating set
+        setEvaluatingHomes(prev => {
+          const newSet = new Set(prev);
+          newSet.delete(home.id);
+          return newSet;
+        });
+
+        // Add delay to avoid rate limiting (3 seconds between calls)
+        if (home !== dreamFinderHomes[dreamFinderHomes.length - 1]) {
+          await new Promise(resolve => setTimeout(resolve, 3000));
+        }
+
+      } catch (error) {
+        console.error(`Error evaluating ${home.modelName}:`, error);
+        errors++;
+        
+        // Remove this home from evaluating set
+        setEvaluatingHomes(prev => {
+          const newSet = new Set(prev);
+          newSet.delete(home.id);
+          return newSet;
+        });
+      }
+    }
+
+    console.log(`DreamFinder evaluation complete: ${completed} successful, ${errors} errors`);
+  };
+
+  // Load stored evaluations for DreamFinder homes
+  useEffect(() => {
+    const loadStoredEvaluations = async () => {
+      if (evaluationsLoaded) return;
+      
+      try {
+        const response = await fetch('/api/get-stored-evaluations?builder=Dream%20Finders%20Homes');
+        const data = await response.json();
+        
+        if (data.success) {
+          setEvaluations(data.evaluations);
+          console.log(`Loaded ${data.count} stored price evaluations from API`);
+        } else {
+          console.error('Failed to load stored evaluations:', data.error);
+        }
+        
+        setEvaluationsLoaded(true);
+      } catch (error) {
+        console.error('Error loading stored evaluations:', error);
+        setEvaluationsLoaded(true); // Still mark as loaded to prevent retries
+      }
+    };
+
+    loadStoredEvaluations();
+  }, [evaluationsLoaded]);
 
   if (loading) {
     return (
@@ -329,9 +435,30 @@ function InventoryContent() {
                     <Building2 className="h-5 w-5 text-blue-600" />
                     {builderName}
                   </CardTitle>
-                  <span className="bg-blue-50 text-blue-700 px-3 py-1 rounded-full text-sm font-medium border border-blue-200">
-                    {homes.length} home{homes.length !== 1 ? 's' : ''}
-                  </span>
+                  <div className="flex items-center gap-3">
+                    <span className="bg-blue-50 text-blue-700 px-3 py-1 rounded-full text-sm font-medium border border-blue-200">
+                      {homes.length} home{homes.length !== 1 ? 's' : ''}
+                    </span>
+                    
+                    {/* Evaluate All Button for DreamFinder homes only */}
+                    {builderName.includes('Dream Finders') && (
+                      <div className="flex items-center gap-2">
+                        {evaluatingHomes.size > 0 && homes.some(home => evaluatingHomes.has(home.id)) && (
+                          <div className="text-xs text-gray-600 bg-gray-100 px-2 py-1 rounded-md">
+                            Evaluating {evaluatingHomes.size} home{evaluatingHomes.size !== 1 ? 's' : ''}...
+                          </div>
+                        )}
+                        <button
+                          onClick={() => evaluateAllDreamFinderHomes(homes)}
+                          disabled={evaluatingHomes.size > 0}
+                          className="inline-flex items-center gap-2 px-3 py-1.5 rounded-md bg-blue-600 text-white hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors text-sm font-medium"
+                        >
+                          <TrendingUp className="w-4 h-4" />
+                          {evaluatingHomes.size > 0 ? 'Evaluating...' : 'Evaluate All Homes'}
+                        </button>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </CardHeader>
               <CardContent>
@@ -342,6 +469,9 @@ function InventoryContent() {
                         <th className="text-left py-3 px-2">Model</th>
                         <th className="text-left py-3 px-2">Community</th>
                         <th className="text-left py-3 px-2">Price</th>
+                        {builderName.includes('Dream Finders') && (
+                          <th className="text-left py-3 px-2">Evaluation</th>
+                        )}
                         <th className="text-left py-3 px-2">Price/Sq Ft</th>
                         <th className="text-left py-3 px-2">Sq Ft</th>
                         <th className="text-left py-3 px-2">Beds</th>
@@ -395,6 +525,47 @@ function InventoryContent() {
                           <td className="py-4 px-2">
                             <div className="font-bold text-foreground">{formatPrice(home.price)}</div>
                           </td>
+                          {builderName.includes('Dream Finders') && (
+                            <td className="py-4 px-2">
+                              {evaluations[home.id] ? (
+                                <button
+                                  onClick={() => handleEvaluationComplete(home, evaluations[home.id])}
+                                  className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full cursor-pointer hover:opacity-80 transition-opacity"
+                                  style={{
+                                    backgroundColor: evaluations[home.id].classification === 'below_market' ? '#dcfce7' : 
+                                                   evaluations[home.id].classification === 'market_fair' ? '#dbeafe' : 
+                                                   evaluations[home.id].classification === 'above_market' ? '#fed7aa' : '#f3f4f6',
+                                    color: evaluations[home.id].classification === 'below_market' ? '#15803d' : 
+                                           evaluations[home.id].classification === 'market_fair' ? '#1d4ed8' : 
+                                           evaluations[home.id].classification === 'above_market' ? '#c2410c' : '#374151'
+                                  }}
+                                >
+                                  {evaluations[home.id].classification === 'below_market' && <TrendingDown className="w-3.5 h-3.5" />}
+                                  {evaluations[home.id].classification === 'market_fair' && <Minus className="w-3.5 h-3.5" />}
+                                  {evaluations[home.id].classification === 'above_market' && <TrendingUp className="w-3.5 h-3.5" />}
+                                  <span className="text-xs font-medium">
+                                    {evaluations[home.id].classification === 'below_market' ? 'Good Deal' :
+                                     evaluations[home.id].classification === 'market_fair' ? 'Fair Price' :
+                                     evaluations[home.id].classification === 'above_market' ? 'Above Market' : 'No Data'}
+                                  </span>
+                                </button>
+                              ) : evaluatingHomes.has(home.id) ? (
+                                <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-gray-100">
+                                  <div className="w-3 h-3 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                                  <span className="text-xs text-gray-600">Evaluating...</span>
+                                </div>
+                              ) : evaluationsLoaded ? (
+                                <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-gray-100 text-gray-600">
+                                  <span className="text-xs">Not evaluated</span>
+                                </div>
+                              ) : (
+                                <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-gray-100">
+                                  <div className="w-3 h-3 border-2 border-gray-400 border-t-transparent rounded-full animate-spin"></div>
+                                  <span className="text-xs text-gray-600">Loading...</span>
+                                </div>
+                              )}
+                            </td>
+                          )}
                           <td className="py-4 px-2 text-muted-foreground">{formatPricePerSquareFoot(home.price, home.squareFootage)}</td>
                           <td className="py-4 px-2 text-muted-foreground">{formatSquareFootageNumber(home.squareFootage)}</td>
                           <td className="py-4 px-2 text-muted-foreground">{home.bedrooms}</td>
@@ -428,6 +599,20 @@ function InventoryContent() {
           )}
         </div>
       </div>
+
+      {/* Price Evaluation Modal */}
+      {selectedHomeForEval && currentEvaluation && (
+        <PriceEvaluationModal
+          isOpen={showEvalModal}
+          onClose={() => {
+            setShowEvalModal(false);
+            setSelectedHomeForEval(null);
+            setCurrentEvaluation(null);
+          }}
+          home={selectedHomeForEval}
+          evaluation={currentEvaluation}
+        />
+      )}
     </div>
   );
 }

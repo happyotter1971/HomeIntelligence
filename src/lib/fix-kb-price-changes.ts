@@ -120,7 +120,7 @@ export const fixKBHomePriceChanges = async () => {
     const existingHomes = homesSnapshot.docs.map(doc => ({
       id: doc.id,
       ...doc.data()
-    }));
+    })) as any[];
     
     for (const homeData of kbHomeData) {
       // Find the matching home in the database
