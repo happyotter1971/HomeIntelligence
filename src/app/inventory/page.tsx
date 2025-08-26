@@ -446,8 +446,9 @@ function InventoryContent() {
                               {home.address}
                             </h3>
                           </Link>
-                          <p className="text-sm text-gray-500 mt-1">{home.modelName}</p>
                           <p className="text-sm text-gray-600 flex items-center gap-1 mt-1">
+                            <span className="text-gray-500">{home.modelName}</span>
+                            <span className="text-gray-400">•</span>
                             <MapPin className="h-3 w-3" />
                             {home.community?.name}
                           </p>

@@ -656,7 +656,7 @@ export default function AdminPage() {
         <div className="space-y-6">
           <div className="mb-6">
             <h2 className="text-2xl font-semibold text-gray-900 mb-2">Quick Move-In Inventory</h2>
-            <p className="text-gray-600">Manage homes ready for immediate move-in ({homes.length} total)</p>
+            <p className="text-gray-600">Manage homes ready for immediate move-in</p>
           </div>
 
           {/* Builder Summary Section */}
