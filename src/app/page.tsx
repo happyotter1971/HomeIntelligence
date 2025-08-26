@@ -3,7 +3,7 @@
 import { useEffect, useState, useMemo } from 'react';
 import { onAuthStateChanged, User as FirebaseUser } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
-import { getUserData } from '@/lib/auth';
+import { getUserData, signInWithGoogle } from '@/lib/auth';
 import { getHomes } from '@/lib/firestore';
 import { User, HomeWithRelations } from '@/types';
 import { Button } from '@/components/ui/button';
@@ -20,6 +20,8 @@ export default function HomePage() {
   const [loading, setLoading] = useState(true);
   const [homes, setHomes] = useState<HomeWithRelations[]>([]);
   const [analysisLoading, setAnalysisLoading] = useState(true);
+  const [signInLoading, setSignInLoading] = useState(false);
+  const [signInError, setSignInError] = useState('');
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
@@ -131,6 +133,19 @@ export default function HomePage() {
     if (!diff) return 'text-gray-500';
     if (diff > 0) return 'text-red-600';
     return 'text-green-600';
+  };
+
+  const handleGoogleSignIn = async () => {
+    setSignInLoading(true);
+    setSignInError('');
+
+    try {
+      await signInWithGoogle();
+    } catch (error: any) {
+      setSignInError(error.message || 'Failed to sign in with Google');
+    } finally {
+      setSignInLoading(false);
+    }
   };
 
   if (loading) {
@@ -398,11 +413,27 @@ export default function HomePage() {
           <h1 className="text-3xl font-bold text-gray-900 mb-2">BuilderIntelligence</h1>
           <p className="text-gray-600 mb-8">See the market clearly, build smarter</p>
           
-          <Link href="/auth/login">
-            <Button size="lg" className="w-full bg-blue-500 hover:bg-blue-600 text-white">
-              Sign in to continue
-            </Button>
-          </Link>
+          {signInError && (
+            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md text-sm mb-4">
+              {signInError}
+            </div>
+          )}
+          
+          <Button 
+            onClick={handleGoogleSignIn}
+            disabled={signInLoading}
+            size="lg" 
+            className="w-full bg-blue-500 hover:bg-blue-600 text-white"
+          >
+            {signInLoading ? (
+              <div className="flex items-center gap-2">
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                Signing in...
+              </div>
+            ) : (
+              'Sign in with Google'
+            )}
+          </Button>
         </div>
       </div>
     </div>
