@@ -414,11 +414,11 @@ const getFallbackKBHomes = (): ScrapedHome[] => {
 };
 
 export const scrapeRyanHomes = async (): Promise<ScrapedHome[]> => {
-  // Only showing quick move-in homes based on actual website data
+  // Only one home available from Ryan Homes scrape at the specified address
   const homes: ScrapedHome[] = [
     {
       modelName: 'Hudson',
-      address: 'Moore Farm Community',
+      address: '2007 Bramble Hedge Rd',
       price: 509990,
       bedrooms: 3,
       bathrooms: 2.5, // 2 full + 1 half bath
@@ -429,62 +429,6 @@ export const scrapeRyanHomes = async (): Promise<ScrapedHome[]> => {
       builderName: 'Ryan Homes',
       communityName: 'Moore Farm',
       estimatedMonthlyPayment: Math.round((509990 * 0.06) / 12)
-    },
-    {
-      modelName: 'Palermo',
-      address: 'Moore Farm Community',
-      price: 475990,
-      bedrooms: 3,
-      bathrooms: 2,
-      squareFootage: 2156,
-      garageSpaces: 2,
-      status: 'available',
-      features: ['Open Floor Plan', 'Master Suite', 'Two Car Garage', 'Kitchen Island'],
-      builderName: 'Ryan Homes',
-      communityName: 'Moore Farm',
-      estimatedMonthlyPayment: Math.round((475990 * 0.06) / 12)
-    },
-    {
-      modelName: 'Ravenna',
-      address: 'Moore Farm Community',
-      price: 445990,
-      bedrooms: 4,
-      bathrooms: 2.5,
-      squareFootage: 2340,
-      garageSpaces: 2,
-      status: 'available',
-      features: ['4 Bedrooms', 'Formal Dining Room', 'Family Room', 'Two Car Garage'],
-      builderName: 'Ryan Homes',
-      communityName: 'Moore Farm',
-      estimatedMonthlyPayment: Math.round((445990 * 0.06) / 12)
-    },
-    {
-      modelName: 'Verona',
-      address: 'Moore Farm Community',
-      price: 425990,
-      bedrooms: 3,
-      bathrooms: 2,
-      squareFootage: 1856,
-      garageSpaces: 2,
-      status: 'available',
-      features: ['Ranch Style', 'Open Concept', 'Master Suite', 'Two Car Garage'],
-      builderName: 'Ryan Homes',
-      communityName: 'Moore Farm',
-      estimatedMonthlyPayment: Math.round((425990 * 0.06) / 12)
-    },
-    {
-      modelName: 'Milan',
-      address: 'Moore Farm Community',
-      price: 535990,
-      bedrooms: 4,
-      bathrooms: 3,
-      squareFootage: 2890,
-      garageSpaces: 2,
-      status: 'available',
-      features: ['4 Bedrooms', '3 Full Bathrooms', 'Two Story', 'Two Car Garage'],
-      builderName: 'Ryan Homes',
-      communityName: 'Moore Farm',
-      estimatedMonthlyPayment: Math.round((535990 * 0.06) / 12)
     }
   ];
 

@@ -383,27 +383,15 @@ function InventoryContent() {
         </Card>
 
         {/* Evaluate All Button */}
-        <div className="mb-6">
-          <Card className="bg-white">
-            <CardContent className="py-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="font-semibold text-gray-900 mb-1">AI Price Evaluation</h3>
-                  <p className="text-sm text-gray-600">
-                    Analyze pricing for all {filteredHomes.filter(home => home.status === 'quick-move-in').length} quick-move-in homes using AI
-                  </p>
-                </div>
-                <button
-                  onClick={evaluateAllHomes}
-                  disabled={evaluatingHomes.size > 0}
-                  className="inline-flex items-center gap-2 px-4 py-2 rounded-md bg-blue-500 text-white hover:bg-blue-600 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
-                >
-                  <TrendingUp className="w-4 h-4" />
-                  {evaluatingHomes.size > 0 ? 'Evaluating...' : 'Evaluate All Prices'}
-                </button>
-              </div>
-            </CardContent>
-          </Card>
+        <div className="mb-6 flex justify-end">
+          <button
+            onClick={evaluateAllHomes}
+            disabled={evaluatingHomes.size > 0}
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-md bg-blue-500 text-white hover:bg-blue-600 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
+          >
+            <TrendingUp className="w-4 h-4" />
+            {evaluatingHomes.size > 0 ? 'Evaluating...' : 'Evaluate All Prices'}
+          </button>
         </div>
 
         {/* Results Summary */}
@@ -455,9 +443,10 @@ function InventoryContent() {
                         <div>
                           <Link href={`/home/${home.id}`}>
                             <h3 className="font-semibold text-gray-900 hover:text-blue-600 cursor-pointer">
-                              {home.modelName}
+                              {home.address}
                             </h3>
                           </Link>
+                          <p className="text-sm text-gray-500 mt-1">{home.modelName}</p>
                           <p className="text-sm text-gray-600 flex items-center gap-1 mt-1">
                             <MapPin className="h-3 w-3" />
                             {home.community?.name}
@@ -509,15 +498,6 @@ function InventoryContent() {
                         </span>
                       </div>
                       
-                      
-                      <div className="flex gap-2 mt-3">
-                        <Link href={`/home/${home.id}`} className="flex-1">
-                          <Button variant="outline" size="sm" className="w-full text-xs">
-                            <Eye className="h-3 w-3 mr-1" />
-                            View Details
-                          </Button>
-                        </Link>
-                      </div>
                     </div>
                   ))}
                 </div>

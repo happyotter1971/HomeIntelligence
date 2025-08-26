@@ -11,7 +11,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { formatPrice, formatSquareFootage, formatPricePerSquareFoot } from '@/lib/utils';
 import { ArrowLeft, Home, MapPin, Bed, Bath, Car, Square, Calendar, DollarSign, Zap, TrendingDown, TrendingUp, History, CheckCircle, Minus, AlertCircle, Target, Users, BarChart3 } from 'lucide-react';
 import { PriceEvaluation } from '@/lib/openai/types';
-import { getStoredEvaluation } from '@/lib/price-evaluation/storage';
 import PriceEvaluationBadge from '@/components/PriceEvaluationBadge';
 import Link from 'next/link';
 
@@ -32,32 +31,13 @@ export default function HomeDetailPage({ params }: HomeDetailPageProps) {
   const router = useRouter();
   
   useEffect(() => {
-    // Set the back button text based on referrer
-    if (typeof window !== 'undefined') {
-      const referrer = document.referrer;
-      if (referrer.includes('/inventory')) {
-        setBackButtonText('Back to Inventory');
-      } else {
-        setBackButtonText('Back to Home');
-      }
-    }
+    // Always set back button to go to inventory/pricing page
+    setBackButtonText('Back to Pricing');
   }, []);
   
   const handleBack = () => {
-    // Check the referrer to determine where to go back
-    if (typeof window !== 'undefined') {
-      const referrer = document.referrer;
-      if (referrer.includes('/inventory')) {
-        router.push('/inventory');
-      } else if (referrer === '' || !referrer.includes(window.location.origin)) {
-        // If no referrer or external referrer, go to home
-        router.push('/');
-      } else {
-        router.back();
-      }
-    } else {
-      router.back();
-    }
+    // Always navigate back to the inventory/pricing page
+    router.push('/inventory');
   };
 
   useEffect(() => {
@@ -69,6 +49,34 @@ export default function HomeDetailPage({ params }: HomeDetailPageProps) {
 
     return () => unsubscribe();
   }, [router]);
+
+  const loadEvaluation = useCallback(async () => {
+    try {
+      console.log(`Loading evaluation for home: ${params.id}`);
+      const response = await fetch(`/api/get-evaluation/${params.id}`);
+      
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success && data.evaluation) {
+          console.log(`Evaluation loaded for home: ${params.id}`);
+          setEvaluation(data.evaluation);
+          setEvaluatedAt(new Date(data.evaluatedAt));
+        } else {
+          console.log(`No evaluation found for home: ${params.id}`);
+          setEvaluation(null);
+          setEvaluatedAt(null);
+        }
+      } else {
+        console.error(`Failed to load evaluation: ${response.status}`);
+        setEvaluation(null);
+        setEvaluatedAt(null);
+      }
+    } catch (evalError) {
+      console.error('Error loading price evaluation:', evalError);
+      setEvaluation(null);
+      setEvaluatedAt(null);
+    }
+  }, [params.id]);
 
   const fetchHome = useCallback(async () => {
     try {
@@ -89,15 +97,7 @@ export default function HomeDetailPage({ params }: HomeDetailPageProps) {
         setHome(homeData);
         
         // Load price evaluation for all homes (enhanced system supports all builders)
-        try {
-          const storedEvaluation = await getStoredEvaluation(params.id);
-          if (storedEvaluation) {
-            setEvaluation(storedEvaluation.evaluation);
-            setEvaluatedAt(storedEvaluation.evaluatedAt.toDate());
-          }
-        } catch (evalError) {
-          console.error('Error loading price evaluation:', evalError);
-        }
+        await loadEvaluation();
         
         // Fetch price history using API endpoint to avoid Firebase index issues
         try {
@@ -144,11 +144,35 @@ export default function HomeDetailPage({ params }: HomeDetailPageProps) {
     } finally {
       setLoading(false);
     }
-  }, [params.id]);
+  }, [params.id, loadEvaluation]);
+
 
   useEffect(() => {
     fetchHome();
   }, [fetchHome]);
+
+  // Refresh evaluation data when the page becomes visible (helps with stale data from navigation)
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (!document.hidden) {
+        // Page became visible, refresh evaluation data
+        loadEvaluation();
+      }
+    };
+
+    const handleFocus = () => {
+      // Page received focus, refresh evaluation data
+      loadEvaluation();
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('focus', handleFocus);
+    
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('focus', handleFocus);
+    };
+  }, [loadEvaluation]);
 
   if (loading) {
     return (
@@ -273,16 +297,15 @@ export default function HomeDetailPage({ params }: HomeDetailPageProps) {
                       <Target className="h-5 w-5" />
                       Price Evaluation
                     </div>
-                    {!evaluation && (
-                      <PriceEvaluationBadge
-                        homeId={home.id}
-                        evaluatedAt={evaluatedAt || undefined}
-                        onEvaluate={(newEvaluation) => {
-                          setEvaluation(newEvaluation);
-                          setEvaluatedAt(new Date());
-                        }}
-                      />
-                    )}
+                    <PriceEvaluationBadge
+                      homeId={home.id}
+                      initialEvaluation={evaluation || undefined}
+                      evaluatedAt={evaluatedAt || undefined}
+                      onEvaluate={(newEvaluation) => {
+                        setEvaluation(newEvaluation);
+                        setEvaluatedAt(new Date());
+                      }}
+                    />
                   </CardTitle>
                   <CardDescription>
                     Enhanced mathematical analysis of this home&apos;s pricing vs. market comparables
