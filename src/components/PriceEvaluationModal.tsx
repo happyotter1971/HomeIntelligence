@@ -148,7 +148,7 @@ export default function PriceEvaluationModal({
                 </ul>
 
                 <div className="mt-4">
-                  <span className="font-medium">Quality Control:</span> Our system validates ChatGPT's analysis using mathematical logic to ensure accuracy and corrects any inconsistencies automatically. If corrections are made, confidence is reduced by 20 points.
+                  <span className="font-medium">Quality Control:</span> Our system validates ChatGPT&apos;s analysis using mathematical logic to ensure accuracy and corrects any inconsistencies automatically. If corrections are made, confidence is reduced by 20 points.
                 </div>
               </div>
             </div>
