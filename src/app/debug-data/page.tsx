@@ -88,7 +88,7 @@ export default function DebugDataPage() {
                               <span className="font-medium">Price:</span> ${home.price?.toLocaleString() || 'N/A'}
                             </div>
                             <div>
-                              <span className="font-medium">Sqft:</span> {home.sqft || 'N/A'}
+                              <span className="font-medium">Sqft:</span> {home.squareFootage || 'N/A'}
                             </div>
                             <div>
                               <span className="font-medium">Beds/Baths:</span> {home.bedrooms || 'N/A'}/{home.bathrooms || 'N/A'}
