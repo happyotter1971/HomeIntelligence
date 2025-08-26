@@ -117,13 +117,16 @@ export default function PriceEvaluationBadge({
 
   if (compact) {
     return (
-      <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full ${styles.bg} ${styles.text}`}>
+      <button 
+        onClick={() => onEvaluate?.(evaluation)}
+        className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full ${styles.bg} ${styles.text} hover:opacity-80 transition-opacity cursor-pointer`}
+      >
         <Icon className="w-3.5 h-3.5" />
         <span className="text-xs font-medium">{styles.label}</span>
         {evaluation.confidence > 0 && (
           <span className="text-xs opacity-75">({evaluation.confidence}%)</span>
         )}
-      </div>
+      </button>
     );
   }
 
