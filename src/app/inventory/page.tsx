@@ -37,6 +37,7 @@ function InventoryContent() {
   const [currentEvaluation, setCurrentEvaluation] = useState<PriceEvaluation | null>(null);
   const [showEvalModal, setShowEvalModal] = useState(false);
   const [evaluations, setEvaluations] = useState<{[homeId: string]: PriceEvaluation}>({});
+  const [evaluationTimestamps, setEvaluationTimestamps] = useState<{[homeId: string]: Date}>({});
   const [evaluationsLoaded, setEvaluationsLoaded] = useState(false);
   const [evaluatingHomes, setEvaluatingHomes] = useState<Set<string>>(new Set());
   const router = useRouter();
@@ -191,7 +192,11 @@ function InventoryContent() {
           headers: {
             'Content-Type': 'application/json'
           },
-          body: JSON.stringify({ homeId: home.id })
+          body: JSON.stringify({ 
+            homeId: home.id,
+            useEnhanced: true,  // Use the enhanced deterministic pricing system
+            forceUpdate: true   // Force fresh evaluation (skip cache)
+          })
         });
 
         if (response.ok) {
@@ -200,6 +205,10 @@ function InventoryContent() {
             setEvaluations(prev => ({
               ...prev,
               [home.id]: result.evaluation
+            }));
+            setEvaluationTimestamps(prev => ({
+              ...prev,
+              [home.id]: new Date()
             }));
             completed++;
           } else {
@@ -237,12 +246,14 @@ function InventoryContent() {
       const allStoredEvaluations = await getAllStoredEvaluations();
       
       const evaluationMap: {[homeId: string]: PriceEvaluation} = {};
+      const timestampMap: {[homeId: string]: Date} = {};
       
       // Match evaluations by homeId first, then by address and model name
       homes.forEach(home => {
         // Try exact homeId match first
         if (allStoredEvaluations[home.id]) {
           evaluationMap[home.id] = allStoredEvaluations[home.id].evaluation;
+          timestampMap[home.id] = allStoredEvaluations[home.id].evaluatedAt.toDate();
           return;
         }
         
@@ -254,11 +265,13 @@ function InventoryContent() {
         
         if (storedEvaluation) {
           evaluationMap[home.id] = storedEvaluation.evaluation;
+          timestampMap[home.id] = storedEvaluation.evaluatedAt.toDate();
         }
       });
 
       console.log(`Loaded ${Object.keys(evaluationMap).length} evaluations for ${homes.length} homes`);
       setEvaluations(evaluationMap);
+      setEvaluationTimestamps(timestampMap);
       setEvaluationsLoaded(true);
     } catch (error) {
       console.error('Error loading stored evaluations:', error);
@@ -472,6 +485,7 @@ function InventoryContent() {
                               <PriceEvaluationBadge
                                 homeId={home.id}
                                 initialEvaluation={evaluations[home.id]}
+                                evaluatedAt={evaluationTimestamps[home.id]}
                                 compact={true}
                                 onEvaluate={(evaluation) => handleEvaluationComplete(home, evaluation)}
                               />

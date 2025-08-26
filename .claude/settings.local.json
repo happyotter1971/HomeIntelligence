@@ -12,7 +12,10 @@
       "Bash(node:*)",
       "Bash(npm run build:*)",
       "Bash(lsof:*)",
-      "Bash(npm run dev:*)"
+      "Bash(npm run dev:*)",
+      "WebFetch(domain:vercel.com)",
+      "Bash(open http://localhost:3000/test-pricing)",
+      "Bash(open http://localhost:3000/data-completeness)"
     ],
     "deny": [],
     "ask": []

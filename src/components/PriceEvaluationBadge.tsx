@@ -7,6 +7,7 @@ import { PriceEvaluation } from '@/lib/openai/types';
 interface PriceEvaluationBadgeProps {
   homeId: string;
   initialEvaluation?: PriceEvaluation;
+  evaluatedAt?: Date;
   compact?: boolean;
   onEvaluate?: (evaluation: PriceEvaluation) => void;
 }
@@ -14,12 +15,31 @@ interface PriceEvaluationBadgeProps {
 export default function PriceEvaluationBadge({ 
   homeId, 
   initialEvaluation,
+  evaluatedAt,
   compact = false,
   onEvaluate 
 }: PriceEvaluationBadgeProps) {
   const [evaluation, setEvaluation] = useState<PriceEvaluation | undefined>(initialEvaluation);
+  const [lastUpdated, setLastUpdated] = useState<Date | undefined>(evaluatedAt);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const formatLastUpdated = (date: Date) => {
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+    const diffDays = Math.floor(diffHours / 24);
+    
+    if (diffHours < 1) {
+      return 'Just now';
+    } else if (diffHours < 24) {
+      return `${diffHours}h ago`;
+    } else if (diffDays < 7) {
+      return `${diffDays}d ago`;
+    } else {
+      return date.toLocaleDateString();
+    }
+  };
 
   const evaluatePrice = async () => {
     setLoading(true);
@@ -31,7 +51,11 @@ export default function PriceEvaluationBadge({
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ homeId }),
+        body: JSON.stringify({ 
+          homeId,
+          useEnhanced: true,  // Use the enhanced deterministic pricing system
+          forceUpdate: true   // Force fresh evaluation (skip cache)
+        }),
       });
 
       if (!response.ok) {
@@ -40,6 +64,7 @@ export default function PriceEvaluationBadge({
 
       const data = await response.json();
       setEvaluation(data.evaluation);
+      setLastUpdated(new Date());
       onEvaluate?.(data.evaluation);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to evaluate');
@@ -86,14 +111,14 @@ export default function PriceEvaluationBadge({
           bg: 'bg-green-50',
           text: 'text-green-700',
           icon: CheckCircle,
-          label: 'Good Deal'
+          label: 'Below Market'
         };
       case 'market_fair':
         return {
           bg: 'bg-blue-50',
           text: 'text-blue-700',
           icon: Minus,
-          label: 'Fair Price'
+          label: 'Market Fair'
         };
       case 'above_market':
         return {
@@ -117,16 +142,23 @@ export default function PriceEvaluationBadge({
 
   if (compact) {
     return (
-      <button 
-        onClick={() => onEvaluate?.(evaluation)}
-        className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full ${styles.bg} ${styles.text} hover:opacity-80 transition-opacity cursor-pointer`}
-      >
-        <Icon className="w-3.5 h-3.5" />
-        <span className="text-xs font-medium">{styles.label}</span>
-        {evaluation.confidence > 0 && (
-          <span className="text-xs opacity-75">({evaluation.confidence}%)</span>
+      <div className="space-y-1">
+        <button 
+          onClick={() => onEvaluate?.(evaluation)}
+          className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full ${styles.bg} ${styles.text} hover:opacity-80 transition-opacity cursor-pointer`}
+        >
+          <Icon className="w-3.5 h-3.5" />
+          <span className="text-xs font-medium">{styles.label}</span>
+          {evaluation.confidence > 0 && (
+            <span className="text-xs opacity-75">({evaluation.confidence}%)</span>
+          )}
+        </button>
+        {lastUpdated && (
+          <div className="text-xs text-gray-500 text-center">
+            {formatLastUpdated(lastUpdated)}
+          </div>
         )}
-      </button>
+      </div>
     );
   }
 
@@ -144,6 +176,12 @@ export default function PriceEvaluationBadge({
         <div className="text-xs text-gray-600">
           {evaluation.price_gap.vs_median_ppsf > 0 ? '+' : ''}
           ${Math.abs(evaluation.price_gap.vs_median_ppsf).toLocaleString()}/sqft vs median
+        </div>
+      )}
+      
+      {lastUpdated && (
+        <div className="text-xs text-gray-500">
+          Updated {formatLastUpdated(lastUpdated)}
         </div>
       )}
     </div>

@@ -90,6 +90,12 @@ export interface SubjectProperty {
       amount: number;
     }>;
   };
+  // Enhanced data quality fields
+  price_ppsf?: number;
+  days_on_market?: number;
+  is_new_construction?: boolean;
+  data_quality_score?: number;
+  outlier_flags?: string[];
 }
 
 export interface ComparableProperty extends SubjectProperty {

@@ -42,7 +42,7 @@ export default function PriceEvaluationModal({
 
   const getClassificationLabel = () => {
     switch (evaluation.classification) {
-      case 'below_market': return 'Below Market - Good Deal';
+      case 'below_market': return 'Below Market';
       case 'market_fair': return 'Market Fair';
       case 'above_market': return 'Above Market';
       default: return 'Insufficient Data';
@@ -110,7 +110,7 @@ export default function PriceEvaluationModal({
                   <span className="font-medium">Classification Criteria:</span> Our AI uses ChatGPT to analyze home pricing with these exact thresholds:
                 </div>
                 <ul className="list-disc list-inside ml-4 space-y-1">
-                  <li><span className="font-medium text-green-700">Below Market (Good Deal):</span> Price per sqft is more than 5% below comparable median</li>
+                  <li><span className="font-medium text-green-700">Below Market:</span> Price per sqft is more than 5% below comparable median</li>
                   <li><span className="font-medium text-blue-700">Market Fair:</span> Price per sqft is within ±5% of comparable median</li>
                   <li><span className="font-medium text-orange-700">Above Market:</span> Price per sqft is more than 5% above comparable median</li>
                   <li><span className="font-medium text-gray-700">Insufficient Data:</span> Less than 3 comparable homes found</li>

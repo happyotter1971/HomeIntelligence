@@ -25,6 +25,7 @@ export default function HomeDetailPage({ params }: HomeDetailPageProps) {
   const [home, setHome] = useState<HomeWithRelations | null>(null);
   const [priceHistory, setPriceHistory] = useState<PriceChangeWithRelations[]>([]);
   const [evaluation, setEvaluation] = useState<PriceEvaluation | null>(null);
+  const [evaluatedAt, setEvaluatedAt] = useState<Date | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [backButtonText, setBackButtonText] = useState('Back');
@@ -87,16 +88,15 @@ export default function HomeDetailPage({ params }: HomeDetailPageProps) {
       if (homeData) {
         setHome(homeData);
         
-        // Load price evaluation if it's a Dream Finders home
-        if (homeData.builder?.name.includes('Dream Finders')) {
-          try {
-            const storedEvaluation = await getStoredEvaluation(params.id);
-            if (storedEvaluation) {
-              setEvaluation(storedEvaluation.evaluation);
-            }
-          } catch (evalError) {
-            console.error('Error loading price evaluation:', evalError);
+        // Load price evaluation for all homes (enhanced system supports all builders)
+        try {
+          const storedEvaluation = await getStoredEvaluation(params.id);
+          if (storedEvaluation) {
+            setEvaluation(storedEvaluation.evaluation);
+            setEvaluatedAt(storedEvaluation.evaluatedAt.toDate());
           }
+        } catch (evalError) {
+          console.error('Error loading price evaluation:', evalError);
         }
         
         // Fetch price history using API endpoint to avoid Firebase index issues
@@ -265,7 +265,7 @@ export default function HomeDetailPage({ params }: HomeDetailPageProps) {
             )}
 
             {/* Price Evaluation */}
-            {home.builder?.name.includes('Dream Finders') && (
+            {(
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center justify-between">
@@ -276,12 +276,16 @@ export default function HomeDetailPage({ params }: HomeDetailPageProps) {
                     {!evaluation && (
                       <PriceEvaluationBadge
                         homeId={home.id}
-                        onEvaluate={(newEvaluation) => setEvaluation(newEvaluation)}
+                        evaluatedAt={evaluatedAt || undefined}
+                        onEvaluate={(newEvaluation) => {
+                          setEvaluation(newEvaluation);
+                          setEvaluatedAt(new Date());
+                        }}
                       />
                     )}
                   </CardTitle>
                   <CardDescription>
-                    AI-powered analysis of this home&apos;s pricing vs. market comparables
+                    Enhanced mathematical analysis of this home&apos;s pricing vs. market comparables
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -313,8 +317,8 @@ export default function HomeDetailPage({ params }: HomeDetailPageProps) {
                         </div>
                         <div className="flex-1">
                           <h3 className="text-lg font-semibold text-gray-900 mb-1">
-                            {evaluation.classification === 'below_market' && 'Good Deal'}
-                            {evaluation.classification === 'market_fair' && 'Fair Price'}
+                            {evaluation.classification === 'below_market' && 'Below Market'}
+                            {evaluation.classification === 'market_fair' && 'Market Fair'}
                             {evaluation.classification === 'above_market' && 'Above Market'}
                             {evaluation.classification === 'insufficient_data' && 'Insufficient Data'}
                           </h3>
