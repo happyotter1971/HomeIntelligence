@@ -281,7 +281,7 @@ export default function HomeDetailPage({ params }: HomeDetailPageProps) {
                     )}
                   </CardTitle>
                   <CardDescription>
-                    AI-powered analysis of this home's pricing vs. market comparables
+                    AI-powered analysis of this home&apos;s pricing vs. market comparables
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -440,7 +440,7 @@ export default function HomeDetailPage({ params }: HomeDetailPageProps) {
                     <div className="text-center py-8">
                       <Target className="h-12 w-12 text-gray-400 mx-auto mb-4" />
                       <h3 className="text-lg font-semibold text-gray-900 mb-2">No Price Evaluation Available</h3>
-                      <p className="text-gray-600 mb-4">Click "Evaluate Price" to get an AI-powered market analysis</p>
+                      <p className="text-gray-600 mb-4">Click &quot;Evaluate Price&quot; to get an AI-powered market analysis</p>
                     </div>
                   )}
                 </CardContent>
