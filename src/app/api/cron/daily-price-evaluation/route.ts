@@ -7,6 +7,9 @@ import { calculateMarketAggregates } from '@/lib/price-evaluation/aggregates';
 import { storeEvaluation } from '@/lib/price-evaluation/storage';
 import { EvaluationRequest } from '@/lib/openai/types';
 
+// Force dynamic rendering for cron jobs
+export const dynamic = 'force-dynamic';
+
 export async function GET(req: NextRequest) {
   try {
     // Verify cron secret for security

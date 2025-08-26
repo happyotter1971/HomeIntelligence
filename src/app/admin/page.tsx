@@ -5,14 +5,14 @@ import { useRouter } from 'next/navigation';
 import { onAuthStateChanged } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
 import { getUserData } from '@/lib/auth';
-import { getHomes, addHome, updateHome, deleteHome, getBuilders, getCommunities } from '@/lib/firestore';
+import { getHomes, updateHome, deleteHome, getBuilders, getCommunities } from '@/lib/firestore';
 import { HomeWithRelations, Home, Builder, Community } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select } from '@/components/ui/select';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { formatPrice } from '@/lib/utils';
-import { ArrowLeft, Plus, Edit, Trash2, Shield, Download, RefreshCw, AlertTriangle, Building2, CheckCircle, XCircle, Clock } from 'lucide-react';
+import { ArrowLeft, Edit, Trash2, Shield, Download, RefreshCw, AlertTriangle, Building2, CheckCircle, XCircle, Clock } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Timestamp } from 'firebase/firestore';
@@ -39,7 +39,6 @@ export default function AdminPage() {
   const [communities, setCommunities] = useState<Community[]>([]);
   const [loading, setLoading] = useState(true);
   const [isAuthorized, setIsAuthorized] = useState(false);
-  const [showAddForm, setShowAddForm] = useState(false);
   const [editingHome, setEditingHome] = useState<HomeWithRelations | null>(null);
   const [scraping, setScraping] = useState(false);
   const [scrapeResult, setScrapeResult] = useState<{ success: boolean; message: string } | null>(null);
@@ -187,7 +186,6 @@ export default function AdminPage() {
       features: ''
     });
     setEditingHome(null);
-    setShowAddForm(false);
   };
 
   const handleEdit = (home: HomeWithRelations) => {
@@ -206,7 +204,6 @@ export default function AdminPage() {
       features: home.features.join(', ')
     });
     setEditingHome(home);
-    setShowAddForm(true);
     
     // Scroll to form after a brief delay to ensure it's rendered
     setTimeout(() => {
@@ -217,36 +214,6 @@ export default function AdminPage() {
     }, 100);
   };
 
-  const checkForDuplicates = (homeData: Omit<Home, 'id'>) => {
-    return homes.filter(existingHome => {
-      // Skip the home we're editing
-      if (editingHome && existingHome.id === editingHome.id) {
-        return false;
-      }
-      
-      // Check for duplicates based on multiple criteria
-      const sameModel = existingHome.modelName.toLowerCase() === homeData.modelName.toLowerCase();
-      const sameBuilder = existingHome.builderId === homeData.builderId;
-      const sameCommunity = existingHome.communityId === homeData.communityId;
-      
-      // If address is provided, use it as primary duplicate check
-      if (homeData.address && existingHome.address) {
-        return existingHome.address.toLowerCase() === homeData.address.toLowerCase();
-      }
-      
-      // If homesite number is provided, use it as primary duplicate check
-      if (homeData.homesiteNumber && existingHome.homesiteNumber) {
-        return existingHome.homesiteNumber === homeData.homesiteNumber && sameBuilder && sameCommunity;
-      }
-      
-      // Otherwise check for same model, builder, community, and exact specs
-      return sameModel && sameBuilder && sameCommunity && 
-             existingHome.price === homeData.price &&
-             existingHome.bedrooms === homeData.bedrooms &&
-             existingHome.bathrooms === homeData.bathrooms &&
-             existingHome.squareFootage === homeData.squareFootage;
-    });
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -269,26 +236,8 @@ export default function AdminPage() {
         createdAt: editingHome ? editingHome.createdAt : Timestamp.now()
       };
 
-      // Check for duplicates only when adding new homes
-      if (!editingHome) {
-        const duplicates = checkForDuplicates(homeData);
-        if (duplicates.length > 0) {
-          const duplicateInfo = duplicates.map(h => 
-            `${h.modelName} - ${h.address || h.homesiteNumber || 'No address'}`
-          ).join(', ');
-          
-          const confirmMessage = `Warning: Potential duplicate found!\n\nExisting home(s): ${duplicateInfo}\n\nDo you want to add this home anyway?`;
-          
-          if (!window.confirm(confirmMessage)) {
-            return; // Don't save if user cancels
-          }
-        }
-      }
-
       if (editingHome) {
         await updateHome(editingHome.id, homeData);
-      } else {
-        await addHome(homeData);
       }
 
       await fetchData();
@@ -499,14 +448,6 @@ export default function AdminPage() {
                 </>
               )}
             </Button>
-            <Button 
-              onClick={() => setShowAddForm(true)}
-              disabled={scraping}
-              className="flex items-center gap-2 bg-blue-600 text-white border-2 border-blue-700 hover:bg-blue-700 shadow-md"
-            >
-              <Plus className="h-4 w-4" />
-              Add New Home
-            </Button>
           </div>
 
         {/* Scrape Result Message */}
@@ -525,44 +466,16 @@ export default function AdminPage() {
           </div>
         )}
 
-        {/* Scraping Status Card */}
-        <Card className="bg-white border-2 border-blue-200 shadow-md mb-8">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-gray-900">
+        {/* Scraping Status Bar - Compact */}
+        <div className="bg-white border border-gray-200 rounded-lg p-4 mb-6 shadow-sm">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
               <RefreshCw className="h-5 w-5 text-blue-600" />
-              Automated Scraping
-            </CardTitle>
-            <CardDescription className="text-gray-600">
-              Home data is automatically scraped from builder websites
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {/* Last Update Status */}
-              <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <div className="flex items-center gap-2 text-sm font-medium text-gray-900">
-                      <Clock className="h-4 w-4" />
-                      Last Data Update
-                    </div>
-                    <div className="text-lg font-semibold text-gray-700">
-                      {formatLastUpdateTime(lastUpdateTime)}
-                    </div>
-                    {lastUpdateTime && (
-                      <div className="text-xs text-gray-500 mt-1">
-                        {lastUpdateTime.toLocaleDateString('en-US', { 
-                          weekday: 'long',
-                          month: 'long', 
-                          day: 'numeric', 
-                          year: 'numeric',
-                          hour: 'numeric',
-                          minute: '2-digit'
-                        })}
-                      </div>
-                    )}
-                  </div>
-                  <div className={`px-3 py-1 rounded-full text-xs font-medium ${
+              <div>
+                <div className="flex items-center gap-3">
+                  <span className="text-sm font-medium text-gray-900">Last Update:</span>
+                  <span className="text-sm font-semibold text-gray-700">{formatLastUpdateTime(lastUpdateTime)}</span>
+                  <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${
                     lastUpdateTime && (new Date().getTime() - lastUpdateTime.getTime()) < 3600000
                       ? 'bg-green-100 text-green-800'
                       : lastUpdateTime && (new Date().getTime() - lastUpdateTime.getTime()) < 86400000
@@ -574,39 +487,36 @@ export default function AdminPage() {
                       : lastUpdateTime && (new Date().getTime() - lastUpdateTime.getTime()) < 86400000
                       ? 'Recent'
                       : 'Stale'}
-                  </div>
+                  </span>
                 </div>
-              </div>
-              
-              {/* Schedule Info */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="bg-blue-50 p-4 rounded-lg border border-blue-100">
-                  <div className="text-sm font-medium text-blue-900">Schedule</div>
-                  <div className="text-blue-700">Daily at 2:00 AM</div>
-                  <div className="text-xs text-blue-600 mt-1">Automatic updates from all builders</div>
-                </div>
-                <div className="bg-green-50 p-4 rounded-lg border border-green-100">
-                  <div className="text-sm font-medium text-green-900">Manual Control</div>
-                  <div className="text-green-700">Click &quot;Scrape Now&quot; above</div>
-                  <div className="text-xs text-green-600 mt-1">Immediate data refresh available</div>
+                <div className="text-xs text-gray-500 mt-1">
+                  Auto-refresh daily at 2:00 AM UTC
                 </div>
               </div>
             </div>
-          </CardContent>
-        </Card>
+            {lastUpdateTime && (
+              <div className="text-xs text-gray-500">
+                {lastUpdateTime.toLocaleDateString('en-US', { 
+                  month: 'short', 
+                  day: 'numeric',
+                  hour: 'numeric',
+                  minute: '2-digit'
+                })}
+              </div>
+            )}
+          </div>
+        </div>
 
-        {showAddForm && (
+        {editingHome && (
           <Card id="home-form" className="bg-white border-2 border-blue-200 shadow-md mb-8">
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-blue-600">
-                {editingHome ? <Edit className="h-5 w-5" /> : <Plus className="h-5 w-5" />}
-                {editingHome ? `Edit Home: ${formData.modelName}` : 'Add New Home'}
+                <Edit className="h-5 w-5" />
+                Edit Home: {formData.modelName}
               </CardTitle>
-              {editingHome && (
-                <CardDescription>
-                  Editing home in {homes.find(h => h.id === editingHome.id)?.community?.name}
-                </CardDescription>
-              )}
+              <CardDescription>
+                Editing home in {homes.find(h => h.id === editingHome.id)?.community?.name}
+              </CardDescription>
             </CardHeader>
             <CardContent>
               <form onSubmit={handleSubmit} className="space-y-4">
@@ -745,7 +655,7 @@ export default function AdminPage() {
                 
                 <div className="flex gap-4">
                   <Button type="submit">
-                    {editingHome ? 'Update Home' : 'Add Home'}
+                    Update Home
                   </Button>
                   <Button type="button" variant="outline" onClick={resetForm}>
                     Cancel
@@ -806,12 +716,6 @@ export default function AdminPage() {
                     </div>
                   </div>
                 ))}
-              </div>
-              <div className="mt-4 p-4 bg-blue-50 rounded-lg">
-                <div className="flex items-center justify-between">
-                  <span className="font-medium text-blue-900">Total Homes</span>
-                  <span className="text-2xl font-bold text-blue-600">{homes.length}</span>
-                </div>
               </div>
             </CardContent>
           </Card>

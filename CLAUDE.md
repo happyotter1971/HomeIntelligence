@@ -41,6 +41,8 @@ The application includes an automated web scraping system that refreshes home da
 - **Automated**: Daily cron job at 2 AM UTC via `/api/cron/daily-scrape`
 - **Implementation**: `src/lib/scrape-and-update.ts` contains the scraping logic
 - **Target**: Builder websites for Dream Finders, KB Home, and Ryan Homes
+- **Error Handling**: KB Home scraper includes timeout protection and fallback data
+- **Performance**: Optimized with 45-second timeout and graceful degradation
 
 ### Data Population
 
@@ -93,9 +95,20 @@ The `getHomes()` function in firestore.ts automatically joins related builder an
 - `vercel.json` configured for Next.js optimization with daily cron jobs
 - All environment variables are embedded in the client bundle (Firebase config)
 - Static generation enabled for most pages except `/comparison` which uses search params
-- Automated daily scraping via Vercel cron jobs at 2 AM UTC
+- Automated daily scraping and price evaluation via Vercel cron jobs at 2 AM UTC
+- Cron route handlers use `export const dynamic = 'force-dynamic'` for proper execution
 
 ### API Routes
 
 - `/api/scrape` - Manual trigger for web scraping (POST)
 - `/api/cron/daily-scrape` - Automated daily scraping endpoint
+- `/api/cron/daily-price-evaluation` - Automated daily ChatGPT price evaluation system
+
+### Price Evaluation System
+
+The application includes an AI-powered price evaluation system:
+
+- **Daily Analysis**: Automated ChatGPT evaluation of home pricing trends
+- **Market Aggregates**: Calculates market statistics and pricing insights
+- **Storage**: Evaluation results stored for historical tracking
+- **Integration**: Works with scraping system for comprehensive market analysis
