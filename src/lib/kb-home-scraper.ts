@@ -26,8 +26,9 @@ export const scrapeKBHomesLive = async (): Promise<ScrapedHome[]> => {
       resolve(getFallbackKBHomes());
     }, timeoutMs);
 
+    let browser;
     try {
-      const browser = await puppeteer.launch({
+      browser = await puppeteer.launch({
         headless: true,
         args: [
           '--no-sandbox',
@@ -292,10 +293,12 @@ export const scrapeKBHomesLive = async (): Promise<ScrapedHome[]> => {
     } catch (error) {
       console.error('Error scraping KB Home move-in ready page:', error);
       clearTimeout(timer);
-      try {
-        await browser.close();
-      } catch (closeError) {
-        console.error('Error closing browser:', closeError);
+      if (browser) {
+        try {
+          await browser.close();
+        } catch (closeError) {
+          console.error('Error closing browser:', closeError);
+        }
       }
       // Return fallback data instead of throwing
       resolve(getFallbackKBHomes());
