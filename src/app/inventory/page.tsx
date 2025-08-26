@@ -11,13 +11,13 @@ import { Input } from '@/components/ui/input';
 import { Select } from '@/components/ui/select';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { formatPrice, formatSquareFootage, formatSquareFootageNumber, formatPricePerSquareFoot } from '@/lib/utils';
-import { Search, Filter, ArrowLeft, MapPin, Eye, Clock, Zap, Check, Building2, TrendingUp, CheckCircle, Minus } from 'lucide-react';
+import { Search, Filter, ArrowLeft, MapPin, Eye, Clock, Zap, Check, Building2, TrendingUp, CheckCircle, Minus, Home, Bath, Bed, Car } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 import PriceEvaluationBadge from '@/components/PriceEvaluationBadge';
 import PriceEvaluationModal from '@/components/PriceEvaluationModal';
 import { PriceEvaluation } from '@/lib/openai/types';
-import { getEvaluationsForBuilder } from '@/lib/price-evaluation/storage';
+import { getEvaluationsForBuilder, StoredEvaluation } from '@/lib/price-evaluation/storage';
 
 function InventoryContent() {
   const [homes, setHomes] = useState<HomeWithRelations[]>([]);
@@ -56,7 +56,6 @@ function InventoryContent() {
     fetchData();
   }, []);
 
-  // Handle URL search parameters
   useEffect(() => {
     const bedroomsParam = searchParams.get('bedrooms');
     if (bedroomsParam) {
@@ -120,11 +119,6 @@ function InventoryContent() {
     setFilteredHomes(filtered);
   }, [homes, searchTerm, selectedBuilder, selectedCommunity, minPrice, maxPrice, bedrooms, status]);
 
-  // All homes are now quick move-in, so this function is simplified
-  const quickMoveInHomes = useCallback(() => {
-    return filteredHomes; // All homes are quick move-in
-  }, [filteredHomes]);
-
   const groupedHomes = useCallback(() => {
     const groups = filteredHomes.reduce((acc, home) => {
       const builderName = home.builder?.name || 'Unknown Builder';
@@ -135,14 +129,11 @@ function InventoryContent() {
       return acc;
     }, {} as Record<string, HomeWithRelations[]>);
 
-    // Sort homes within each builder group by price (lowest to highest), then by square footage (lowest to highest)
     Object.keys(groups).forEach(builderName => {
       groups[builderName].sort((a, b) => {
-        // Primary sort: price (lowest to highest)
         if (a.price !== b.price) {
           return a.price - b.price;
         }
-        // Secondary sort: square footage (lowest to highest)
         return a.squareFootage - b.squareFootage;
       });
     });
@@ -187,7 +178,6 @@ function InventoryContent() {
 
     if (dreamFinderHomes.length === 0) return;
 
-    // Mark all homes as evaluating
     setEvaluatingHomes(new Set(dreamFinderHomes.map(h => h.id)));
 
     let completed = 0;
@@ -198,419 +188,320 @@ function InventoryContent() {
         const response = await fetch('/api/evaluate-price', {
           method: 'POST',
           headers: {
-            'Content-Type': 'application/json',
+            'Content-Type': 'application/json'
           },
-          body: JSON.stringify({ homeId: home.id, forceUpdate: true }),
+          body: JSON.stringify({ home })
         });
 
         if (response.ok) {
-          const data = await response.json();
-          // Update the evaluations state immediately
+          const evaluation = await response.json();
           setEvaluations(prev => ({
             ...prev,
-            [home.id]: data.evaluation
+            [home.id]: evaluation
           }));
           completed++;
         } else {
-          console.error(`Failed to evaluate ${home.modelName}`);
           errors++;
+          console.error(`Failed to evaluate home ${home.id}`);
         }
-
-        // Remove this home from evaluating set
-        setEvaluatingHomes(prev => {
-          const newSet = new Set(prev);
-          newSet.delete(home.id);
-          return newSet;
-        });
-
-        // Add delay to avoid rate limiting (3 seconds between calls)
-        if (home !== dreamFinderHomes[dreamFinderHomes.length - 1]) {
-          await new Promise(resolve => setTimeout(resolve, 3000));
-        }
-
       } catch (error) {
-        console.error(`Error evaluating ${home.modelName}:`, error);
         errors++;
-        
-        // Remove this home from evaluating set
-        setEvaluatingHomes(prev => {
-          const newSet = new Set(prev);
-          newSet.delete(home.id);
-          return newSet;
-        });
+        console.error(`Error evaluating home ${home.id}:`, error);
       }
+
+      setEvaluatingHomes(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(home.id);
+        return newSet;
+      });
     }
 
-    console.log(`DreamFinder evaluation complete: ${completed} successful, ${errors} errors`);
+    console.log(`Evaluation complete: ${completed} successful, ${errors} errors`);
   };
 
-  // Load stored evaluations for DreamFinder homes
-  useEffect(() => {
-    const loadStoredEvaluations = async () => {
-      if (evaluationsLoaded) return;
-      
-      try {
-        const response = await fetch('/api/get-stored-evaluations?builder=Dream%20Finders%20Homes');
-        const data = await response.json();
-        
-        if (data.success) {
-          setEvaluations(data.evaluations);
-          console.log(`Loaded ${data.count} stored price evaluations from API`);
-        } else {
-          console.error('Failed to load stored evaluations:', data.error);
-        }
-        
-        setEvaluationsLoaded(true);
-      } catch (error) {
-        console.error('Error loading stored evaluations:', error);
-        setEvaluationsLoaded(true); // Still mark as loaded to prevent retries
-      }
-    };
+  const loadStoredEvaluations = useCallback(async () => {
+    if (evaluationsLoaded) return;
 
-    loadStoredEvaluations();
-  }, [evaluationsLoaded]);
+    const dreamFinderHomes = homes.filter(home => 
+      home.builder?.name.includes('Dream Finders')
+    );
+
+    if (dreamFinderHomes.length === 0) {
+      setEvaluationsLoaded(true);
+      return;
+    }
+
+    try {
+      const storedEvaluationsMap = await getEvaluationsForBuilder('Dream Finders Homes');
+      const storedEvaluations = Object.values(storedEvaluationsMap);
+      
+      const evaluationMap: {[homeId: string]: PriceEvaluation} = {};
+      dreamFinderHomes.forEach(home => {
+        const storedEvaluation = storedEvaluations.find(e => 
+          e.homeData.address === home.address &&
+          e.homeData.modelName === home.modelName
+        );
+        if (storedEvaluation) {
+          evaluationMap[home.id] = storedEvaluation.evaluation;
+        }
+      });
+
+      setEvaluations(evaluationMap);
+      setEvaluationsLoaded(true);
+    } catch (error) {
+      console.error('Error loading stored evaluations:', error);
+      setEvaluationsLoaded(true);
+    }
+  }, [homes, evaluationsLoaded]);
+
+  useEffect(() => {
+    if (homes.length > 0) {
+      loadStoredEvaluations();
+    }
+  }, [homes, loadStoredEvaluations]);
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-4 border-blue-500 mx-auto mb-4"></div>
+          <h2 className="text-2xl font-semibold text-gray-900">Loading Inventory</h2>
+          <p className="text-gray-600 mt-2">Fetching the latest homes...</p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-slate-50">
-      {/* Header with clean background */}
-      <div className="bg-white border-b-2 border-blue-200 shadow-md">
-        <div className="container mx-auto px-6 py-8 relative z-10">
+    <div className="min-h-screen bg-gray-50">
+      {/* Header */}
+      <header className="bg-white border-b border-gray-200">
+        <div className="container mx-auto px-6 py-4">
           <div className="flex justify-between items-center">
-            <div className="flex items-center gap-6">
-              <div className="p-3 bg-white rounded-2xl border-2 border-blue-200 shadow-md">
-                <Image 
-                  src="/new-logo.svg" 
-                  alt="BuilderIntelligence Logo" 
-                  width={64} 
-                  height={64}
-                  className="flex-shrink-0"
-                />
-              </div>
-              <div className="flex flex-col justify-center">
-                <h1 className="text-3xl md:text-4xl font-bold text-gray-900 leading-tight">
-                  <span className="text-blue-600">Quick Move-In</span>
-                  <span className="text-gray-700">: Inventory Browser</span>
-                </h1>
-                <p className="text-sm text-gray-600 mt-2 font-medium bg-blue-50 px-3 py-1 rounded-lg border border-blue-200">
-                  Browse homes ready for immediate move-in
-                </p>
-              </div>
-            </div>
             <div className="flex items-center gap-4">
               <Link href="/">
-                <Button 
-                  variant="outline"
-                  className="bg-white border-gray-300 text-gray-700 hover:bg-blue-50 hover:border-blue-300 hover:text-blue-700 rounded-xl transition-all duration-200 shadow-lg"
-                >
+                <Button variant="ghost" size="sm" className="text-gray-600 hover:text-gray-900">
                   <ArrowLeft className="h-4 w-4 mr-2" />
-                  Back to Home
+                  Back
                 </Button>
               </Link>
+              <div>
+                <h1 className="text-xl font-semibold text-gray-900">Quick Move-In Inventory</h1>
+                <p className="text-xs text-gray-500">Browse homes ready for immediate move-in</p>
+              </div>
             </div>
           </div>
         </div>
-      </div>
+      </header>
       
-      <div className="relative">
-        <div className="container mx-auto px-6 pt-8 pb-12">
-
-        <Card className="mb-6 bg-white border-2 border-blue-200 shadow-md">
+      <div className="container mx-auto px-6 py-8">
+        {/* Filters */}
+        <Card className="mb-6 bg-white">
           <CardContent className="pt-6">
-            <div className="space-y-6">
-              {/* Search Bar & Clear Button */}
+            <div className="space-y-4">
               <div className="flex gap-3">
-                <Input
-                  placeholder="🔍 Search by model name, builder, or community..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="flex-1 h-12 text-lg border-0 bg-white shadow-sm rounded-lg"
-                />
-                <Button variant="outline" onClick={clearFilters} className="h-12 px-6 bg-white/70 border-0 shadow-sm hover:bg-white whitespace-nowrap">
-                  Clear All Filters
+                <div className="relative flex-1">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                  <Input
+                    placeholder="Search by model name, builder, or community..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="pl-10 h-10 bg-gray-50 border-gray-200"
+                  />
+                </div>
+                <Button variant="outline" onClick={clearFilters} className="h-10">
+                  Clear Filters
                 </Button>
               </div>
               
-              {/* Filter Groups */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {/* Builder & Community */}
-                <div className="space-y-3">
-                  <h4 className="text-sm font-semibold text-gray-700 uppercase tracking-wide">Location</h4>
-                  <div className="space-y-2">
-                    <Select value={selectedBuilder} onChange={(e) => setSelectedBuilder(e.target.value)} className="bg-white border-0 shadow-sm rounded-md">
-                      <option value="">All Builders</option>
-                      {builders.map(builder => (
-                        <option key={builder.id} value={builder.id}>{builder.name}</option>
-                      ))}
-                    </Select>
-                    <Select value={selectedCommunity} onChange={(e) => setSelectedCommunity(e.target.value)} className="bg-white border-0 shadow-sm rounded-md">
-                      <option value="">All Communities</option>
-                      {communities.map(community => (
-                        <option key={community.id} value={community.id}>{community.name}</option>
-                      ))}
-                    </Select>
-                  </div>
-                </div>
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <Select value={selectedBuilder} onChange={(e) => setSelectedBuilder(e.target.value)} className="h-10 bg-gray-50 border-gray-200">
+                  <option value="">All Builders</option>
+                  {builders.map(builder => (
+                    <option key={builder.id} value={builder.id}>{builder.name}</option>
+                  ))}
+                </Select>
                 
-                {/* Price Range */}
-                <div className="space-y-3">
-                  <h4 className="text-sm font-semibold text-gray-700 uppercase tracking-wide">Price Range</h4>
-                  <div className="space-y-2">
-                    <Input
-                      placeholder="Min Price"
-                      type="number"
-                      value={minPrice}
-                      onChange={(e) => setMinPrice(e.target.value)}
-                      className="bg-white border-0 shadow-sm rounded-md"
-                    />
-                    <Input
-                      placeholder="Max Price"
-                      type="number"
-                      value={maxPrice}
-                      onChange={(e) => setMaxPrice(e.target.value)}
-                      className="bg-white border-0 shadow-sm rounded-md"
-                    />
-                  </div>
-                </div>
+                <Select value={selectedCommunity} onChange={(e) => setSelectedCommunity(e.target.value)} className="h-10 bg-gray-50 border-gray-200">
+                  <option value="">All Communities</option>
+                  {communities.map(community => (
+                    <option key={community.id} value={community.id}>{community.name}</option>
+                  ))}
+                </Select>
                 
-                {/* Home Details */}
-                <div className="space-y-3">
-                  <h4 className="text-sm font-semibold text-gray-700 uppercase tracking-wide">Home Details</h4>
-                  <div className="space-y-2">
-                    <Select value={bedrooms} onChange={(e) => setBedrooms(e.target.value)} className="bg-white border-0 shadow-sm rounded-md">
-                      <option value="">Any Bedrooms</option>
-                      <option value="3">3 Bedrooms</option>
-                      <option value="4">4 Bedrooms</option>
-                      <option value="5">5+ Bedrooms</option>
-                    </Select>
-                    <Select value={status} onChange={(e) => setStatus(e.target.value)} className="bg-white border-0 shadow-sm rounded-md">
-                      <option value="">All Status</option>
-                      <option value="available">Available</option>
-                      <option value="quick-move-in">Quick Move-In</option>
-                      <option value="pending">Pending</option>
-                    </Select>
-                  </div>
+                <Select value={bedrooms} onChange={(e) => setBedrooms(e.target.value)} className="h-10 bg-gray-50 border-gray-200">
+                  <option value="">Any Bedrooms</option>
+                  <option value="3">3 Bedrooms</option>
+                  <option value="4">4 Bedrooms</option>
+                  <option value="5">5+ Bedrooms</option>
+                </Select>
+                
+                <div className="flex gap-2">
+                  <Input
+                    placeholder="Min Price"
+                    type="number"
+                    value={minPrice}
+                    onChange={(e) => setMinPrice(e.target.value)}
+                    className="h-10 bg-gray-50 border-gray-200"
+                  />
+                  <Input
+                    placeholder="Max Price"
+                    type="number"
+                    value={maxPrice}
+                    onChange={(e) => setMaxPrice(e.target.value)}
+                    className="h-10 bg-gray-50 border-gray-200"
+                  />
                 </div>
               </div>
             </div>
           </CardContent>
         </Card>
 
-{/* Floating Compare Button - only show when 2+ homes selected */}
-        {compareList.length >= 2 && (
-          <div className="fixed bottom-6 right-6 z-50">
-            <Link href={`/comparison?homes=${compareList.map(h => h.id).join(',')}`}>
-              <Button size="lg" className="shadow-sm bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg border border-blue-700">
-                Compare {compareList.length} Home{compareList.length !== 1 ? 's' : ''} Now
-              </Button>
-            </Link>
-          </div>
-        )}
-
+        {/* Results Summary */}
         <div className="mb-4 flex justify-between items-center">
-          <div>
-            <p className="text-gray-600">
-              Showing {filteredHomes.length} of {homes.length} quick move-in ready homes
-            </p>
-            <p className="text-sm text-green-600 flex items-center gap-1 mt-1">
-              <Zap className="h-4 w-4" />
-              All homes are available for immediate move-in
-            </p>
-          </div>
+          <p className="text-gray-600">
+            Showing {filteredHomes.length} of {homes.length} homes
+          </p>
+          {compareList.length > 0 && (
+            <div className="flex items-center gap-3">
+              <span className="text-sm text-gray-600">
+                {compareList.length} selected for comparison
+              </span>
+              {compareList.length >= 2 && (
+                <Link href={`/comparison?homes=${compareList.map(h => h.id).join(',')}`}>
+                  <Button size="sm" className="bg-blue-500 hover:bg-blue-600 text-white">
+                    Compare Now
+                  </Button>
+                </Link>
+              )}
+            </div>
+          )}
         </div>
 
+        {/* Home Listings */}
         <div className="space-y-6">
           {groupedHomes().map(([builderName, homes]) => (
-            <Card key={builderName} className="bg-white border-2 border-blue-200 shadow-md">
-              <CardHeader>
+            <Card key={builderName} className="bg-white">
+              <CardHeader className="pb-4">
                 <div className="flex items-center justify-between">
-                  <CardTitle className="text-xl flex items-center gap-2 text-gray-900">
-                    <Building2 className="h-5 w-5 text-blue-600" />
-                    {builderName}
-                  </CardTitle>
-                  <div className="flex items-center gap-3">
-                    <span className="bg-blue-50 text-blue-700 px-3 py-1 rounded-full text-sm font-medium border border-blue-200">
-                      {homes.length} home{homes.length !== 1 ? 's' : ''}
+                  <div className="flex items-center gap-2">
+                    <Building2 className="h-5 w-5 text-blue-500" />
+                    <CardTitle className="text-lg font-semibold text-gray-900">{builderName}</CardTitle>
+                    <span className="text-sm text-gray-500">
+                      ({homes.length} homes)
                     </span>
-                    
-                    {/* Evaluate All Button for DreamFinder homes only */}
-                    {builderName.includes('Dream Finders') && (
-                      <div className="flex items-center gap-2">
-                        {evaluatingHomes.size > 0 && homes.some(home => evaluatingHomes.has(home.id)) && (
-                          <div className="text-xs text-gray-600 bg-gray-100 px-2 py-1 rounded-md">
-                            Evaluating {evaluatingHomes.size} home{evaluatingHomes.size !== 1 ? 's' : ''}...
-                          </div>
-                        )}
-                        <button
-                          onClick={() => evaluateAllDreamFinderHomes(homes)}
-                          disabled={evaluatingHomes.size > 0}
-                          className="inline-flex items-center gap-2 px-3 py-1.5 rounded-md bg-blue-600 text-white hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors text-sm font-medium"
-                        >
-                          <TrendingUp className="w-4 h-4" />
-                          {evaluatingHomes.size > 0 ? 'Evaluating...' : 'Evaluate All Homes'}
-                        </button>
-                      </div>
-                    )}
                   </div>
+                  
+                  {builderName.includes('Dream Finders') && (
+                    <button
+                      onClick={() => evaluateAllDreamFinderHomes(homes)}
+                      disabled={evaluatingHomes.size > 0}
+                      className="inline-flex items-center gap-2 px-3 py-1.5 rounded-md bg-blue-500 text-white hover:bg-blue-600 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors text-sm"
+                    >
+                      <TrendingUp className="w-4 h-4" />
+                      {evaluatingHomes.size > 0 ? 'Evaluating...' : 'Evaluate All'}
+                    </button>
+                  )}
                 </div>
               </CardHeader>
-              <CardContent>
-                <div className="overflow-x-auto">
-                  <table className="w-full">
-                    <thead>
-                      <tr className="border-b">
-                        <th className="text-left py-3 px-2">Model</th>
-                        <th className="text-left py-3 px-2">Community</th>
-                        <th className="text-left py-3 px-2">Price</th>
-                        {builderName.includes('Dream Finders') && (
-                          <th className="text-left py-3 px-2">Evaluation</th>
-                        )}
-                        <th className="text-left py-3 px-2">Price/Sq Ft</th>
-                        <th className="text-left py-3 px-2">Sq Ft</th>
-                        <th className="text-left py-3 px-2">Beds</th>
-                        <th className="text-left py-3 px-2">Baths</th>
-                        <th className="text-left py-3 px-2">Garage</th>
-                        <th className="text-left py-3 px-2">Actions</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y">
-                      {homes.map((home) => (
-                        <tr 
-                          key={home.id} 
-                          className={`hover:bg-accent/50 transition-colors duration-200 ${compareList.some(h => h.id === home.id) ? 'bg-blue-50/50' : ''}`}
-                        >
-                          <td className="py-4 px-2">
-                            <div className="flex items-center gap-3">
-                              <input
-                                type="checkbox"
-                                checked={compareList.some(h => h.id === home.id)}
-                                onChange={() => handleCompare(home)}
-                                disabled={!compareList.some(h => h.id === home.id) && compareList.length >= 3}
-                                className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
-                                title={compareList.length >= 3 && !compareList.some(h => h.id === home.id) ? "Maximum 3 homes can be compared" : "Select to compare"}
-                              />
-                              <div>
-                                <div className="font-semibold text-foreground">{home.modelName}</div>
-                                {home.address && (
-                                  <div className="text-sm text-muted-foreground">
-                                    {home.address.match(/Lot\s+(\d+)/i) ? (
-                                      <>
-                                        <span className="font-medium text-foreground">Lot {home.address.match(/Lot\s+(\d+)/i)?.[1]}</span>
-                                        <span className="ml-1">{home.address.replace(/Lot\s+\d+\s*,?\s*/i, '')}</span>
-                                      </>
-                                    ) : home.address.match(/^\d+/) ? (
-                                      <>
-                                        <span className="font-medium text-foreground">{home.address.match(/^\d+/)?.[0]}</span>
-                                        <span className="ml-1">{home.address.replace(/^\d+\s*,?\s*/, '')}</span>
-                                      </>
-                                    ) : (
-                                      home.address
-                                    )}
-                                  </div>
-                                )}
-                                {home.homesiteNumber && (
-                                  <div className="text-sm text-muted-foreground">Homesite: {home.homesiteNumber}</div>
-                                )}
-                              </div>
-                            </div>
-                          </td>
-                          <td className="py-4 px-2 text-muted-foreground">{home.community?.name}</td>
-                          <td className="py-4 px-2">
-                            <div className="font-bold text-foreground">{formatPrice(home.price)}</div>
-                          </td>
-                          {builderName.includes('Dream Finders') && (
-                            <td className="py-4 px-2">
-                              {evaluations[home.id] ? (
-                                <button
-                                  onClick={() => handleEvaluationComplete(home, evaluations[home.id])}
-                                  className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full cursor-pointer hover:opacity-80 transition-opacity"
-                                  style={{
-                                    backgroundColor: evaluations[home.id].classification === 'below_market' ? '#dcfce7' : 
-                                                   evaluations[home.id].classification === 'market_fair' ? '#dbeafe' : 
-                                                   evaluations[home.id].classification === 'above_market' ? '#fed7aa' : '#f3f4f6',
-                                    color: evaluations[home.id].classification === 'below_market' ? '#15803d' : 
-                                           evaluations[home.id].classification === 'market_fair' ? '#1d4ed8' : 
-                                           evaluations[home.id].classification === 'above_market' ? '#c2410c' : '#374151'
-                                  }}
-                                >
-                                  {evaluations[home.id].classification === 'below_market' && <CheckCircle className="w-3.5 h-3.5" />}
-                                  {evaluations[home.id].classification === 'market_fair' && <Minus className="w-3.5 h-3.5" />}
-                                  {evaluations[home.id].classification === 'above_market' && <TrendingUp className="w-3.5 h-3.5" />}
-                                  <span className="text-xs font-medium">
-                                    {evaluations[home.id].classification === 'below_market' ? 'Good Deal' :
-                                     evaluations[home.id].classification === 'market_fair' ? 'Fair Price' :
-                                     evaluations[home.id].classification === 'above_market' ? 'Above Market' : 'No Data'}
-                                  </span>
-                                </button>
-                              ) : evaluatingHomes.has(home.id) ? (
-                                <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-gray-100">
-                                  <div className="w-3 h-3 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-                                  <span className="text-xs text-gray-600">Evaluating...</span>
-                                </div>
-                              ) : evaluationsLoaded ? (
-                                <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-gray-100 text-gray-600">
-                                  <span className="text-xs">Not evaluated</span>
-                                </div>
-                              ) : (
-                                <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-gray-100">
-                                  <div className="w-3 h-3 border-2 border-gray-400 border-t-transparent rounded-full animate-spin"></div>
-                                  <span className="text-xs text-gray-600">Loading...</span>
-                                </div>
-                              )}
-                            </td>
-                          )}
-                          <td className="py-4 px-2 text-muted-foreground">{formatPricePerSquareFoot(home.price, home.squareFootage)}</td>
-                          <td className="py-4 px-2 text-muted-foreground">{formatSquareFootageNumber(home.squareFootage)}</td>
-                          <td className="py-4 px-2 text-muted-foreground">{home.bedrooms}</td>
-                          <td className="py-4 px-2 text-muted-foreground">{home.bathrooms}</td>
-                          <td className="py-4 px-2 text-muted-foreground">{home.garageSpaces}</td>
-                          <td className="py-4 px-2">
-                            <Link href={`/home/${home.id}`}>
-                              <Button size="sm" variant="outline">
-                                <Eye className="h-4 w-4 mr-1" />
-                                View
-                              </Button>
-                            </Link>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+              <CardContent className="pt-0">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {homes.map((home) => (
+                    <div
+                      key={home.id}
+                      className={`bg-gray-50 rounded-lg p-4 hover:bg-gray-100 transition-colors ${
+                        compareList.some(h => h.id === home.id) ? 'ring-2 ring-blue-500' : ''
+                      }`}
+                    >
+                      <div className="flex justify-between items-start mb-3">
+                        <div>
+                          <Link href={`/home/${home.id}`}>
+                            <h3 className="font-semibold text-gray-900 hover:text-blue-600 cursor-pointer">
+                              {home.modelName}
+                            </h3>
+                          </Link>
+                          <p className="text-sm text-gray-600 flex items-center gap-1 mt-1">
+                            <MapPin className="h-3 w-3" />
+                            {home.community?.name}
+                          </p>
+                        </div>
+                        <input
+                          type="checkbox"
+                          checked={compareList.some(h => h.id === home.id)}
+                          onChange={() => handleCompare(home)}
+                          disabled={!compareList.some(h => h.id === home.id) && compareList.length >= 3}
+                          className="w-4 h-4 text-blue-500"
+                        />
+                      </div>
+                      
+                      <div className="mb-3">
+                        <p className="text-2xl font-bold text-gray-900">{formatPrice(home.price)}</p>
+                        <p className="text-sm text-gray-500">
+                          {formatPricePerSquareFoot(home.price, home.squareFootage)} per sq ft
+                        </p>
+                      </div>
+                      
+                      <div className="flex items-center gap-4 text-sm text-gray-600 mb-3">
+                        <span className="flex items-center gap-1">
+                          <Bed className="h-4 w-4" />
+                          {home.bedrooms} beds
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <Bath className="h-4 w-4" />
+                          {home.bathrooms} baths
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <Home className="h-4 w-4" />
+                          {formatSquareFootageNumber(home.squareFootage)} sq ft
+                        </span>
+                      </div>
+                      
+                      {builderName.includes('Dream Finders') && evaluations[home.id] && (
+                        <div className="mt-3">
+                          <PriceEvaluationBadge
+                            homeId={home.id}
+                            initialEvaluation={evaluations[home.id]}
+                            compact={true}
+                            onEvaluate={(evaluation) => handleEvaluationComplete(home, evaluation)}
+                          />
+                        </div>
+                      )}
+                      
+                      <div className="flex gap-2 mt-3">
+                        <Link href={`/home/${home.id}`} className="flex-1">
+                          <Button variant="outline" size="sm" className="w-full text-xs">
+                            <Eye className="h-3 w-3 mr-1" />
+                            View Details
+                          </Button>
+                        </Link>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </CardContent>
             </Card>
           ))}
         </div>
-
-          {filteredHomes.length === 0 && (
-            <div className="text-center py-12">
-              <p className="text-gray-500 text-lg">No homes found matching your criteria</p>
-              <Button variant="outline" onClick={clearFilters} className="mt-4">
-                Clear Filters
-              </Button>
-            </div>
-          )}
-        </div>
+        
+        {filteredHomes.length === 0 && (
+          <Card className="bg-white">
+            <CardContent className="py-12">
+              <div className="text-center">
+                <Home className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">No homes found</h3>
+                <p className="text-gray-600">Try adjusting your filters to see more results</p>
+              </div>
+            </CardContent>
+          </Card>
+        )}
       </div>
 
-      {/* Price Evaluation Modal */}
-      {selectedHomeForEval && currentEvaluation && (
+      {showEvalModal && selectedHomeForEval && currentEvaluation && (
         <PriceEvaluationModal
           isOpen={showEvalModal}
-          onClose={() => {
-            setShowEvalModal(false);
-            setSelectedHomeForEval(null);
-            setCurrentEvaluation(null);
-          }}
-          home={selectedHomeForEval}
+          onClose={() => setShowEvalModal(false)}
           evaluation={currentEvaluation}
+          home={selectedHomeForEval}
         />
       )}
     </div>
@@ -620,8 +511,11 @@ function InventoryContent() {
 export default function InventoryPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-4 border-blue-500 mx-auto mb-4"></div>
+          <h2 className="text-2xl font-semibold text-gray-900">Loading Inventory</h2>
+        </div>
       </div>
     }>
       <InventoryContent />

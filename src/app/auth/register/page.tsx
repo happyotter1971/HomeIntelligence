@@ -8,7 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import Link from 'next/link';
 import { Building2, ArrowLeft } from 'lucide-react';
 
-export default function LoginPage() {
+export default function RegisterPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const router = useRouter();
@@ -21,7 +21,7 @@ export default function LoginPage() {
       await signInWithGoogle();
       router.push('/');
     } catch (error: any) {
-      setError(error.message || 'Failed to sign in with Google');
+      setError(error.message || 'Failed to sign up with Google');
     } finally {
       setLoading(false);
     }
@@ -35,9 +35,9 @@ export default function LoginPage() {
             <div className="flex justify-center mb-4">
               <Building2 className="h-12 w-12 text-blue-500" />
             </div>
-            <CardTitle className="text-2xl font-bold text-gray-900">Welcome to BuilderIntelligence</CardTitle>
+            <CardTitle className="text-2xl font-bold text-gray-900">Create Your Account</CardTitle>
             <CardDescription className="text-gray-600">
-              Sign in to access home inventory and market insights
+              Join BuilderIntelligence to access comprehensive home market data
             </CardDescription>
           </CardHeader>
           
@@ -57,10 +57,10 @@ export default function LoginPage() {
               {loading ? (
                 <div className="flex items-center gap-2">
                   <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                  Signing in...
+                  Creating account...
                 </div>
               ) : (
-                'Sign in with Google'
+                'Sign up with Google'
               )}
             </Button>
             
@@ -73,9 +73,9 @@ export default function LoginPage() {
             
             <div className="text-center pt-4">
               <p className="text-xs text-gray-500">
-                Don&apos;t have an account?{' '}
-                <Link href="/auth/register" className="text-blue-500 hover:text-blue-600 font-medium">
-                  Sign up here
+                Already have an account?{' '}
+                <Link href="/auth/login" className="text-blue-500 hover:text-blue-600 font-medium">
+                  Sign in here
                 </Link>
               </p>
             </div>

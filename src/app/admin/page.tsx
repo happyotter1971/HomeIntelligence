@@ -328,127 +328,89 @@ export default function AdminPage() {
 
   if (!isAuthorized) {
     return (
-      <div className="min-h-screen bg-slate-50">
-        {/* Header with clean background */}
-        <div className="bg-white border-b-2 border-blue-200 shadow-md">
-          <div className="container mx-auto px-6 py-8 relative z-10">
-            <div className="flex justify-between items-center">
-              <div className="flex items-center gap-6">
-                <div className="p-3 bg-white rounded-2xl border-2 border-blue-200 shadow-md">
-                  <Image 
-                    src="/new-logo.svg" 
-                    alt="BuilderIntelligence Logo" 
-                    width={64} 
-                    height={64}
-                    className="flex-shrink-0"
-                  />
-                </div>
-                <div className="flex flex-col justify-center">
-                  <h1 className="text-3xl md:text-4xl font-bold text-gray-900 leading-tight">
-                    <span className="text-blue-600">Admin Panel</span>
-                    <span className="text-gray-700">: Access Denied</span>
-                  </h1>
-                  <p className="text-sm text-gray-600 mt-2 font-medium bg-red-50 px-3 py-1 rounded-lg border border-red-200">
-                    Insufficient privileges
-                  </p>
-                </div>
-              </div>
+      <div className="min-h-screen bg-gray-50">
+        {/* Header */}
+        <header className="bg-white border-b border-gray-200">
+          <div className="container mx-auto px-6 py-4">
+            <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
                 <Link href="/">
-                  <Button 
-                    variant="outline"
-                    className="bg-white border-gray-300 text-gray-700 hover:bg-blue-50 hover:border-blue-300 hover:text-blue-700 rounded-xl transition-all duration-200 shadow-lg"
-                  >
+                  <Button variant="ghost" size="sm" className="text-gray-600 hover:text-gray-900">
                     <ArrowLeft className="h-4 w-4 mr-2" />
-                    Back to Home
+                    Back
                   </Button>
                 </Link>
+                <div className="flex items-center gap-3">
+                  <Building2 className="h-8 w-8 text-blue-500 mr-2" />
+                  <div>
+                    <h1 className="text-xl font-semibold text-gray-900">Admin Panel</h1>
+                    <p className="text-xs text-gray-500">Access Denied</p>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
-        </div>
+        </header>
         
-        <div className="relative">
-          <div className="container mx-auto px-6 pt-8 pb-12">
-            <Card className="bg-white border-2 border-blue-200 shadow-md">
-              <CardContent className="text-center py-12">
-                <Shield className="h-16 w-16 mx-auto text-red-400 mb-4" />
-                <h2 className="text-xl font-semibold mb-2">Access Denied</h2>
-                <p className="text-gray-600">
-                  You don&apos;t have admin privileges to access this page.
-                </p>
-              </CardContent>
-            </Card>
-          </div>
+        <div className="container mx-auto px-6 py-8">
+          <Card className="bg-white">
+            <CardContent className="text-center py-12">
+              <Shield className="h-16 w-16 mx-auto text-red-400 mb-4" />
+              <h2 className="text-xl font-semibold mb-2">Access Denied</h2>
+              <p className="text-gray-600">
+                You don&apos;t have admin privileges to access this page.
+              </p>
+            </CardContent>
+          </Card>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-slate-50">
-      {/* Header with clean background */}
-      <div className="bg-white border-b-2 border-blue-200 shadow-md">
-        <div className="container mx-auto px-6 py-8 relative z-10">
-          <div className="flex justify-between items-center">
-            <div className="flex items-center gap-6">
-              <div className="p-3 bg-white rounded-2xl border-2 border-blue-200 shadow-md">
-                <Image 
-                  src="/new-logo.svg" 
-                  alt="BuilderIntelligence Logo" 
-                  width={64} 
-                  height={64}
-                  className="flex-shrink-0"
-                />
-              </div>
-              <div className="flex flex-col justify-center">
-                <h1 className="text-3xl md:text-4xl font-bold text-gray-900 leading-tight">
-                  <span className="text-blue-600">Admin Panel</span>
-                  <span className="text-gray-700">: Inventory Management</span>
-                </h1>
-                <p className="text-sm text-gray-600 mt-2 font-medium bg-blue-50 px-3 py-1 rounded-lg border border-blue-200">
-                  Manage home inventory and builder data
-                </p>
+    <div className="min-h-screen bg-gray-50">
+      {/* Header */}
+      <header className="bg-white border-b border-gray-200">
+        <div className="container mx-auto px-6 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <Link href="/">
+                <Button variant="ghost" size="sm" className="text-gray-600 hover:text-gray-900">
+                  <ArrowLeft className="h-4 w-4 mr-2" />
+                  Back
+                </Button>
+              </Link>
+              <div>
+                <h1 className="text-xl font-semibold text-gray-900">Admin Panel</h1>
+                <p className="text-xs text-gray-500">Manage home inventory and builder data</p>
               </div>
             </div>
             <div className="flex items-center gap-4">
-              <Link href="/">
-                <Button 
-                  variant="outline"
-                  className="bg-white border-gray-300 text-gray-700 hover:bg-blue-50 hover:border-blue-300 hover:text-blue-700 rounded-xl transition-all duration-200 shadow-lg"
-                >
-                  <ArrowLeft className="h-4 w-4 mr-2" />
-                  Back to Home
-                </Button>
-              </Link>
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={handleManualScrape} 
+                disabled={scraping}
+                className="text-gray-600 hover:text-gray-900"
+              >
+                {scraping ? (
+                  <>
+                    <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                    Updating...
+                  </>
+                ) : (
+                  <>
+                    <Download className="h-4 w-4 mr-2" />
+                    Refresh Data
+                  </>
+                )}
+              </Button>
             </div>
           </div>
         </div>
-      </div>
+      </header>
       
-      <div className="relative">
-        <div className="container mx-auto px-6 pt-8 pb-12">
-          {/* Admin Actions Bar */}
-          <div className="flex justify-end gap-4 mb-8">
-            <Button 
-              variant="outline"
-              onClick={handleManualScrape}
-              disabled={scraping || loading}
-              className="flex items-center gap-2 bg-white border-2 border-blue-200 text-blue-600 hover:bg-blue-50 hover:border-blue-300 shadow-md"
-            >
-              {scraping ? (
-                <>
-                  <RefreshCw className="h-4 w-4 animate-spin" />
-                  Scraping...
-                </>
-              ) : (
-                <>
-                  <Download className="h-4 w-4" />
-                  Scrape Now
-                </>
-              )}
-            </Button>
-          </div>
+      <div className="container mx-auto px-6 py-8">
 
         {/* Scrape Result Message */}
         {scrapeResult && (
@@ -466,55 +428,80 @@ export default function AdminPage() {
           </div>
         )}
 
-        {/* Scraping Status Bar - Compact */}
-        <div className="bg-white border border-gray-200 rounded-lg p-4 mb-6 shadow-sm">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <RefreshCw className="h-5 w-5 text-blue-600" />
-              <div>
-                <div className="flex items-center gap-3">
-                  <span className="text-sm font-medium text-gray-900">Last Update:</span>
-                  <span className="text-sm font-semibold text-gray-700">{formatLastUpdateTime(lastUpdateTime)}</span>
-                  <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${
-                    lastUpdateTime && (new Date().getTime() - lastUpdateTime.getTime()) < 3600000
-                      ? 'bg-green-100 text-green-800'
-                      : lastUpdateTime && (new Date().getTime() - lastUpdateTime.getTime()) < 86400000
-                      ? 'bg-yellow-100 text-yellow-800'
-                      : 'bg-red-100 text-red-800'
-                  }`}>
-                    {lastUpdateTime && (new Date().getTime() - lastUpdateTime.getTime()) < 3600000
-                      ? 'Fresh'
-                      : lastUpdateTime && (new Date().getTime() - lastUpdateTime.getTime()) < 86400000
-                      ? 'Recent'
-                      : 'Stale'}
-                  </span>
+        {/* Status Overview Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+          <Card className="bg-white">
+            <CardContent className="p-6">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-green-50 rounded-lg">
+                  <CheckCircle className="h-6 w-6 text-green-500" />
                 </div>
-                <div className="text-xs text-gray-500 mt-1">
-                  Auto-refresh daily at 2:00 AM UTC
+                <div>
+                  <h3 className="text-sm font-medium text-gray-600">Total Homes</h3>
+                  <p className="text-2xl font-bold text-gray-900">{homes.length}</p>
                 </div>
               </div>
-            </div>
-            {lastUpdateTime && (
-              <div className="text-xs text-gray-500">
-                {lastUpdateTime.toLocaleDateString('en-US', { 
-                  month: 'short', 
-                  day: 'numeric',
-                  hour: 'numeric',
-                  minute: '2-digit'
-                })}
+            </CardContent>
+          </Card>
+          
+          <Card className="bg-white">
+            <CardContent className="p-6">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-blue-50 rounded-lg">
+                  <Building2 className="h-6 w-6 text-blue-500" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-medium text-gray-600">Builders</h3>
+                  <p className="text-2xl font-bold text-gray-900">{builders.length}</p>
+                </div>
               </div>
-            )}
+            </CardContent>
+          </Card>
+          
+          <Card className="bg-white">
+            <CardContent className="p-6">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-amber-50 rounded-lg">
+                  <Clock className="h-6 w-6 text-amber-500" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-medium text-gray-600">Last Updated</h3>
+                  <p className="text-sm text-gray-900">
+                    {formatLastUpdateTime(lastUpdateTime)}
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+        
+        {/* Quick Status */}
+        <div className="mb-6">
+          <div className={`inline-flex items-center gap-2 px-3 py-2 rounded-lg text-sm ${
+            lastUpdateTime && (new Date().getTime() - lastUpdateTime.getTime()) < 3600000
+              ? 'bg-green-100 text-green-800'
+              : lastUpdateTime && (new Date().getTime() - lastUpdateTime.getTime()) < 86400000
+              ? 'bg-yellow-100 text-yellow-800'
+              : 'bg-red-100 text-red-800'
+          }`}>
+            <RefreshCw className="h-4 w-4" />
+            Data is {lastUpdateTime && (new Date().getTime() - lastUpdateTime.getTime()) < 3600000
+              ? 'Fresh'
+              : lastUpdateTime && (new Date().getTime() - lastUpdateTime.getTime()) < 86400000
+              ? 'Recent'
+              : 'Stale'}
+ • Auto-refresh daily at 2:00 AM UTC
           </div>
         </div>
 
         {editingHome && (
-          <Card id="home-form" className="bg-white border-2 border-blue-200 shadow-md mb-8">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-blue-600">
-                <Edit className="h-5 w-5" />
+          <Card id="home-form" className="bg-white mb-8">
+            <CardHeader className="pb-4">
+              <CardTitle className="flex items-center gap-2 text-lg font-semibold text-gray-900">
+                <Edit className="h-5 w-5 text-blue-500" />
                 Edit Home: {formData.modelName}
               </CardTitle>
-              <CardDescription>
+              <CardDescription className="text-sm text-gray-600">
                 Editing home in {homes.find(h => h.id === editingHome.id)?.community?.name}
               </CardDescription>
             </CardHeader>
@@ -667,19 +654,19 @@ export default function AdminPage() {
         )}
 
         <div className="space-y-6">
-          <div className="flex justify-between items-center">
-            <h2 className="text-2xl font-bold text-gray-900">Quick Move-In Inventory ({homes.length})</h2>
-            <p className="text-gray-600">Manage homes ready for immediate move-in</p>
+          <div className="mb-6">
+            <h2 className="text-2xl font-semibold text-gray-900 mb-2">Quick Move-In Inventory</h2>
+            <p className="text-gray-600">Manage homes ready for immediate move-in ({homes.length} total)</p>
           </div>
 
           {/* Builder Summary Section */}
-          <Card className="bg-white border-2 border-blue-200 shadow-md mb-8">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-gray-900">
-                <Building2 className="h-5 w-5 text-blue-600" />
+          <Card className="bg-white mb-8">
+            <CardHeader className="pb-4">
+              <CardTitle className="flex items-center gap-2 text-lg font-semibold text-gray-900">
+                <Building2 className="h-5 w-5 text-blue-500" />
                 Builder Summary
               </CardTitle>
-              <CardDescription className="text-gray-600">
+              <CardDescription className="text-sm text-gray-600">
                 Total homes by builder
               </CardDescription>
             </CardHeader>
@@ -724,13 +711,13 @@ export default function AdminPage() {
             const duplicateGroups = findAllDuplicates();
             if (duplicateGroups.length > 0) {
               return (
-                <Card className="bg-red-50 border-2 border-red-200 shadow-md mb-8">
-                  <CardHeader>
+                <Card className="bg-red-50 border border-red-200 mb-8">
+                  <CardHeader className="pb-4">
                     <CardTitle className="flex items-center gap-2 text-red-800">
                       <AlertTriangle className="h-5 w-5" />
                       Duplicate Homes Detected ({duplicateGroups.length} group{duplicateGroups.length > 1 ? 's' : ''})
                     </CardTitle>
-                    <CardDescription className="text-red-700">
+                    <CardDescription className="text-sm text-red-700">
                       The following homes appear to be duplicates. Review and remove duplicates to maintain data quality.
                     </CardDescription>
                   </CardHeader>
@@ -757,39 +744,39 @@ export default function AdminPage() {
           })()}
 
           {homes.length === 0 ? (
-            <Card className="bg-white border-2 border-blue-200 shadow-md">
-              <CardContent className="text-center py-8">
-                <p className="text-gray-500">No homes found. Add some homes to get started.</p>
+            <Card className="bg-white">
+              <CardContent className="text-center py-12">
+                <Building2 className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">No homes found</h3>
+                <p className="text-gray-500">Add some homes to get started.</p>
               </CardContent>
             </Card>
           ) : (
             groupedHomes().map(([builderName, builderHomes]) => (
-              <Card key={builderName} className="bg-white border-2 border-blue-200 shadow-md mb-8">
-                <CardHeader>
+              <Card key={builderName} className="bg-white mb-8">
+                <CardHeader className="pb-4">
                   <div className="flex items-center justify-between">
-                    <CardTitle className="text-xl flex items-center gap-2 text-gray-900">
-                      <Building2 className="h-5 w-5 text-blue-600" />
-                      {builderName}
-                    </CardTitle>
-                    <span className="bg-blue-50 text-blue-700 px-3 py-1 rounded-full text-sm font-medium border border-blue-200">
-                      {builderHomes.length} home{builderHomes.length !== 1 ? 's' : ''}
-                    </span>
+                    <div className="flex items-center gap-2">
+                      <Building2 className="h-5 w-5 text-blue-500" />
+                      <CardTitle className="text-lg font-semibold text-gray-900">{builderName}</CardTitle>
+                      <span className="text-sm text-gray-500">({builderHomes.length} homes)</span>
+                    </div>
                   </div>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="pt-0">
                   <div className="overflow-x-auto">
                     <table className="w-full">
                       <thead>
-                        <tr className="border-b">
-                          <th className="text-left py-2">Address</th>
-                          <th className="text-left py-2">Community</th>
-                          <th className="text-left py-2">Price</th>
-                          <th className="text-left py-2">Bedrooms</th>
-                          <th className="text-left py-2">Bathrooms</th>
-                          <th className="text-left py-2">Actions</th>
+                        <tr className="border-b border-gray-200">
+                          <th className="text-left py-3 px-3 font-medium text-sm text-gray-700">Address</th>
+                          <th className="text-left py-3 px-3 font-medium text-sm text-gray-700">Community</th>
+                          <th className="text-left py-3 px-3 font-medium text-sm text-gray-700">Price</th>
+                          <th className="text-left py-3 px-3 font-medium text-sm text-gray-700">Bedrooms</th>
+                          <th className="text-left py-3 px-3 font-medium text-sm text-gray-700">Bathrooms</th>
+                          <th className="text-left py-3 px-3 font-medium text-sm text-gray-700">Actions</th>
                         </tr>
                       </thead>
-                      <tbody className="divide-y">
+                      <tbody className="divide-y divide-gray-100">
                         {builderHomes.map((home) => (
                           <tr key={home.id} className={isDuplicateHome(home.id) ? "bg-red-50 border-l-4 border-red-400" : ""}>
                             <td className="py-3">
@@ -839,7 +826,6 @@ export default function AdminPage() {
             ))
           )}
         </div>
-      </div>
       </div>
     </div>
   );

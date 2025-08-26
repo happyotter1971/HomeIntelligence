@@ -159,13 +159,13 @@ export default function PriceChanges({ maxItems = 10 }: PriceChangesProps) {
 
   if (loading) {
     return (
-      <Card className="glass-effect border-0 shadow-lg">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <TrendingDown className="h-5 w-5 text-blue-600" />
-            Recent Price Changes by Company
+      <Card className="bg-white">
+        <CardHeader className="pb-4">
+          <CardTitle className="flex items-center gap-2 text-lg font-semibold text-gray-900">
+            <TrendingDown className="h-5 w-5 text-blue-500" />
+            Recent Price Changes by Builder
           </CardTitle>
-          <CardDescription>
+          <CardDescription className="text-sm text-gray-600">
             Track price movements from Dream Finder Homes, KB Home, and Ryan Homes
           </CardDescription>
         </CardHeader>
@@ -174,10 +174,10 @@ export default function PriceChanges({ maxItems = 10 }: PriceChangesProps) {
             {[...Array(3)].map((_, i) => (
               <div key={i} className="flex items-center justify-between py-3 border-b">
                 <div className="flex-1">
-                  <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
-                  <div className="h-3 bg-gray-200 rounded w-1/2"></div>
+                  <div className="h-4 bg-gray-100 rounded w-3/4 mb-2"></div>
+                  <div className="h-3 bg-gray-100 rounded w-1/2"></div>
                 </div>
-                <div className="h-6 bg-gray-200 rounded w-20"></div>
+                <div className="h-6 bg-gray-100 rounded w-20"></div>
               </div>
             ))}
           </div>
@@ -188,13 +188,13 @@ export default function PriceChanges({ maxItems = 10 }: PriceChangesProps) {
 
   if (priceChanges.length === 0) {
     return (
-      <Card className="glass-effect border-0 shadow-lg">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <TrendingDown className="h-5 w-5 text-blue-600" />
-            Recent Price Changes by Company
+      <Card className="bg-white">
+        <CardHeader className="pb-4">
+          <CardTitle className="flex items-center gap-2 text-lg font-semibold text-gray-900">
+            <TrendingDown className="h-5 w-5 text-blue-500" />
+            Recent Price Changes by Builder
           </CardTitle>
-          <CardDescription>
+          <CardDescription className="text-sm text-gray-600">
             Track price movements from Dream Finder Homes, KB Home, and Ryan Homes
           </CardDescription>
         </CardHeader>
@@ -209,18 +209,18 @@ export default function PriceChanges({ maxItems = 10 }: PriceChangesProps) {
   }
 
   return (
-    <Card className="bg-white border-2 border-blue-200 shadow-md">
-      <CardHeader>
+    <Card className="bg-white">
+      <CardHeader className="pb-4">
         <CardTitle className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <TrendingDown className="h-5 w-5 text-blue-600" />
-            <span className="text-gray-900">Recent Price Changes by Builder</span>
+            <TrendingDown className="h-5 w-5 text-blue-500" />
+            <span className="text-lg font-semibold text-gray-900">Recent Price Changes by Builder</span>
           </div>
-          <span className="bg-blue-600 text-white px-3 py-1 rounded-full text-sm font-medium shadow-sm border border-blue-700">
-            {priceChanges.length} change{priceChanges.length !== 1 ? 's' : ''} (90 days)
-          </span>
+          <Link href="/inventory" className="text-sm text-blue-500 hover:text-blue-600 font-medium">
+            {priceChanges.length} changes (90 days)
+          </Link>
         </CardTitle>
-        <CardDescription className="text-gray-600">
+        <CardDescription className="text-sm text-gray-600 mt-1">
           Track price movements from Dream Finder Homes, KB Home, and Ryan Homes
         </CardDescription>
       </CardHeader>
@@ -231,76 +231,67 @@ export default function PriceChanges({ maxItems = 10 }: PriceChangesProps) {
             .map(([companyName, changes]) => (
             <div key={companyName} className="space-y-3">
               <div className="flex items-center justify-between">
-                <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
-                  <Building2 className="h-5 w-5 text-blue-600" />
+                <h3 className="text-sm font-medium text-gray-700 flex items-center gap-2">
+                  <Building2 className="h-4 w-4 text-gray-400" />
                   {companyName}
                 </h3>
-                <span className="text-sm text-gray-600 bg-blue-50 px-2 py-1 rounded-full border border-blue-200">
+                <span className="text-xs text-gray-500">
                   {changes.length} change{changes.length !== 1 ? 's' : ''}
                 </span>
               </div>
               
-              <div className="space-y-1 pl-4 border-l-2 border-blue-200">
+              <div className="space-y-2">
                 {changes.map((change: any) => {
                   const homeId = change.actualHomeId || change.homeId;
                   return (
                   <Link
                     key={change.id}
                     href={`/home/${homeId}`}
-                    className="flex items-center justify-between px-3 py-2 rounded-lg border-2 border-blue-100 bg-white hover:bg-blue-50 hover:border-blue-200 transition-colors text-sm cursor-pointer group shadow-sm"
+                    className="flex items-center justify-between px-4 py-3 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors text-sm cursor-pointer group"
                     title={`Home ID: ${homeId}`}
                   >
                     {/* Left side: Address with trend icon */}
-                    <div className="flex items-center gap-2 flex-shrink-0">
+                    <div className="flex items-center gap-3 flex-shrink-0">
+                      {change.changeType === 'decrease' ? (
+                        <TrendingDown className="h-4 w-4 text-green-500" />
+                      ) : (
+                        <TrendingUp className="h-4 w-4 text-red-500" />
+                      )}
                       <div className="flex flex-col">
                         {change.address ? (
-                          <h4 className="font-semibold text-gray-900">
-                            {/* Display full street address with house numbers */}
+                          <h4 className="font-medium text-gray-900">
                             {change.address}
                           </h4>
                         ) : (
-                          <h4 className="font-semibold text-gray-900 text-gray-400">
+                          <h4 className="font-medium text-gray-400">
                             Address Not Available
                           </h4>
                         )}
-                      </div>
-                      {change.changeType === 'decrease' ? (
-                        <TrendingDown className="h-3 w-3 text-green-600" />
-                      ) : (
-                        <TrendingUp className="h-3 w-3 text-red-600" />
-                      )}
-                    </div>
-                    
-                    {/* Middle: Community and timing */}
-                    <div className="flex items-center gap-3 text-xs text-gray-600 flex-1 min-w-0 mx-3">
-                      <div className="flex items-center gap-1">
-                        <MapPin className="h-3 w-3 flex-shrink-0" />
-                        <span className="truncate">{change.community?.name}</span>
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <Calendar className="h-3 w-3 flex-shrink-0" />
-                        <span>{formatTimeAgo(change.changeDate)}</span>
+                        <div className="flex items-center gap-2 text-xs text-gray-500 mt-1">
+                          <MapPin className="h-3 w-3" />
+                          <span>{change.community?.name}</span>
+                          <Calendar className="h-3 w-3 ml-2" />
+                          <span>{formatTimeAgo(change.changeDate)}</span>
+                        </div>
                       </div>
                     </div>
                     
                     {/* Right side: Price change details */}
-                    <div className="flex items-center gap-2 flex-shrink-0">
-                      <span className="text-xs text-gray-500 line-through">
+                    <div className="flex items-center gap-3 flex-shrink-0">
+                      <span className="text-sm text-gray-500 line-through">
                         {formatPrice(change.oldPrice)}
                       </span>
-                      <span className="text-sm">→</span>
                       <span className="font-semibold text-gray-900">
                         {formatPrice(change.newPrice)}
                       </span>
-                      <span className={`text-xs font-medium px-1.5 py-0.5 rounded ${
+                      <span className={`text-xs font-medium px-2 py-1 rounded ${
                         change.changeType === 'decrease' 
-                          ? 'text-green-700 bg-green-50' 
-                          : 'text-red-700 bg-red-50'
+                          ? 'text-green-700 bg-green-100' 
+                          : 'text-red-700 bg-red-100'
                       }`}>
-                        {change.changeType === 'decrease' ? '-' : '+'}
-                        {formatPrice(Math.abs(change.changeAmount))} ({change.changePercentage > 0 ? '+' : ''}{change.changePercentage.toFixed(1)}%)
+                        {change.changeType === 'decrease' ? '↓' : '↑'}
+                        {formatPrice(Math.abs(change.changeAmount))} ({Math.abs(change.changePercentage).toFixed(1)}%)
                       </span>
-                      <ExternalLink className="h-3 w-3 ml-1 opacity-0 group-hover:opacity-100 transition-opacity" />
                     </div>
                   </Link>
                   );
