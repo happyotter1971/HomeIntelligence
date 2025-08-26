@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { X, TrendingDown, TrendingUp, Minus, Home, DollarSign, BarChart3 } from 'lucide-react';
+import { X, CheckCircle, TrendingUp, Minus, Home, DollarSign, BarChart3 } from 'lucide-react';
 import { PriceEvaluation } from '@/lib/openai/types';
 import { HomeWithRelations } from '@/types';
 
@@ -31,7 +31,7 @@ export default function PriceEvaluationModal({
 
   const getClassificationIcon = () => {
     switch (evaluation.classification) {
-      case 'below_market': return <TrendingDown className="w-6 h-6" />;
+      case 'below_market': return <CheckCircle className="w-6 h-6" />;
       case 'market_fair': return <Minus className="w-6 h-6" />;
       case 'above_market': return <TrendingUp className="w-6 h-6" />;
       default: return <BarChart3 className="w-6 h-6" />;

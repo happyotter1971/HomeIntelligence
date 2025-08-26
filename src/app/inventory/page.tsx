@@ -11,7 +11,7 @@ import { Input } from '@/components/ui/input';
 import { Select } from '@/components/ui/select';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { formatPrice, formatSquareFootage, formatSquareFootageNumber, formatPricePerSquareFoot } from '@/lib/utils';
-import { Search, Filter, ArrowLeft, MapPin, Eye, Clock, Zap, Check, Building2, TrendingUp, TrendingDown, Minus } from 'lucide-react';
+import { Search, Filter, ArrowLeft, MapPin, Eye, Clock, Zap, Check, Building2, TrendingUp, CheckCircle, Minus } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 import PriceEvaluationBadge from '@/components/PriceEvaluationBadge';
@@ -540,7 +540,7 @@ function InventoryContent() {
                                            evaluations[home.id].classification === 'above_market' ? '#c2410c' : '#374151'
                                   }}
                                 >
-                                  {evaluations[home.id].classification === 'below_market' && <TrendingDown className="w-3.5 h-3.5" />}
+                                  {evaluations[home.id].classification === 'below_market' && <CheckCircle className="w-3.5 h-3.5" />}
                                   {evaluations[home.id].classification === 'market_fair' && <Minus className="w-3.5 h-3.5" />}
                                   {evaluations[home.id].classification === 'above_market' && <TrendingUp className="w-3.5 h-3.5" />}
                                   <span className="text-xs font-medium">

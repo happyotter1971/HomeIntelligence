@@ -36,7 +36,12 @@ Instructions:
    • Primary suite on main: $8K–$15K in 2-story plans if typical for area.
    If model coefficients are provided in Aggregates, use those instead.
 3. Consider incentives as effective price reductions. Convert buydowns/credits to a dollar-equivalent and subtract from list_price to compute an effective_price. State your assumptions briefly.
-4. Classify as "below_market", "market_fair", or "above_market" with a 0–100 confidence score. If required fields are missing or filtered_comp_count < 2, return classification = 'insufficient_data' and populate assumptions explaining what's missing.
+4. Classify using these EXACT criteria based on price per square foot comparison to market median:
+   • "below_market": Subject price/sqft is more than 5% BELOW the comparable median (good deal for buyers)
+   • "market_fair": Subject price/sqft is within ±5% of the comparable median (fairly priced)
+   • "above_market": Subject price/sqft is more than 5% ABOVE the comparable median (overpriced)
+   • "insufficient_data": If filtered_comp_count < 3 or required fields missing
+   Provide 0–100 confidence score. Higher confidence for larger sample sizes and tighter comp quality.
 5. Return only JSON, no commentary. Output exactly the schema below:
 
 {
@@ -95,7 +100,10 @@ export async function evaluatePrice(request: EvaluationRequest): Promise<PriceEv
       throw new Error('Invalid evaluation response structure');
     }
 
-    return evaluation;
+    // Post-process validation to ensure logic is sound
+    const validatedEvaluation = validateEvaluationLogic(evaluation, request);
+    
+    return validatedEvaluation;
   } catch (error) {
     console.error('Error evaluating price:', error);
     
@@ -153,4 +161,48 @@ export function calculateEffectivePrice(
   }
 
   return listPrice - reduction;
+}
+
+function validateEvaluationLogic(evaluation: PriceEvaluation, request: EvaluationRequest): PriceEvaluation {
+  const subjectPpsf = evaluation.subject_metrics.price_per_sqft;
+  const medianPpsf = evaluation.market_baselines.comp_price_per_sqft.median;
+  
+  if (subjectPpsf <= 0 || medianPpsf <= 0) {
+    console.warn('Invalid price per square foot values detected', { subjectPpsf, medianPpsf });
+    return evaluation; // Return as-is if we can't validate
+  }
+  
+  // Calculate the actual percentage difference
+  const percentDifference = ((subjectPpsf - medianPpsf) / medianPpsf) * 100;
+  
+  // Validate the classification matches our 5% threshold logic
+  let expectedClassification: PriceEvaluation['classification'];
+  if (percentDifference < -5) {
+    expectedClassification = 'below_market';
+  } else if (percentDifference > 5) {
+    expectedClassification = 'above_market';
+  } else {
+    expectedClassification = 'market_fair';
+  }
+  
+  // If AI classification doesn't match our logic, correct it and reduce confidence
+  if (evaluation.classification !== expectedClassification && evaluation.classification !== 'insufficient_data') {
+    console.warn('AI classification corrected', {
+      original: evaluation.classification,
+      corrected: expectedClassification,
+      percentDifference: percentDifference.toFixed(1) + '%',
+      subjectPpsf,
+      medianPpsf
+    });
+    
+    return {
+      ...evaluation,
+      classification: expectedClassification,
+      confidence: Math.max(evaluation.confidence - 20, 30), // Reduce confidence for correction
+      assumptions: [...evaluation.assumptions, 'Classification auto-corrected based on price analysis'],
+      evidence: [...evaluation.evidence, `Subject is ${percentDifference.toFixed(1)}% ${percentDifference > 0 ? 'above' : 'below'} market median`]
+    };
+  }
+  
+  return evaluation;
 }

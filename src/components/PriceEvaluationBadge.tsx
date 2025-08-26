@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { TrendingDown, TrendingUp, Minus, Loader2, AlertCircle } from 'lucide-react';
+import { CheckCircle, TrendingUp, Minus, Loader2, AlertCircle } from 'lucide-react';
 import { PriceEvaluation } from '@/lib/openai/types';
 
 interface PriceEvaluationBadgeProps {
@@ -85,7 +85,7 @@ export default function PriceEvaluationBadge({
         return {
           bg: 'bg-green-50',
           text: 'text-green-700',
-          icon: TrendingDown,
+          icon: CheckCircle,
           label: 'Good Deal'
         };
       case 'market_fair':
